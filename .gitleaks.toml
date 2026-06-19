@@ -1,0 +1,13 @@
+title = "Net Sec Watch Gitleaks configuration"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Sanitized documentation and test fixtures"
+paths = [
+  '''^examples/''',
+  '''^tests/runtime/''',
+  '''^docs/test-results/'''
+]
+

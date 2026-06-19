@@ -1,0 +1,19 @@
+# Example private Fluent Bit configuration.
+#
+# Copy to config/fluent-bit.local.conf, customize it, and set this in .env:
+# FLUENT_BIT_CONFIG_PATH=./config/fluent-bit.local.conf
+#
+# The copied local file is ignored by Git. Do not place passwords, tokens, or
+# private certificates in this example file.
+
+@INCLUDE /fluent-bit/etc/fluent-bit.base.conf
+
+# Add machine-specific filters or outputs below. For example, a later
+# OpenSearch output can be configured here using environment variables or
+# mounted secret files rather than committed credentials.
+#
+# [FILTER]
+#     Name   modify
+#     Match  *
+#     Add    deployment.environment local
+

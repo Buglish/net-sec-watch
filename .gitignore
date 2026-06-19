@@ -1,0 +1,24 @@
+# Private runtime settings. Commit only the corresponding *.example files.
+.env
+.env.*
+!.env.example
+
+# Machine-specific collector configuration.
+config/fluent-bit.local.conf
+config/*.local.conf
+config/private/
+secrets/
+*.pem
+*.key
+*.p12
+
+*.local
+*.swp
+examples/logs/text/*.log.1
+tests/runtime/
+
+# Generated security-audit evidence. Keep the process and README in Git, not
+# machine-generated reports or vulnerability database caches.
+security/audits/*
+!security/audits/README.md
+!security/audits/.gitkeep

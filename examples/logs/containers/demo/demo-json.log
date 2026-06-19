@@ -1,0 +1,3 @@
+{"log":"container service started\n","stream":"stdout","time":"2026-06-19T20:00:00.000000000Z"}
+{"log":"example warning from container\n","stream":"stderr","time":"2026-06-19T20:00:02.000000000Z"}
+

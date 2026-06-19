@@ -1,0 +1,2 @@
+Jun 20 08:00:04 demo-host sudo: demo : TTY=pts/0 ; PWD=/home/demo ; USER=root ; COMMAND=/usr/bin/systemctl status demo
+

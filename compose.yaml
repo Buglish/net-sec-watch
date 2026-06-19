@@ -1,0 +1,54 @@
+services:
+  fluent-bit:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
+    container_name: net-sec-watch-fluent-bit
+    restart: unless-stopped
+    command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+    ports:
+      - "${FLUENT_BIT_HTTP_BIND:-127.0.0.1}:${FLUENT_BIT_HTTP_PORT:-2020}:2020"
+    volumes:
+      - ${FLUENT_BIT_CONFIG_PATH:-./config/fluent-bit.conf}:/fluent-bit/etc/fluent-bit.conf:ro
+      - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.base.conf:ro
+      - ./config/parsers-custom.conf:/fluent-bit/etc/parsers-custom.conf:ro
+      - ./examples/logs:/logs:ro
+      - ${HOST_LOG_ROOT:-./examples/logs/system}:/host/var/log:ro
+      - ${CONTAINER_LOG_ROOT:-./examples/logs/containers}:/host/var/lib/docker/containers:ro
+      - fluent-bit-state:/fluent-bit/state
+
+  audit-runtime-sbom:
+    image: ${SYFT_IMAGE:-anchore/syft:v1.45.1}
+    profiles: ["audit"]
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command:
+      - ${AUDIT_TARGET_IMAGE:-fluent/fluent-bit:4.0}
+      - --output
+      - spdx-json
+
+  audit-source-sbom:
+    image: ${SYFT_IMAGE:-anchore/syft:v1.45.1}
+    profiles: ["audit"]
+    volumes:
+      - ./:/source:ro
+    command:
+      - dir:/source
+      - --source-name
+      - net-sec-watch
+      - --source-version
+      - ${AUDIT_SOURCE_VERSION:-working-tree}
+      - --exclude
+      - ./security/audits/**
+      - --output
+      - spdx-json
+
+  audit-vulnerabilities:
+    image: ${GRYPE_IMAGE:-anchore/grype:v0.114.0}
+    profiles: ["audit"]
+    volumes:
+      - ./security/audits:/audit:ro
+      - grype-db:/root/.cache/grype
+    command: ["version"]
+
+volumes:
+  fluent-bit-state:
+  grype-db:

@@ -1,0 +1,3 @@
+Jun 20 08:00:00 demo-host systemd[1]: Started Net Sec Watch demo service.
+Jun 20 08:00:03 demo-host sshd[1024]: Accepted publickey for demo from 192.0.2.10 port 49152 ssh2
+

@@ -1,0 +1,20 @@
+services:
+  collector:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
+    command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/collector.conf"]
+    depends_on:
+      - receiver
+    volumes:
+      - ./config/collector.conf:/fluent-bit/etc/collector.conf:ro
+      - ../../config/parsers-custom.conf:/fluent-bit/etc/parsers-custom.conf:ro
+      - ../runtime/logs:/logs:ro
+      - collector-state:/fluent-bit/state
+
+  receiver:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
+    command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/receiver.conf"]
+    volumes:
+      - ./config/receiver.conf:/fluent-bit/etc/receiver.conf:ro
+
+volumes:
+  collector-state:
