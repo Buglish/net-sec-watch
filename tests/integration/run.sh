@@ -173,6 +173,57 @@ test_canonical_normalization() {
   echo "PASS: canonical metadata, timestamps, severity, and raw events were normalized"
 }
 
+assert_deadletter_event() {
+  local marker="$1"
+  local expected_source="$2"
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "$expected_source parse failure was not marked as a pipeline error"
+  grep -Fq '"event.dataset":"pipeline.deadletter"' <<<"$event" ||
+    fail "$expected_source parse failure was not assigned to dead-letter"
+  grep -Fq '"error.type":"parsing_error"' <<<"$event" ||
+    fail "$expected_source parse failure type was not recorded"
+  grep -Fq '"error.stage":"source_parser"' <<<"$event" ||
+    fail "$expected_source parse failure stage was not recorded"
+  grep -Fq "\"error.source_dataset\":\"${expected_source}\"" <<<"$event" ||
+    fail "$expected_source source dataset was not retained"
+  grep -Fq '"_dead_letter":true' <<<"$event" ||
+    fail "$expected_source dead-letter marker was not recorded"
+  grep -Fq '"event.original":' <<<"$event" ||
+    fail "$expected_source malformed source record was not preserved"
+}
+
+test_structured_deadletter_routing() {
+  local app_marker="bad-app-$RANDOM-$RANDOM"
+  local container_marker="bad-container-$RANDOM-$RANDOM"
+  local zeek_marker="bad-zeek-$RANDOM-$RANDOM"
+  local suricata_marker="bad-suricata-$RANDOM-$RANDOM"
+
+  printf '{"message":"%s"\n' "$app_marker" \
+    >> "$runtime/logs/app/application.json.log"
+  printf '{"log":"%s\\n","stream":\n' "$container_marker" \
+    >> "$runtime/logs/containers/demo/demo-json.log"
+  printf '{"uid":"%s"\n' "$zeek_marker" \
+    >> "$runtime/logs/zeek/conn.log"
+  printf '{"flow_id":"%s"\n' "$suricata_marker" \
+    >> "$runtime/logs/suricata/eve.json"
+
+  wait_for_log receiver "$app_marker"
+  wait_for_log receiver "$container_marker"
+  wait_for_log receiver "$zeek_marker"
+  wait_for_log receiver "$suricata_marker"
+
+  assert_deadletter_event "$app_marker" "application.json"
+  assert_deadletter_event "$container_marker" "container.docker"
+  assert_deadletter_event "$zeek_marker" "zeek.conn"
+  assert_deadletter_event "$suricata_marker" "suricata.unknown"
+
+  echo "PASS: malformed structured records were routed to dead-letter"
+}
+
 test_rotation() {
   local old_marker="phase1-before-rotation-$RANDOM-$RANDOM"
   local new_marker="phase1-after-rotation-$RANDOM-$RANDOM"
@@ -299,10 +350,15 @@ test_syslog_deadletter() {
   # Two spaces after the timestamp produce an empty host field, triggering dead-letter.
   send_udp 127.0.0.1 15514 "<134>${ts}  sshd[1234]: ${marker}"
   wait_for_log receiver "$marker"
-  if ! compose logs --no-color receiver 2>/dev/null |
-      grep -F "$marker" | grep -Fq '"_dead_letter"'; then
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"_dead_letter":true' <<<"$event" ||
     fail "malformed syslog record was not routed to dead-letter stream"
-  fi
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "malformed syslog record was not marked as a pipeline error"
+  grep -Fq '"error.stage":"syslog_input"' <<<"$event" ||
+    fail "malformed syslog error stage was not recorded"
   echo "PASS: malformed syslog record was routed to dead-letter stream"
 }
 
@@ -518,6 +574,7 @@ main() {
 
   test_initial_collection
   test_canonical_normalization
+  test_structured_deadletter_routing
   test_multiline
   test_rotation
   test_restart_offsets

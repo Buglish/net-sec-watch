@@ -158,7 +158,7 @@ schema while retaining the original log.
 - [x] Add timestamp inference and clock-skew indicators.
 - [x] Normalize log levels and syslog severities.
 - [x] Add host, service, device, environment, site, and collector metadata.
-- [ ] Add controlled parsing-error fields and dead-letter routing.
+- [x] Add controlled parsing-error fields and dead-letter routing.
 - [ ] Prevent uncontrolled dynamic fields and mapping explosion.
 - [ ] Add golden input/output parser tests for every supported source.
 - [x] Add parser version metadata to normalized events.

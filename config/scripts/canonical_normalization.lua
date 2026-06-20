@@ -45,6 +45,15 @@ local TAG_DEFAULTS = {
     ["net.syslog.deadletter"] = {"syslog.deadletter", "syslog-deadletter-1"},
 }
 
+local PARSER_REQUIREMENTS = {
+    ["file.application"] = {"message", "application JSON"},
+    ["test.application"] = {"message", "application JSON"},
+    ["container.docker"] = {"stream", "Docker JSON"},
+    ["test.container"] = {"stream", "Docker JSON"},
+    ["sensor.zeek"] = {"ts", "Zeek JSON"},
+    ["sensor.suricata"] = {"event_type", "Suricata EVE JSON"},
+}
+
 local function timestamp_seconds(timestamp)
     if type(timestamp) == "table" then
         return tonumber(timestamp.sec) or os.time()
@@ -185,6 +194,42 @@ local function source_metadata(record)
     end
 end
 
+local function mark_pipeline_error(tag, record)
+    if tag == "net.syslog.deadletter" then
+        record["event.kind"] = "pipeline_error"
+        record["event.dataset"] = "pipeline.deadletter"
+        record["error.type"] = "parsing_error"
+        record["error.stage"] = "syslog_input"
+        record["error.message"] =
+            "syslog record did not satisfy the configured RFC parser"
+        record["error.source_dataset"] = "syslog"
+        record["_dead_letter"] = true
+        record["_route"] = "deadletter"
+        return
+    end
+
+    local requirement = PARSER_REQUIREMENTS[tag]
+    if requirement == nil or record[requirement[1]] ~= nil then
+        return
+    end
+
+    local source_dataset = record["event.dataset"]
+    local defaults = TAG_DEFAULTS[tag]
+    if defaults then
+        source_dataset = defaults[1]
+    end
+
+    record["event.kind"] = "pipeline_error"
+    record["event.dataset"] = "pipeline.deadletter"
+    record["error.type"] = "parsing_error"
+    record["error.stage"] = "source_parser"
+    record["error.message"] =
+        requirement[2] .. " record could not be parsed"
+    record["error.source_dataset"] = source_dataset or tag
+    record["_dead_letter"] = true
+    record["_route"] = "deadletter"
+end
+
 function normalize_canonical_event(tag, timestamp, record)
     local observed_epoch = os.time()
     local fallback_epoch = timestamp_seconds(timestamp)
@@ -203,6 +248,7 @@ function normalize_canonical_event(tag, timestamp, record)
             record["event.parser_version"] or defaults[2]
     end
 
+    mark_pipeline_error(tag, record)
     record["event.kind"] = record["event.kind"] or "event"
     record["event.schema_version"] = SCHEMA_VERSION
     record["@timestamp"] = utc(source_epoch)

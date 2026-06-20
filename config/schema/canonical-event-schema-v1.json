@@ -150,6 +150,9 @@
     "error.stage": {
       "type": "string"
     },
+    "error.source_dataset": {
+      "type": "string"
+    },
     "event.classification": {
       "type": "string",
       "description": "Reserved for approved ML enrichment."
