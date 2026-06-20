@@ -153,15 +153,15 @@ schema while retaining the original log.
 - [x] Define the canonical event schema and field naming conventions.
 - [x] Align appropriate fields with OpenTelemetry log conventions.
 - [x] Define security fields for source, destination, action, outcome, and severity.
-- [ ] Preserve every raw source message in `event.original`.
-- [ ] Normalize timestamps to UTC and preserve source timezone information.
-- [ ] Add timestamp inference and clock-skew indicators.
-- [ ] Normalize log levels and syslog severities.
-- [ ] Add host, service, device, environment, site, and collector metadata.
+- [x] Preserve every raw source message in `event.original`.
+- [x] Normalize timestamps to UTC and preserve source timezone information.
+- [x] Add timestamp inference and clock-skew indicators.
+- [x] Normalize log levels and syslog severities.
+- [x] Add host, service, device, environment, site, and collector metadata.
 - [ ] Add controlled parsing-error fields and dead-letter routing.
 - [ ] Prevent uncontrolled dynamic fields and mapping explosion.
 - [ ] Add golden input/output parser tests for every supported source.
-- [ ] Add parser version metadata to normalized events.
+- [x] Add parser version metadata to normalized events.
 - [x] Document schema compatibility and migration rules.
 - [x] Reserve the ML enrichment field namespace (`event.classification`,
   `event.threat_level`, `event.threat_score`, `event.ml_model_id`,

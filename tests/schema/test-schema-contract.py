@@ -10,6 +10,7 @@ SCHEMA = ROOT / "config/schema/canonical-event-schema-v1.json"
 
 REQUIRED = {
     "@timestamp",
+    "event.observed",
     "event.dataset",
     "event.kind",
     "event.original",

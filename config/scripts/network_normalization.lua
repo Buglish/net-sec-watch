@@ -52,6 +52,12 @@ local function observation_id(record)
 end
 
 function normalize_network_event(tag, timestamp, record)
+    local module = record["event.module"]
+    if module ~= "asuswrt" and module ~= "zeek" and
+        module ~= "suricata" then
+        return 0, timestamp, record
+    end
+
     local ingest_time = os.time()
     record["event.schema_version"] = SCHEMA_VERSION
     record["event.observation_id"] = observation_id(record)

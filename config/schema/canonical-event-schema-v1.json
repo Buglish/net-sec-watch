@@ -6,6 +6,7 @@
   "type": "object",
   "required": [
     "@timestamp",
+    "event.observed",
     "event.dataset",
     "event.kind",
     "event.original",

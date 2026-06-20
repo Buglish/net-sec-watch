@@ -4,6 +4,9 @@ services:
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/collector.conf"]
     depends_on:
       - receiver
+    environment:
+      COLLECTOR_NAME: integration-collector
+      SITE_NAME: integration-site
     ports:
       - "15514:5514/udp"
       - "15514:5514/tcp"

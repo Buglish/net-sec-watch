@@ -93,6 +93,86 @@ test_initial_collection() {
   echo "PASS: all sample source types were collected"
 }
 
+assert_canonical_event() {
+  local marker="$1"
+  local expected_dataset="$2"
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+
+  grep -Fq '"event.original":' <<<"$event" ||
+    fail "$expected_dataset did not preserve event.original"
+  grep -Fq '"event.schema_version":"1.0.0"' <<<"$event" ||
+    fail "$expected_dataset did not receive the canonical schema version"
+  grep -Fq "\"event.dataset\":\"${expected_dataset}\"" <<<"$event" ||
+    fail "$expected_dataset dataset was not normalized"
+  grep -Fq '"event.parser_version":' <<<"$event" ||
+    fail "$expected_dataset parser version was not recorded"
+  grep -Fq '"@timestamp":' <<<"$event" ||
+    fail "$expected_dataset UTC timestamp was not recorded"
+  grep -Fq '"event.observed":' <<<"$event" ||
+    fail "$expected_dataset observation time was not recorded"
+  grep -Fq '"event.timestamp_inferred":' <<<"$event" ||
+    fail "$expected_dataset timestamp inference status was not recorded"
+  grep -Fq '"event.clock_skew_seconds":' <<<"$event" ||
+    fail "$expected_dataset clock skew was not recorded"
+  grep -Fq '"collector.name":"integration-collector"' <<<"$event" ||
+    fail "$expected_dataset collector metadata was not recorded"
+  grep -Fq '"site.name":"integration-site"' <<<"$event" ||
+    fail "$expected_dataset site metadata was not recorded"
+}
+
+test_canonical_normalization() {
+  local text_marker="phase3-text-$RANDOM-$RANDOM"
+  local app_marker="phase3-app-$RANDOM-$RANDOM"
+  local system_marker="phase3-system-$RANDOM-$RANDOM"
+  local container_marker="phase3-container-$RANDOM-$RANDOM"
+
+  printf '%s WARN %s\n' "$(date --iso-8601=seconds)" "$text_marker" \
+    >> "$runtime/logs/text/service.log"
+  printf '{"timestamp":"%s","level":"ERROR","service":"phase3-test","environment":"integration","message":"%s"}\n' \
+    "$(date --iso-8601=seconds)" "$app_marker" \
+    >> "$runtime/logs/app/application.json.log"
+  printf '%s phase3-host phase3[1]: %s\n' \
+    "$(date '+%b %d %H:%M:%S')" "$system_marker" \
+    >> "$runtime/logs/system/syslog"
+  printf '{"log":"%s\\n","stream":"stderr","time":"%s"}\n' \
+    "$container_marker" "$(date --utc '+%Y-%m-%dT%H:%M:%S.000000000Z')" \
+    >> "$runtime/logs/containers/demo/demo-json.log"
+
+  wait_for_log receiver "$text_marker"
+  wait_for_log receiver "$app_marker"
+  wait_for_log receiver "$system_marker"
+  wait_for_log receiver "$container_marker"
+
+  assert_canonical_event "$text_marker" "file.text"
+  assert_canonical_event "$app_marker" "application.json"
+  assert_canonical_event "$system_marker" "host.system"
+  assert_canonical_event "$container_marker" "container.docker"
+
+  local text_event app_event
+  text_event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$text_marker" | tail -n 1)"
+  app_event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$app_marker" | tail -n 1)"
+  grep -Fq '"event.timestamp_inferred":false' <<<"$text_event" ||
+    fail "ISO 8601 text timestamp was not recognized"
+  grep -Fq '"log.level":"warn"' <<<"$text_event" ||
+    fail "plain-text log level was not normalized"
+  grep -Fq '"log.severity.number":13' <<<"$text_event" ||
+    fail "plain-text severity was not mapped to OpenTelemetry"
+  grep -Fq '"log.level":"error"' <<<"$app_event" ||
+    fail "application log level was not normalized"
+  grep -Fq '"log.severity.number":17' <<<"$app_event" ||
+    fail "application severity was not mapped to OpenTelemetry"
+  grep -Fq '"service.name":"phase3-test"' <<<"$app_event" ||
+    fail "application service metadata was not normalized"
+  grep -Fq '"deployment.environment.name":"integration"' <<<"$app_event" ||
+    fail "application environment metadata was not normalized"
+
+  echo "PASS: canonical metadata, timestamps, severity, and raw events were normalized"
+}
+
 test_rotation() {
   local old_marker="phase1-before-rotation-$RANDOM-$RANDOM"
   local new_marker="phase1-after-rotation-$RANDOM-$RANDOM"
@@ -183,6 +263,20 @@ test_syslog_udp() {
   ts="$(date '+%b %e %H:%M:%S')"
   send_udp 127.0.0.1 15514 "<134>${ts} testhost sshd[1234]: ${marker}"
   wait_for_log receiver "$marker"
+
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"event.dataset":"syslog.rfc3164"' <<<"$event" ||
+    fail "generic syslog dataset was not normalized"
+  grep -Fq '"event.parser_version":"syslog-rfc3164-1"' <<<"$event" ||
+    fail "generic syslog parser version was not recorded"
+  grep -Fq '"log.level":"info"' <<<"$event" ||
+    fail "syslog severity text was not normalized"
+  grep -Fq '"log.severity.number":9' <<<"$event" ||
+    fail "syslog severity was not mapped to OpenTelemetry"
+  grep -Fq '"host.name":"testhost"' <<<"$event" ||
+    fail "syslog host metadata was not normalized"
   echo "PASS: UDP syslog was collected"
 }
 
@@ -392,7 +486,7 @@ test_cross_source_correlation() {
 
   grep -Fq '"event.deduplication.strategy":"correlate-preserve"' <<<"$zeek_event" ||
     fail "cross-source duplicate strategy was not recorded"
-  grep -Fq '"event.schema_version":"net-sec-watch-network-1.0"' <<<"$asus_event" ||
+  grep -Fq '"event.schema_version":"1.0.0"' <<<"$asus_event" ||
     fail "shared network schema version was not recorded"
   [[ "$zeek_event" != "$suricata_event" && "$zeek_event" != "$asus_event" ]] ||
     fail "source observations were collapsed instead of preserved"
@@ -423,6 +517,7 @@ main() {
   sleep 5
 
   test_initial_collection
+  test_canonical_normalization
   test_multiline
   test_rotation
   test_restart_offsets

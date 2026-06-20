@@ -3,6 +3,9 @@ services:
     image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
     restart: unless-stopped
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
+    environment:
+      COLLECTOR_NAME: ${COLLECTOR_NAME:-net-sec-watch-fluent-bit}
+      SITE_NAME: ${SITE_NAME:-default}
     ports:
       - "${FLUENT_BIT_HTTP_BIND:-127.0.0.1}:${FLUENT_BIT_HTTP_PORT:-2020}:2020"
       - "${SYSLOG_BIND:-0.0.0.0}:${SYSLOG_UDP_PORT:-514}:5514/udp"

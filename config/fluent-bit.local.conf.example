@@ -56,4 +56,18 @@
 #     Match   net.syslog.tls
 #     script  /fluent-bit/etc/scripts/syslog_metadata.lua
 #     call    enrich_syslog
-
+#
+# [FILTER]
+#     Name    lua
+#     Match   net.syslog.tls
+#     script  /fluent-bit/etc/scripts/network_normalization.lua
+#     call    normalize_network_event
+#
+# Local filters run after the included base configuration, so apply the
+# canonical filter again after TLS source enrichment.
+#
+# [FILTER]
+#     Name    lua
+#     Match   net.syslog.tls
+#     script  /fluent-bit/etc/scripts/canonical_normalization.lua
+#     call    normalize_canonical_event
