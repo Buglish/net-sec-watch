@@ -15,8 +15,23 @@ services:
 
   fluent-bit:
     depends_on:
-      opensearch:
-        condition: service_healthy
+      opensearch-bootstrap:
+        condition: service_completed_successfully
     environment:
       OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+
+  opensearch-bootstrap:
+    image: ${CURL_IMAGE:-curlimages/curl:8.17.0}
+    profiles: ["opensearch"]
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      OPENSEARCH_ENDPOINT: https://opensearch:9200
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+    entrypoint: ["/bin/sh", "/opensearch-config/install-templates.sh"]
+    restart: "no"
+    volumes:
+      - ./config/opensearch:/opensearch-config:ro

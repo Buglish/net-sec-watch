@@ -44,6 +44,10 @@ grep -Fq 'OPENSEARCH_PASSWORD:' <<<"$secure_config" || {
   echo "Fluent Bit does not receive its ignored OpenSearch credential." >&2
   exit 1
 }
+grep -Fq 'opensearch-bootstrap:' <<<"$secure_config" || {
+  echo "OpenSearch template bootstrap service is missing." >&2
+  exit 1
+}
 grep -Fq "HTTP_User            \${OPENSEARCH_USERNAME}" \
   config/fluent-bit.opensearch.conf.example || {
   echo "OpenSearch HTTP authentication is missing from the Fluent Bit example." >&2
@@ -66,3 +70,51 @@ for private_file in .env config/fluent-bit.opensearch.conf; do
 done
 
 echo "Authenticated TLS ingestion configuration is valid."
+
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+template = json.loads(
+    Path("config/opensearch/index-template-v1.json").read_text(encoding="utf-8")
+)
+canonical = json.loads(
+    Path("config/schema/canonical-event-schema-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
+policy = json.loads(
+    Path("config/schema/mapping-policy-v1.json").read_text(encoding="utf-8")
+)
+mapping = template["template"]["mappings"]
+settings = template["template"]["settings"]
+
+def mapped_fields(properties, prefix=""):
+    fields = set()
+    for name, definition in properties.items():
+        path = f"{prefix}.{name}" if prefix else name
+        if "properties" in definition:
+            fields.update(mapped_fields(definition["properties"], path))
+        else:
+            fields.add(path)
+    return fields
+
+assert mapping["dynamic"] is False
+assert mapping["date_detection"] is False
+assert mapping["properties"]["@timestamp"]["type"] == "date"
+assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
+assert mapping["properties"]["message"]["type"] == "text"
+assert set(canonical["properties"]) <= mapped_fields(mapping["properties"])
+assert settings["index.mapping.total_fields.limit"] == policy[
+    "opensearch_defaults"
+]["index.mapping.total_fields.limit"]
+assert settings["index.mapping.depth.limit"] == policy[
+    "opensearch_defaults"
+]["index.mapping.depth.limit"]
+assert settings["index.mapping.field_name_length.limit"] == policy[
+    "opensearch_defaults"
+]["index.mapping.field_name_length.limit"]
+assert template["_meta"]["schema_version"] == "1.0.0"
+
+print("OpenSearch explicit mapping contract is valid.")
+PY
