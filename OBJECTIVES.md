@@ -159,7 +159,7 @@ schema while retaining the original log.
 - [x] Normalize log levels and syslog severities.
 - [x] Add host, service, device, environment, site, and collector metadata.
 - [x] Add controlled parsing-error fields and dead-letter routing.
-- [ ] Prevent uncontrolled dynamic fields and mapping explosion.
+- [x] Prevent uncontrolled dynamic fields and mapping explosion.
 - [ ] Add golden input/output parser tests for every supported source.
 - [x] Add parser version metadata to normalized events.
 - [x] Document schema compatibility and migration rules.

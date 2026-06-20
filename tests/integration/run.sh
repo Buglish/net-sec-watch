@@ -224,6 +224,47 @@ test_structured_deadletter_routing() {
   echo "PASS: malformed structured records were routed to dead-letter"
 }
 
+test_mapping_explosion_guard() {
+  local marker="mapping-guard-$RANDOM-$RANDOM"
+
+  python3 - "$runtime/logs/app/application.json.log" "$marker" <<'EOF'
+import json
+import sys
+
+event = {
+    "timestamp": "2026-06-20T08:00:00Z",
+    "level": "INFO",
+    "service": "mapping-guard-test",
+    "message": sys.argv[2],
+}
+for number in range(140):
+    event[f"attacker_controlled_{number:03d}"] = number
+
+with open(sys.argv[1], "a", encoding="utf-8") as handle:
+    handle.write(json.dumps(event, separators=(",", ":")) + "\n")
+EOF
+
+  wait_for_log receiver "$marker"
+
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "oversized dynamic event was not marked as a pipeline error"
+  grep -Fq '"event.dataset":"pipeline.deadletter"' <<<"$event" ||
+    fail "oversized dynamic event was not routed to dead-letter"
+  grep -Fq '"error.type":"mapping_guard_error"' <<<"$event" ||
+    fail "mapping guard error type was not recorded"
+  grep -Fq '"error.stage":"schema_guard"' <<<"$event" ||
+    fail "mapping guard stage was not recorded"
+  grep -Fq '"error.message":"maximum field count exceeded"' <<<"$event" ||
+    fail "mapping guard limit reason was not recorded"
+  grep -Fq '"error.source_dataset":"application.json"' <<<"$event" ||
+    fail "mapping guard source dataset was not retained"
+
+  echo "PASS: mapping explosion guard rejected an excessive dynamic event"
+}
+
 test_rotation() {
   local old_marker="phase1-before-rotation-$RANDOM-$RANDOM"
   local new_marker="phase1-after-rotation-$RANDOM-$RANDOM"
@@ -575,6 +616,7 @@ main() {
   test_initial_collection
   test_canonical_normalization
   test_structured_deadletter_routing
+  test_mapping_explosion_guard
   test_multiline
   test_rotation
   test_restart_offsets

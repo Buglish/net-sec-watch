@@ -1,0 +1,17 @@
+{
+  "version": "1.0.0",
+  "description": "Collector and OpenSearch safeguards against mapping explosion.",
+  "collector_limits": {
+    "maximum_fields_per_event": 128,
+    "maximum_nesting_depth": 8,
+    "maximum_field_name_length": 128,
+    "violation_dataset": "pipeline.deadletter"
+  },
+  "opensearch_defaults": {
+    "dynamic": false,
+    "index.mapping.total_fields.limit": 1000,
+    "index.mapping.depth.limit": 20,
+    "index.mapping.field_name_length.limit": 128,
+    "source_native_fields": "stored in _source but not dynamically mapped"
+  }
+}

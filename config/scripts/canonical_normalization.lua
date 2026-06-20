@@ -1,6 +1,9 @@
 -- Applies the Net Sec Watch canonical event schema after source parsing.
 
 local SCHEMA_VERSION = "1.0.0"
+local MAX_EVENT_FIELDS = 128
+local MAX_NESTING_DEPTH = 8
+local MAX_FIELD_NAME_LENGTH = 128
 
 local SYSLOG_OTEL_SEVERITY = {
     [0] = 24, -- emerg -> FATAL4
@@ -230,6 +233,56 @@ local function mark_pipeline_error(tag, record)
     record["_route"] = "deadletter"
 end
 
+local function inspect_fields(value, depth, state)
+    if type(value) ~= "table" or state.violation then
+        return
+    end
+    if depth > MAX_NESTING_DEPTH then
+        state.violation = "maximum nesting depth exceeded"
+        return
+    end
+
+    for key, child in pairs(value) do
+        state.count = state.count + 1
+        if state.count > MAX_EVENT_FIELDS then
+            state.violation = "maximum field count exceeded"
+            return
+        end
+        if type(key) == "string" and #key > MAX_FIELD_NAME_LENGTH then
+            state.violation = "maximum field name length exceeded"
+            return
+        end
+        inspect_fields(child, depth + 1, state)
+        if state.violation then
+            return
+        end
+    end
+end
+
+local function apply_schema_guard(record)
+    if record["event.kind"] == "pipeline_error" then
+        return
+    end
+
+    local source_dataset = record["event.dataset"] or "unknown"
+    local state = {count = 0, violation = nil}
+    inspect_fields(record, 1, state)
+    record["event.field_count"] = state.count
+
+    if state.violation == nil then
+        return
+    end
+
+    record["event.kind"] = "pipeline_error"
+    record["event.dataset"] = "pipeline.deadletter"
+    record["error.type"] = "mapping_guard_error"
+    record["error.stage"] = "schema_guard"
+    record["error.message"] = state.violation
+    record["error.source_dataset"] = source_dataset
+    record["_dead_letter"] = true
+    record["_route"] = "deadletter"
+end
+
 function normalize_canonical_event(tag, timestamp, record)
     local observed_epoch = os.time()
     local fallback_epoch = timestamp_seconds(timestamp)
@@ -265,6 +318,7 @@ function normalize_canonical_event(tag, timestamp, record)
 
     source_metadata(record)
     normalize_level(record)
+    apply_schema_guard(record)
 
     return 1, timestamp, record
 end
