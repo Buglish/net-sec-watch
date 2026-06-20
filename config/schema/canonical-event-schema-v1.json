@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Buglish/net-sec-watch/blob/main/config/schema/canonical-event-schema-v1.json",
+  "title": "Net Sec Watch Canonical Event Schema",
+  "description": "Version 1 contract for normalized events. Source-native fields may be retained until OpenSearch mappings are introduced.",
+  "type": "object",
+  "required": [
+    "@timestamp",
+    "event.dataset",
+    "event.kind",
+    "event.original",
+    "event.parser_version",
+    "event.schema_version"
+  ],
+  "properties": {
+    "@timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC event time. Maps to OpenTelemetry Timestamp."
+    },
+    "event.observed": {
+      "type": "string",
+      "format": "date-time",
+      "description": "UTC collector observation time. Maps to OpenTelemetry ObservedTimestamp."
+    },
+    "message": {
+      "type": "string",
+      "description": "Human-readable event body. Maps to OpenTelemetry Body."
+    },
+    "event.original": {
+      "type": "string",
+      "description": "Unmodified or best-effort reconstructed source record."
+    },
+    "event.dataset": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9_.-]*$"
+    },
+    "event.kind": {
+      "enum": ["alert", "event", "metric", "state", "pipeline_error"]
+    },
+    "event.category": {
+      "type": "string"
+    },
+    "event.type": {
+      "type": "string"
+    },
+    "event.action": {
+      "type": "string"
+    },
+    "event.outcome": {
+      "enum": ["success", "failure", "unknown"]
+    },
+    "event.severity": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "event.schema_version": {
+      "const": "1.0.0"
+    },
+    "event.parser_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "event.timezone": {
+      "type": "string"
+    },
+    "event.timestamp_inferred": {
+      "type": "boolean"
+    },
+    "event.clock_skew_seconds": {
+      "type": "number"
+    },
+    "event.ingested": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "log.level": {
+      "type": "string",
+      "description": "Source severity text. Maps to OpenTelemetry SeverityText."
+    },
+    "log.severity.number": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 24,
+      "description": "Normalized OpenTelemetry SeverityNumber."
+    },
+    "log.syslog.facility.code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 23
+    },
+    "log.syslog.severity.code": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 7
+    },
+    "source.ip": {
+      "type": "string"
+    },
+    "source.port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "destination.ip": {
+      "type": "string"
+    },
+    "destination.port": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 65535
+    },
+    "network.transport": {
+      "type": "string"
+    },
+    "network.protocol": {
+      "type": "string"
+    },
+    "host.name": {
+      "type": "string"
+    },
+    "service.name": {
+      "type": "string"
+    },
+    "device.id": {
+      "type": "string"
+    },
+    "device.name": {
+      "type": "string"
+    },
+    "deployment.environment.name": {
+      "type": "string"
+    },
+    "site.name": {
+      "type": "string"
+    },
+    "collector.name": {
+      "type": "string"
+    },
+    "collector.version": {
+      "type": "string"
+    },
+    "error.type": {
+      "type": "string"
+    },
+    "error.message": {
+      "type": "string"
+    },
+    "error.stage": {
+      "type": "string"
+    },
+    "event.classification": {
+      "type": "string",
+      "description": "Reserved for approved ML enrichment."
+    },
+    "event.threat_level": {
+      "enum": ["critical", "high", "medium", "low", "informational", "unknown"]
+    },
+    "event.threat_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100
+    },
+    "event.ml_model_id": {
+      "type": "string"
+    },
+    "event.ml_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    }
+  },
+  "additionalProperties": true
+}

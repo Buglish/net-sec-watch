@@ -352,6 +352,54 @@ test_suricata_collection() {
   echo "PASS: Suricata alert, flow, DNS, HTTP, and TLS events were collected"
 }
 
+correlation_key_from_event() {
+  sed -n 's/.*"event.correlation_key":"\([^"]*\)".*/\1/p' <<<"$1"
+}
+
+test_cross_source_correlation() {
+  local source_port=$((20000 + RANDOM % 30000))
+  local marker="cross-source-$RANDOM-$RANDOM"
+  local epoch
+  epoch="$(date +%s)"
+
+  printf '{"ts":%s,"uid":"%s-zeek","id.orig_h":"192.0.2.90","id.orig_p":%s,"id.resp_h":"198.51.100.90","id.resp_p":443,"proto":"tcp","service":"ssl"}\n' \
+    "$epoch" "$marker" "$source_port" >> "$runtime/logs/zeek/conn.log"
+  printf '{"timestamp":"%s","flow_id":"%s-suricata","event_type":"flow","src_ip":"192.0.2.90","src_port":%s,"dest_ip":"198.51.100.90","dest_port":443,"proto":"TCP","app_proto":"tls"}\n' \
+    "$(date --utc '+%Y-%m-%dT%H:%M:%S.000000+0000')" "$marker" "$source_port" \
+    >> "$runtime/logs/suricata/eve.json"
+  send_udp 127.0.0.1 15514 \
+    "<4>$(date '+%b %e %H:%M:%S') RT-AC68U-TEST kernel: DROP IN=eth0 OUT= SRC=192.0.2.90 DST=198.51.100.90 PROTO=TCP SPT=${source_port} DPT=443 MARKER=${marker}-asus"
+
+  wait_for_log receiver "$marker-zeek"
+  wait_for_log receiver "$marker-suricata"
+  wait_for_log receiver "$marker-asus"
+
+  local logs zeek_event suricata_event asus_event
+  local zeek_key suricata_key asus_key
+  logs="$(compose logs --no-color receiver 2>/dev/null)"
+  zeek_event="$(grep -F "$marker-zeek" <<<"$logs" | tail -n 1)"
+  suricata_event="$(grep -F "$marker-suricata" <<<"$logs" | tail -n 1)"
+  asus_event="$(grep -F "$marker-asus" <<<"$logs" | tail -n 1)"
+  zeek_key="$(correlation_key_from_event "$zeek_event")"
+  suricata_key="$(correlation_key_from_event "$suricata_event")"
+  asus_key="$(correlation_key_from_event "$asus_event")"
+
+  [[ -n "$zeek_key" ]] || fail "Zeek correlation key was not generated"
+  [[ "$zeek_key" == "$suricata_key" ]] ||
+    fail "Zeek and Suricata observations did not share a correlation key"
+  [[ "$zeek_key" == "$asus_key" ]] ||
+    fail "ASUS and sensor observations did not share a correlation key"
+
+  grep -Fq '"event.deduplication.strategy":"correlate-preserve"' <<<"$zeek_event" ||
+    fail "cross-source duplicate strategy was not recorded"
+  grep -Fq '"event.schema_version":"net-sec-watch-network-1.0"' <<<"$asus_event" ||
+    fail "shared network schema version was not recorded"
+  [[ "$zeek_event" != "$suricata_event" && "$zeek_event" != "$asus_event" ]] ||
+    fail "source observations were collapsed instead of preserved"
+
+  echo "PASS: related ASUS, Zeek, and Suricata observations were correlated without data loss"
+}
+
 main() {
   command -v docker >/dev/null 2>&1 || {
     echo "Docker is required. Enable Docker Desktop WSL integration for Ubuntu." >&2
@@ -387,6 +435,7 @@ main() {
   test_asus_firewall_parsing
   test_zeek_collection
   test_suricata_collection
+  test_cross_source_correlation
 
   echo "PASS: all integration tests completed"
 }

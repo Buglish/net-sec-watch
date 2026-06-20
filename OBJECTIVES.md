@@ -127,7 +127,7 @@ network TAP, or supported gateway deployment.
   produce connection and protocol metadata.
 - [x] Add representative, sanitized Zeek fixtures with automated ingestion tests.
 - [x] Add representative, sanitized Suricata fixtures with automated ingestion tests.
-- [ ] Normalize router firewall, Zeek, and Suricata events without treating
+- [x] Normalize router firewall, Zeek, and Suricata events without treating
   duplicate observations as separate incidents.
 - [x] Document storage-volume, privacy, packet-loss, and retention implications
   before enabling high-volume traffic telemetry.
@@ -150,9 +150,9 @@ network TAP, or supported gateway deployment.
 **Outcome:** Different sources produce a consistent, vendor-neutral event
 schema while retaining the original log.
 
-- [ ] Define the canonical event schema and field naming conventions.
-- [ ] Align appropriate fields with OpenTelemetry log conventions.
-- [ ] Define security fields for source, destination, action, outcome, and severity.
+- [x] Define the canonical event schema and field naming conventions.
+- [x] Align appropriate fields with OpenTelemetry log conventions.
+- [x] Define security fields for source, destination, action, outcome, and severity.
 - [ ] Preserve every raw source message in `event.original`.
 - [ ] Normalize timestamps to UTC and preserve source timezone information.
 - [ ] Add timestamp inference and clock-skew indicators.
@@ -162,8 +162,8 @@ schema while retaining the original log.
 - [ ] Prevent uncontrolled dynamic fields and mapping explosion.
 - [ ] Add golden input/output parser tests for every supported source.
 - [ ] Add parser version metadata to normalized events.
-- [ ] Document schema compatibility and migration rules.
-- [ ] Reserve the ML enrichment field namespace (`event.classification`,
+- [x] Document schema compatibility and migration rules.
+- [x] Reserve the ML enrichment field namespace (`event.classification`,
   `event.threat_level`, `event.threat_score`, `event.ml_model_id`,
   `event.ml_confidence`) as defined but initially unpopulated, so Phase 11
   live classification can write to these fields without schema conflicts or
