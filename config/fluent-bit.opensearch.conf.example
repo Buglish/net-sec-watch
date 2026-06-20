@@ -1,0 +1,32 @@
+# Authenticated TLS OpenSearch output for the secure development profile.
+#
+# make init copies this file to config/fluent-bit.opensearch.conf. The copied
+# file is ignored by Git. Credentials are supplied through the ignored .env.
+
+@INCLUDE /fluent-bit/etc/fluent-bit.base.conf
+
+# Remove redundant scalar aliases that conflict with canonical dotted fields
+# when OpenSearch expands them as objects (for example log vs log.file.path).
+[FILTER]
+    Name    modify
+    Match   *
+    Remove  log
+    Remove  service
+    Remove  host
+    Remove  environment
+    Remove  level
+
+[OUTPUT]
+    Name                 opensearch
+    Match                *
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-development
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off

@@ -20,10 +20,29 @@ copy_if_missing() {
 copy_if_missing .env.example .env
 copy_if_missing config/fluent-bit.local.conf.example config/fluent-bit.local.conf
 copy_if_missing \
+  config/fluent-bit.opensearch.conf.example \
+  config/fluent-bit.opensearch.conf
+copy_if_missing \
   config/traffic-telemetry-policy.example.yaml \
   config/traffic-telemetry-policy.yaml
 
 mkdir -p runtime/zeek
+
+if ! grep -Eq '^OPENSEARCH_INITIAL_ADMIN_PASSWORD=.+$' .env; then
+  command -v openssl >/dev/null 2>&1 || {
+    echo "OpenSSL is required to generate the local OpenSearch password." >&2
+    exit 1
+  }
+  generated_value="Nsw-$(openssl rand -hex 16)-A9!"
+  if grep -q '^OPENSEARCH_INITIAL_ADMIN_PASSWORD=' .env; then
+    sed -i \
+      "s|^OPENSEARCH_INITIAL_ADMIN_PASSWORD=.*|OPENSEARCH_INITIAL_ADMIN_PASSWORD=$generated_value|" \
+      .env
+  else
+    printf '\nOPENSEARCH_INITIAL_ADMIN_PASSWORD=%s\n' "$generated_value" >> .env
+  fi
+  echo "Generated OPENSEARCH_INITIAL_ADMIN_PASSWORD in ignored .env"
+fi
 
 echo
 echo "Local files are Git-ignored. Review .env before running Docker Compose."
