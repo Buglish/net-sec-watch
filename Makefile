@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-zeek up-suricata update-suricata-rules down logs logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit up up-opensearch up-zeek up-suricata update-suricata-rules down logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -15,6 +15,9 @@ security-audit:
 up:
 	docker compose --env-file .env up -d
 
+up-opensearch:
+	docker compose --env-file .env --profile opensearch up -d opensearch
+
 up-zeek:
 	docker compose --env-file .env --profile zeek up -d
 
@@ -30,6 +33,9 @@ down:
 
 logs:
 	docker compose --env-file .env logs -f fluent-bit
+
+logs-opensearch:
+	docker compose --env-file .env --profile opensearch logs -f opensearch
 
 logs-zeek:
 	docker compose --env-file .env --profile zeek logs -f zeek fluent-bit
@@ -56,6 +62,9 @@ test-integration:
 test-golden:
 	@echo "Golden cases execute as part of make test-integration."
 	@python3 tests/golden/verify.py --help >/dev/null
+
+test-opensearch:
+	./tests/opensearch/smoke.sh
 
 test-failover:
 	./tests/failover/run-failover.sh

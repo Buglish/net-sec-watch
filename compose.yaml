@@ -24,6 +24,39 @@ services:
       - ${SURICATA_LOG_VOLUME:-suricata-logs}:/suricata/logs:ro
       - fluent-bit-state:/fluent-bit/state
 
+  opensearch:
+    image: ${OPENSEARCH_IMAGE:-opensearchproject/opensearch:3.7.0}
+    profiles: ["opensearch"]
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      bootstrap.memory_lock: "true"
+      OPENSEARCH_JAVA_OPTS: ${OPENSEARCH_JAVA_OPTS:--Xms512m -Xmx512m}
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      DISABLE_SECURITY_PLUGIN: "true"
+    ports:
+      - "${OPENSEARCH_HTTP_BIND:-127.0.0.1}:${OPENSEARCH_HTTP_PORT:-9200}:9200"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --silent
+          http://127.0.0.1:9200/_cluster/health
+          >/dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 30s
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+
   zeek:
     image: ${ZEEK_IMAGE:-zeek/zeek:lts}
     profiles: ["zeek"]
@@ -104,6 +137,7 @@ services:
 
 volumes:
   fluent-bit-state:
+  opensearch-data:
   grype-db:
   zeek-logs:
   suricata-logs:

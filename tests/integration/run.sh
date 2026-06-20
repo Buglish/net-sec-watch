@@ -637,7 +637,6 @@ main() {
   test_multiline
   test_rotation
   test_restart_offsets
-  test_buffer_recovery
 
   test_syslog_udp
   test_syslog_tcp
@@ -648,6 +647,7 @@ main() {
   test_suricata_collection
   test_cross_source_correlation
   test_golden_parser_outputs
+  test_buffer_recovery
 
   echo "PASS: all integration tests completed"
 }

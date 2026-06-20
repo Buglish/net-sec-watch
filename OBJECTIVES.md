@@ -182,7 +182,7 @@ schema while retaining the original log.
 **Outcome:** Normalized events are securely indexed, searchable, retained, and
 recoverable using a self-hosted OpenSearch cluster.
 
-- [ ] Add an OpenSearch development deployment.
+- [x] Add an OpenSearch development deployment.
 - [ ] Add authenticated TLS ingestion from Fluent Bit to OpenSearch.
 - [ ] Store credentials using ignored environment files or mounted secrets.
 - [ ] Define index templates and explicit field mappings.

@@ -67,8 +67,9 @@ The event flow is:
 ## Current implementation status
 
 Net Sec Watch is being developed into a SIEM. The runnable platform currently
-implements Phase 1: the Fluent Bit collection layer. OpenSearch storage,
-Dashboards, detection rules, alerting, and machine learning are later phases
+implements collection and normalization plus an optional single-node
+OpenSearch development deployment. OpenSearch production security and
+lifecycle controls, Dashboards, detections, alerting, and machine learning are
 tracked in [OBJECTIVES.md](OBJECTIVES.md).
 
 The current collector supports:
@@ -237,6 +238,18 @@ Leave it empty for report-only mode.
 make up
 docker compose --env-file .env ps
 ```
+
+To also start the OpenSearch development node:
+
+```bash
+make up-opensearch
+curl --fail http://127.0.0.1:9200/_cluster/health
+```
+
+The current OpenSearch profile is localhost-only and intentionally unsecured
+for development. See
+[docs/phase-4-opensearch-development.md](docs/phase-4-opensearch-development.md)
+before enabling it.
 
 The service should report `Up`. Follow its output:
 
