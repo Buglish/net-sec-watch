@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-zeek up-suricata update-suricata-rules down logs logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit up up-zeek up-suricata update-suricata-rules down logs logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -52,6 +52,10 @@ gen-tls-certs:
 
 test-integration:
 	./tests/integration/run.sh
+
+test-golden:
+	@echo "Golden cases execute as part of make test-integration."
+	@python3 tests/golden/verify.py --help >/dev/null
 
 test-failover:
 	./tests/failover/run-failover.sh

@@ -11,7 +11,7 @@ evidence are complete.
 - [x] Phase 0 - Project foundation
 - [x] Phase 1 - File and workload log collection
 - [ ] Phase 2 - Network-device and syslog collection
-- [ ] Phase 3 - Event normalization and data quality
+- [x] Phase 3 - Event normalization and data quality
 - [ ] Phase 4 - OpenSearch storage and lifecycle
 - [ ] Phase 5 - Search, dashboards, and analyst experience
 - [ ] Phase 6 - Security, privacy, and access control
@@ -160,7 +160,7 @@ schema while retaining the original log.
 - [x] Add host, service, device, environment, site, and collector metadata.
 - [x] Add controlled parsing-error fields and dead-letter routing.
 - [x] Prevent uncontrolled dynamic fields and mapping explosion.
-- [ ] Add golden input/output parser tests for every supported source.
+- [x] Add golden input/output parser tests for every supported source.
 - [x] Add parser version metadata to normalized events.
 - [x] Document schema compatibility and migration rules.
 - [x] Reserve the ML enrichment field namespace (`event.classification`,
@@ -171,9 +171,9 @@ schema while retaining the original log.
 
 ### Completion gate
 
-- [ ] Golden parser tests pass for all onboarded source types.
-- [ ] Required normalized fields are populated or carry an explicit error reason.
-- [ ] Parser changes are versioned, reviewable, and backward-compatible or migrated.
+- [x] Golden parser tests pass for all onboarded source types.
+- [x] Required normalized fields are populated or carry an explicit error reason.
+- [x] Parser changes are versioned, reviewable, and backward-compatible or migrated.
 
 ---
 

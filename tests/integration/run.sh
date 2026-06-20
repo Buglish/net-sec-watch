@@ -591,6 +591,23 @@ test_cross_source_correlation() {
   echo "PASS: related ASUS, Zeek, and Suricata observations were correlated without data loss"
 }
 
+test_golden_parser_outputs() {
+  local ts
+  ts="$(date '+%b %e %H:%M:%S')"
+
+  send_udp 127.0.0.1 15514 \
+    "<134>${ts} golden-router golden[42]: golden-rfc3164-event"
+  send_udp 127.0.0.1 15514 \
+    "<4>${ts} RT-AC68U-GOLDEN kernel: DROP IN=eth0 OUT= SRC=192.0.2.45 DST=198.51.100.7 PROTO=UDP SPT=45001 DPT=6667 GOLDEN=asus-firewall"
+
+  wait_for_log receiver "golden-rfc3164-event"
+  wait_for_log receiver "GOLDEN=asus-firewall"
+
+  local output="$runtime/golden-output.log"
+  compose logs --no-color receiver > "$output"
+  python3 "$repo_root/tests/golden/verify.py" --logs "$output"
+}
+
 main() {
   command -v docker >/dev/null 2>&1 || {
     echo "Docker is required. Enable Docker Desktop WSL integration for Ubuntu." >&2
@@ -630,6 +647,7 @@ main() {
   test_zeek_collection
   test_suricata_collection
   test_cross_source_correlation
+  test_golden_parser_outputs
 
   echo "PASS: all integration tests completed"
 }

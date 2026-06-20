@@ -1,0 +1,189 @@
+{
+  "version": "1.0.0",
+  "cases": [
+    {
+      "name": "plain text",
+      "match": {"field": "event.original", "contains": "first event after rotation"},
+      "expected": {
+        "event.dataset": "file.text",
+        "event.parser_version": "file-text-1",
+        "event.schema_version": "1.0.0",
+        "event.timestamp_inferred": false,
+        "log.level": "info",
+        "log.severity.number": 9
+      }
+    },
+    {
+      "name": "application JSON",
+      "match": {"field": "message", "equals": "application started"},
+      "expected": {
+        "event.dataset": "application.json",
+        "event.parser_version": "application-json-1",
+        "service.name": "payments",
+        "deployment.environment.name": "demo",
+        "log.level": "info"
+      }
+    },
+    {
+      "name": "host system log",
+      "match": {"field": "event.original", "contains": "Started Net Sec Watch demo service"},
+      "expected": {
+        "event.dataset": "host.system",
+        "event.parser_version": "host-system-1",
+        "event.timestamp_inferred": true
+      }
+    },
+    {
+      "name": "Docker JSON",
+      "match": {"field": "log", "contains": "container service started"},
+      "expected": {
+        "event.dataset": "container.docker",
+        "event.parser_version": "docker-json-1",
+        "stream": "stdout",
+        "event.timestamp_inferred": false
+      }
+    },
+    {
+      "name": "RFC 3164 syslog",
+      "match": {"field": "message", "equals": "golden-rfc3164-event"},
+      "expected": {
+        "event.dataset": "syslog.rfc3164",
+        "event.parser_version": "syslog-rfc3164-1",
+        "host.name": "golden-router",
+        "service.name": "golden",
+        "log.level": "info",
+        "log.severity.number": 9
+      }
+    },
+    {
+      "name": "ASUS firewall",
+      "match": {"field": "message", "contains": "GOLDEN=asus-firewall"},
+      "expected": {
+        "event.dataset": "asuswrt.firewall",
+        "event.parser_version": "asuswrt-firewall-1",
+        "event.action": "drop",
+        "event.outcome": "failure",
+        "source.ip": "192.0.2.45",
+        "destination.ip": "198.51.100.7",
+        "source.port": 45001,
+        "destination.port": 6667,
+        "network.transport": "udp"
+      }
+    },
+    {
+      "name": "Zeek connection",
+      "match": {"field": "uid", "equals": "CZeekIntegration001"},
+      "expected": {
+        "event.dataset": "zeek.conn",
+        "event.parser_version": "zeek-network-1",
+        "source.ip": "192.0.2.10",
+        "destination.ip": "198.51.100.20",
+        "destination.port": 443,
+        "network.transport": "tcp"
+      }
+    },
+    {
+      "name": "Zeek DNS",
+      "match": {"field": "uid", "equals": "CZeekIntegration002"},
+      "expected": {
+        "event.dataset": "zeek.dns",
+        "dns.question.name": "zeek-integration.example",
+        "dns.question.type": "A"
+      }
+    },
+    {
+      "name": "Zeek HTTP",
+      "match": {"field": "uid", "equals": "CZeekIntegration003"},
+      "expected": {
+        "event.dataset": "zeek.http",
+        "url.domain": "example.test",
+        "url.path": "/health"
+      }
+    },
+    {
+      "name": "Zeek TLS",
+      "match": {"field": "uid", "equals": "CZeekIntegration004"},
+      "expected": {
+        "event.dataset": "zeek.ssl",
+        "tls.server.name": "secure.example.test"
+      }
+    },
+    {
+      "name": "Zeek DHCP",
+      "match": {"field": "host_name", "equals": "demo-client"},
+      "expected": {
+        "event.dataset": "zeek.dhcp",
+        "client_addr": "192.0.2.50",
+        "server_addr": "192.0.2.1"
+      }
+    },
+    {
+      "name": "Zeek notice",
+      "match": {"field": "msg", "equals": "Sanitized example scan notice"},
+      "expected": {
+        "event.dataset": "zeek.notice",
+        "note": "Scan::Port_Scan"
+      }
+    },
+    {
+      "name": "Suricata alert",
+      "match": {"field": "flow_id", "equals": 987654321000},
+      "expected": {
+        "event.dataset": "suricata.alert",
+        "event.kind": "alert",
+        "rule.id": 9000001,
+        "rule.name": "Sanitized test IDS signature",
+        "source.ip": "192.0.2.60",
+        "destination.port": 22
+      }
+    },
+    {
+      "name": "Suricata flow",
+      "match": {"field": "flow_id", "equals": 987654321001},
+      "expected": {
+        "event.dataset": "suricata.flow",
+        "source.bytes": 640,
+        "destination.bytes": 4210,
+        "network.protocol": "tls"
+      }
+    },
+    {
+      "name": "Suricata DNS",
+      "match": {"field": "flow_id", "equals": 987654321002},
+      "expected": {
+        "event.dataset": "suricata.dns",
+        "dns.question.name": "suricata-integration.example",
+        "dns.question.type": "A"
+      }
+    },
+    {
+      "name": "Suricata HTTP",
+      "match": {"field": "flow_id", "equals": 987654321003},
+      "expected": {
+        "event.dataset": "suricata.http",
+        "url.domain": "suricata-http.example",
+        "http.request.method": "GET"
+      }
+    },
+    {
+      "name": "Suricata TLS",
+      "match": {"field": "flow_id", "equals": 987654321004},
+      "expected": {
+        "event.dataset": "suricata.tls",
+        "tls.server.name": "suricata-tls.example",
+        "tls.version": "TLS 1.3"
+      }
+    },
+    {
+      "name": "application parser failure",
+      "match": {"field": "event.original", "contains": "{\"message\":\"bad-app-"},
+      "expected": {
+        "event.dataset": "pipeline.deadletter",
+        "event.kind": "pipeline_error",
+        "error.type": "parsing_error",
+        "error.stage": "source_parser",
+        "error.source_dataset": "application.json"
+      }
+    }
+  ]
+}
