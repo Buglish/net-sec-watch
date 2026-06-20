@@ -1,0 +1,24 @@
+services:
+  syslog-primary:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
+    command:
+      - /fluent-bit/bin/fluent-bit
+      - -c
+      - /fluent-bit/etc/syslog-receiver.conf
+    ports:
+      - "15515:5514/udp"
+      - "15515:5514/tcp"
+    volumes:
+      - ./config/syslog-receiver.conf:/fluent-bit/etc/syslog-receiver.conf:ro
+
+  syslog-secondary:
+    image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
+    command:
+      - /fluent-bit/bin/fluent-bit
+      - -c
+      - /fluent-bit/etc/syslog-receiver.conf
+    ports:
+      - "15516:5514/udp"
+      - "15516:5514/tcp"
+    volumes:
+      - ./config/syslog-receiver.conf:/fluent-bit/etc/syslog-receiver.conf:ro

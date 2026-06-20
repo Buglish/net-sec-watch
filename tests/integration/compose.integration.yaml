@@ -4,9 +4,13 @@ services:
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/collector.conf"]
     depends_on:
       - receiver
+    ports:
+      - "15514:5514/udp"
+      - "15514:5514/tcp"
     volumes:
       - ./config/collector.conf:/fluent-bit/etc/collector.conf:ro
       - ../../config/parsers-custom.conf:/fluent-bit/etc/parsers-custom.conf:ro
+      - ../../config/scripts:/fluent-bit/etc/scripts:ro
       - ../runtime/logs:/logs:ro
       - collector-state:/fluent-bit/state
 

@@ -1,3 +1,4 @@
 {"timestamp":"2026-06-20T08:00:00.000+1200","level":"INFO","service":"payments","message":"application started","environment":"demo"}
 {"timestamp":"2026-06-20T08:00:02.000+1200","level":"WARN","service":"payments","message":"downstream response was slow","duration_ms":1250,"environment":"demo"}
 
+{"timestamp":"2026-06-20T09:50:50+12:00","level":"INFO","service":"sample-generator","message":"generated JSON event","environment":"demo"}

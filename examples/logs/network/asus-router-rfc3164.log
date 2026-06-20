@@ -1,0 +1,12 @@
+<6>Jun 20 10:00:01 RT-AX88U-XXXX kernel: br0: received packet on eth0 with own address as source address
+<134>Jun 20 10:00:05 RT-AX88U-XXXX httpd: [ASUS Router] admin login successfully from 192.168.1.100
+<46>Jun 20 10:00:10 RT-AX88U-XXXX syslog: started
+<6>Jun 20 10:00:15 RT-AX88U-XXXX kernel: [net_ratelimit] 3 callbacks suppressed
+<30>Jun 20 10:00:20 RT-AX88U-XXXX dnsmasq[1234]: query[A] example.com from 192.168.1.100
+<30>Jun 20 10:00:21 RT-AX88U-XXXX dnsmasq[1234]: forwarded example.com to 8.8.8.8
+<30>Jun 20 10:00:22 RT-AX88U-XXXX dnsmasq[1234]: reply example.com is 93.184.216.34
+<46>Jun 20 10:00:30 RT-AX88U-XXXX syslogd: synchronized to ntp server 192.168.1.1
+<14>Jun 20 10:00:35 RT-AX88U-XXXX httpd: [ASUS Router] unauthorized login attempt from 192.168.1.200
+<134>Jun 20 10:00:40 RT-AX88U-XXXX httpd: [ASUS Router] admin logout from 192.168.1.100
+<4>Jun 20 10:00:45 RT-AC68U-TEST kernel: DROP IN=eth0 OUT= MAC=00:11:22:33:44:55 SRC=192.0.2.45 DST=255.255.255.255 LEN=216 TOS=0x00 PREC=0x00 TTL=64 ID=0 DF PROTO=UDP SPT=51947 DPT=6667 LEN=196
+<6>Jun 20 10:00:46 RT-AC68U-TEST kernel: ACCEPT IN=br0 OUT=eth0 SRC=192.0.2.100 DST=198.51.100.10 LEN=60 TOS=0x00 PREC=0x00 TTL=63 PROTO=TCP SPT=52344 DPT=443

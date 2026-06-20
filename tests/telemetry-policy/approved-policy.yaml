@@ -1,0 +1,55 @@
+policy:
+  owner: "security-operations"
+  approved_by: "test-approver"
+  review_date: "2026-12-20"
+  environment: "test"
+  status: "approved"
+scope:
+  sensor_name: "test-sensor"
+  sensor_type: "zeek"
+  capture_method: "span"
+  monitored_networks:
+    - "192.0.2.0/24"
+  excluded_networks:
+    - "none"
+  payload_capture_enabled: false
+  tls_decryption_enabled: false
+privacy:
+  classification: "confidential"
+  contains_ip_addresses: true
+  contains_dns_names: true
+  contains_urls: true
+  contains_user_identifiers: "possible"
+  redaction_required: true
+  approved_users:
+    - "security-analyst"
+retention_days:
+  ids_alerts: 90
+  connection_flows: 30
+  dns: 30
+  http_metadata: 14
+  tls_metadata: 30
+  dhcp: 30
+  sensor_health: 30
+  raw_packet_capture: 0
+capacity:
+  measured_sample_hours: 24
+  measured_bytes: 1000000
+  estimated_daily_bytes: 1000000
+  peak_events_per_second: 100
+  growth_percent: 25
+  replica_count: 1
+  free_storage_bytes: 100000000
+loss_monitoring:
+  maximum_capture_drop_percent: 1
+  maximum_pipeline_drop_percent: 0
+  alert_after_minutes: 5
+  zeek_capture_loss_monitored: true
+  suricata_capture_kernel_drops_monitored: true
+  fluent_bit_retries_and_drops_monitored: true
+approval:
+  privacy_review_complete: true
+  capacity_review_complete: true
+  retention_review_complete: true
+  security_review_complete: true
+  test_capture_complete: true

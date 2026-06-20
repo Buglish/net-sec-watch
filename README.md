@@ -44,6 +44,7 @@ The full product and technical specification is available at
    risk scoring, analyst feedback, explainability, and model-drift monitoring.
 8. Run on Linux virtual machines, bare metal, Docker, or Kubernetes without a
    mandatory proprietary service.
+9. Provide a live adaptive traffic intelligence layer that continuously improves itself. Stream network and syslog events through a self-hosted classification and threat-scoring pipeline. When the pipeline encounters unknown or low-confidence traffic, an autonomous orchestration loop clusters the new patterns, trains candidate models, evaluates them against quality thresholds, stages them in shadow mode, and promotes approved models to the live serving pipeline — no manual retraining required. A self-hosted large language model (Ollama / Llama 3 or equivalent, open-source licensed) optionally enriches analyst-facing explanations of new patterns but is never required for the automation loop itself. The platform grows progressively smarter while analysts retain full override authority and observability at every step.
 
 ## Architecture
 
@@ -58,6 +59,10 @@ The event flow is:
 4. OpenSearch Dashboards provides exploration, dashboards, alerts, and analyst workflows.
 5. A later security ML phase consumes governed event features and returns anomaly
    scores and supporting evidence without performing automatic enforcement.
+6. A live adaptive intelligence layer streams events through a self-updating
+   classification and threat-scoring pipeline, autonomously discovers unknown
+   traffic patterns, trains and promotes new models, and optionally uses a
+   self-hosted LLM to generate analyst-readable explanations of new patterns.
 
 ## Current implementation status
 
@@ -165,6 +170,16 @@ make verify
 These commands check formatting, shell syntax, secrets, required files, Git
 ignore rules, Fluent Bit settings, and the resolved Docker Compose
 configuration.
+
+Before enabling high-volume Zeek or Suricata telemetry, complete the private
+traffic policy created by `make init`, then run:
+
+```bash
+make telemetry-readiness
+```
+
+See [docs/traffic-telemetry-governance.md](docs/traffic-telemetry-governance.md)
+for capacity measurement, privacy, packet-loss monitoring and retention rules.
 
 ### 5. Build or obtain the runtime
 
@@ -366,12 +381,16 @@ Contribution and review requirements are documented in
 
 ## Planned delivery phases
 
-1. Discovery and sizing
-2. Technical proof of concept
-3. Minimum viable product
-4. Production hardening
-5. Source and dashboard expansion
-6. Security machine learning
+The full phase-by-phase delivery plan with tickable items is maintained in
+[OBJECTIVES.md](OBJECTIVES.md). Summary:
+
+1. Project foundation and collection infrastructure (Phases 0–2)
+2. Event normalization, storage, search, and dashboards (Phases 3–5)
+3. Security hardening, reliability, and disaster recovery (Phases 6–7)
+4. Deterministic security detections and alerting (Phase 8)
+5. Governed security machine learning and anomaly detection (Phase 9)
+6. Deployment portability and production release (Phase 10)
+7. Live adaptive traffic intelligence and self-updating model orchestration (Phase 11)
 
 ## Repository status
 
