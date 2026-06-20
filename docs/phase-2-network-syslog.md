@@ -165,7 +165,7 @@ Get-NetIPAddress -AddressFamily IPv4 |
 From the repository in WSL, run:
 
 ```bash
-docker port net-sec-watch-fluent-bit
+docker compose --env-file .env port fluent-bit 5514/udp
 ```
 
 The expected output includes:
@@ -287,7 +287,8 @@ expected traffic indicates packets are not reaching the receiver.
 Kernel-level UDP socket statistics (run inside the collector container):
 
 ```bash
-docker exec net-sec-watch-fluent-bit sh -c 'cat /proc/net/udp 2>/dev/null || echo "not available"'
+docker compose --env-file .env exec fluent-bit \
+  sh -c 'cat /proc/net/udp 2>/dev/null || echo "not available"'
 ```
 
 The `drops` column in `/proc/net/udp` shows kernel receive-buffer overflow

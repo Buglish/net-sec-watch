@@ -21,6 +21,7 @@ config/tls/*
 *.swp
 examples/logs/text/*.log.1
 tests/runtime/
+tests/runtime-smoke/
 runtime/
 
 # Generated security-audit evidence. Keep the process and README in Git, not

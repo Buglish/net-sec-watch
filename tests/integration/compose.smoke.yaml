@@ -1,0 +1,4 @@
+services:
+  fluent-bit:
+    volumes:
+      - ./tests/runtime-smoke/logs:/logs:ro

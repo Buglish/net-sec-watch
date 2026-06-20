@@ -1,7 +1,6 @@
 services:
   fluent-bit:
     image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
-    container_name: net-sec-watch-fluent-bit
     restart: unless-stopped
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
     ports:
