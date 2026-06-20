@@ -36,6 +36,8 @@ The platform is designed to remain fully self-hostable using open-source compone
 - Provide configurable retention, rollover, deletion, snapshots, health monitoring, and capacity reporting.
 - Deploy on virtual machines, bare metal, or Kubernetes using only free and open-source, self-hostable software and libraries.
 - Add a layer machine-learning capability for security anomaly detection, prioritization, and analyst-assisted investigation.
+- Add a live adaptive traffic-intelligence layer that classifies and scores network events, detects unknown patterns, trains and evaluates candidate models, stages them in shadow mode, and promotes approved models without manual deployment changes.
+- Keep the adaptive loop observable, reversible, and independent of any optional large-language-model component, with analysts retaining approval and override authority.
 ### 2.2 Open-source and free-software policy
 
 All production runtime components, client libraries, machine-learning frameworks, models, deployment tooling, and required plugins must be free to use and available under an OSI-approved open-source license. The solution must operate without paid APIs, proprietary cloud services, license keys, feature-gated enterprise modules, or mandatory vendor subscriptions.
@@ -81,6 +83,7 @@ All production runtime components, client libraries, machine-learning frameworks
 | FR-14 | Administration | Display pipeline status, ingestion rate, failures, queue depth, index health, and storage consumption. | Must |
 | FR-15 | API | Expose authenticated APIs for ingestion, search, configuration automation, and health checks. | Must |
 | FR-16 | Security ML | Score selected security events for anomalies and risk, show contributing features, and support analyst feedback without automatic blocking. | Later phase |
+| FR-17 | Adaptive traffic intelligence | Classify network and syslog events in near-real time; detect low-confidence patterns; train, evaluate, shadow, approve, promote, and roll back model versions through an auditable self-hosted workflow. | Later phase |
 
 ## 5. User experience specification
 
@@ -116,6 +119,9 @@ All production runtime components, client libraries, machine-learning frameworks
 | User interface | OpenSearch Dashboards | Discover-style exploration, dashboards, saved searches, visualizations, administration, and alerts. |
 | Identity | OpenSearch Security with an external IdP where available | Authentication, role mapping, tenant/workspace separation, and audit controls. |
 | Monitoring | OpenSearch monitoring plus Prometheus/Grafana where desired | Collect platform metrics, health, capacity, and service-level indicators. |
+| ML serving | FastAPI or equivalent self-hosted API | Load approved model versions, perform near-real-time classification and threat scoring, expose metrics, and support atomic hot-swap and rollback. |
+| ML lifecycle | scikit-learn/River plus MLflow | Cluster unknown patterns, train and evaluate candidates, record artifacts and approvals, and govern shadow-to-live promotion. |
+| Optional explanation | Ollama-compatible self-hosted model with an individually approved license | Produce analyst-readable pattern explanations only; it is not required for classification, training, evaluation, or promotion decisions. |
 
 ### 6.2 File ingestion flow
 
@@ -243,6 +249,7 @@ Sizing formula: daily indexed storage = raw daily bytes × parsing/index expansi
 | 3. Production hardening | 3-4 weeks | HA cluster, load/failure tests, restore test, runbooks, security review, capacity threshold, and operational handover. |
 | 4. Expansion | Ongoing | Additional vendors/sources, alert content, dashboard library, automation, and cost/performance tuning. |
 | 5. Security machine learning | 6-10 weeks | Open-source anomaly detection, feature pipelines, analyst feedback, model evaluation, explainable risk scoring, shadow deployment, and controlled production rollout. |
+| 6. Adaptive traffic intelligence | After Phase 5 is stable | Near-real-time classification, unknown-pattern clustering, autonomous candidate training and evaluation, governed shadow-to-live promotion, hot-swap rollback, and optional self-hosted LLM explanations. |
 
 ## 15. Security machine-learning phase
 
@@ -294,7 +301,83 @@ This phase adds machine-learning analysis after the collection, schema, security
 | ML-AC-05 | Data-quality and drift monitoring raises an operational alert when configured thresholds are exceeded. |
 | ML-AC-06 | A documented rollback disables model-generated alerts without interrupting normal log ingestion, search, or rule-based detections. |
 
-## 16. Testing strategy
+## 16. Adaptive traffic intelligence and live model orchestration
+
+This phase extends the governed machine-learning foundation into a continuously
+operating classification and improvement loop for network and syslog events.
+It does not permit a model or LLM to change firewall rules, block traffic,
+disable accounts, or otherwise enforce a security action automatically.
+
+### 16.1 Streaming classification
+
+- A self-hosted serving API consumes normalized events without sitting in the
+  critical ingestion path.
+- Each prediction records a classification label, threat level, threat score,
+  confidence, model identifier, model version, and contributing evidence.
+- Predictions are written to a dedicated data stream and linked to, rather than
+  overwriting, the immutable source event.
+- The serving layer supports atomic model hot-swap and a rollback pointer for
+  each traffic class without requiring a full service restart.
+- Disabling or failing the serving layer must not interrupt collection,
+  indexing, search, or deterministic detections.
+
+### 16.2 Unknown-pattern workflow
+
+1. Identify events below an analyst-approved confidence threshold that do not
+   match an accepted class.
+2. Deduplicate and rate-limit those events before placing them on a monitored
+   orchestration queue that is separate from malformed-event dead letters.
+3. Cluster representative events using an approved open-source method such as
+   DBSCAN or k-means.
+4. Build a privacy-reviewed candidate dataset and train an appropriate
+   scikit-learn or River model.
+5. Evaluate the candidate against time-separated data and approved precision,
+   recall, false-positive, latency, stability, and resource thresholds.
+6. Reject failing candidates with recorded evidence; register passing
+   candidates in MLflow and stage them in shadow mode.
+7. Collect analyst feedback, require the configured approval gate, and promote
+   an approved candidate atomically into the active serving slot.
+8. Monitor live quality and automatically alert for review or initiate an
+   approved rollback when degradation thresholds are crossed.
+
+### 16.3 Oversight, audit, and safety requirements
+
+- Every dataset extraction, training run, evaluation, approval, rejection,
+  promotion, rollback, and retirement is recorded as an auditable event.
+- Analysts can approve or reject a candidate, reclassify a prediction, override
+  its threat level, and flag false positives without changing the source event.
+- Automatic approval, if enabled, requires documented thresholds, a named
+  owner, a reversible promotion, and an emergency global disable control.
+- Metrics cover inference latency and errors, queue depth, candidate outcomes,
+  model drift, score drift, analyst agreement, override rate, and resource use.
+- Training data, predictions, feedback, and model artifacts inherit the
+  platform's access, retention, encryption, privacy, and backup controls.
+
+### 16.4 Optional self-hosted LLM explanations
+
+An optional locally hosted LLM may summarize new clusters and propose
+human-readable explanations or candidate features. Its output is untrusted,
+schema-validated advisory content and cannot directly trigger an alert, train
+or promote a model, or perform enforcement. The adaptive pipeline must remain
+fully functional when the LLM is disabled.
+
+The serving framework and each selected model artifact have separate licenses.
+Running a model through Ollama does not establish that the model itself is
+OSI-approved. Every model, tokenizer, and required runtime dependency must pass
+the project's license and security audit before use.
+
+### 16.5 Acceptance criteria
+
+| ID | Acceptance criterion |
+| --- | --- |
+| ATI-AC-01 | A production-like network event receives a linked classification, threat score, confidence, model version, and contributing evidence within the approved latency target. |
+| ATI-AC-02 | A novel low-confidence pattern is deduplicated, clustered, used to train a candidate, evaluated, and staged in shadow mode without manual deployment changes. |
+| ATI-AC-03 | Promotion requires the configured approval gate and produces a complete audit record containing dataset, metrics, approver or policy, active version, and rollback pointer. |
+| ATI-AC-04 | A promoted model can be rolled back within one serving cycle after a simulated quality-degradation alert. |
+| ATI-AC-05 | Disabling the entire adaptive layer leaves ingestion, indexing, search, deterministic alerts, and Phase 9 anomaly analysis operational without data loss. |
+| ATI-AC-06 | The core loop uses only approved open-source, self-hostable components and works without an LLM or external paid API. |
+
+## 17. Testing strategy
 
 - Parser unit tests using golden input/output samples for every supported source and firmware/application variant.
 - End-to-end tests proving that file and syslog events become searchable with expected normalized fields.
@@ -303,8 +386,11 @@ This phase adds machine-learning analysis after the collection, schema, security
 - Failure tests covering destination outage, collector restart, data-node loss, network interruption, certificate expiry, and disk watermark conditions.
 - Security tests for authentication, role boundaries, tenant isolation, TLS, secret handling, export controls, and audit events.
 - Machine-learning tests for dataset leakage, reproducibility, model performance, drift, explainability, resource limits, rollback, and adversarial or malformed inputs.
+- Adaptive-loop tests for unknown-event storms, deduplication, candidate rejection,
+  shadow comparison, approval enforcement, atomic hot-swap, rollback, audit
+  completeness, poisoned training samples, and loss of the optional LLM.
 - Upgrade and restore tests before each production release.
-## 17. MVP acceptance criteria
+## 18. MVP acceptance criteria
 
 | ID | Acceptance criterion |
 | --- | --- |
@@ -319,7 +405,7 @@ This phase adds machine-learning analysis after the collection, schema, security
 | AC-09 | A snapshot is restored into a clean test environment and a known event can be retrieved. |
 | AC-10 | Operational documentation covers onboarding, common failures, backup/restore, certificate rotation, and escalation. |
 
-## 18. Risks and mitigations
+## 19. Risks and mitigations
 
 | Risk | Impact | Mitigation |
 | --- | --- | --- |
@@ -332,8 +418,11 @@ This phase adds machine-learning analysis after the collection, schema, security
 | Open-source version churn | Upgrade risk | Pin supported versions, monitor security notices, test upgrades, and maintain rollback/restore procedures. |
 | ML false positives or concept drift | Analyst fatigue and missed threats | Start in shadow mode, use analyst feedback, monitor drift, retain deterministic rules, and apply rollback thresholds. |
 | Opaque or biased ML scoring | Untrusted or unfair security decisions | Use explainable features, document intended use, review labels, and prohibit autonomous enforcement. |
+| Poisoned or unrepresentative adaptive-training data | Unsafe model promotion or degraded detection | Isolate datasets, validate provenance, cap automation, use time-separated evaluation, require promotion gates, and preserve rollback. |
+| Model-update or unknown-event storm | Resource exhaustion and unstable serving | Deduplicate, rate-limit, bound queues and training concurrency, apply circuit breakers, and alert operators. |
+| Unverified LLM/model license or unsafe generated advice | Distribution risk or misleading analyst output | Audit each model artifact separately, validate outputs, label explanations as advisory, and keep the LLM outside all control gates. |
 
-## 19. Open decisions and discovery questions
+## 20. Open decisions and discovery questions
 
 - What is the average and peak daily ingestion volume, events per second, and largest single event?
 - Which router and firewall vendors, models, firmware versions, and transport options must be supported first?
@@ -344,7 +433,10 @@ This phase adds machine-learning analysis after the collection, schema, security
 - Are regulated data, customer identifiers, credentials, or secrets likely to appear in the logs?
 - What recovery-time and recovery-point objectives are required?
 - Which security anomaly use case has enough historical data and analyst capacity to support a measurable ML pilot?
-## 20. Recommended free and open-source stack
+- What confidence threshold, minimum cluster size, evaluation floor, and approval policy govern adaptive model promotion?
+- What maximum inference latency, orchestration queue size, training concurrency, and rollback time are acceptable?
+- Which model licenses are approved, and is automatic promotion permitted in production or only analyst approval?
+## 21. Recommended free and open-source stack
 
 | Component | Role | License / rationale |
 | --- | --- | --- |
@@ -357,10 +449,12 @@ This phase adds machine-learning analysis after the collection, schema, security
 | scikit-learn + River | Offline and online machine-learning analysis | BSD-licensed libraries suitable for transparent baseline models and streaming learning. |
 | PyTorch (optional) | Advanced deep-learning models | BSD-style open-source license; use only when simpler methods do not meet the use case. |
 | MLflow | Experiment and model lifecycle tracking | Apache 2.0; self-hostable tracking and artifact management. |
+| FastAPI | Self-hosted model-serving and orchestration API | MIT; lightweight API layer for inference, metrics, approval integration, and model hot-swap controls. |
+| Ollama-compatible local model (optional) | Analyst-facing explanation of unknown patterns | Optional only; the runtime and each model artifact require separate license approval and must not be part of a promotion decision. |
 
 Alternative: Grafana Loki can be considered where low-cost label-based log storage is more important than broad full-text indexed search. For this requirement, OpenSearch is the stronger default because the requested experience is explicitly similar to Kibana.
 
-## 21. Sources and implementation references
+## 22. Sources and implementation references
 
 - OpenSearch platform and Apache 2.0 licensing
 - OpenSearch Dashboards: exploring data with Discover
@@ -373,5 +467,7 @@ Alternative: Grafana Loki can be considered where low-cost label-based log stora
 - River open-source license
 - PyTorch open-source license
 - MLflow documentation
+- FastAPI documentation and license
+- Documentation and license for each selected local LLM runtime and model artifact
 | Versioning note  Component versions should be selected during implementation from currently supported releases, pinned in deployment manifests, and validated together in staging. This specification intentionally defines capabilities rather than hard-coding a version number. |
 | --- |

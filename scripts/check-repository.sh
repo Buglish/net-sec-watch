@@ -30,6 +30,8 @@ done < <(find scripts tests -type f -name '*.sh' -print | sort)
 ./scripts/check-format.sh
 ./scripts/check-secrets.sh
 ./scripts/verify-objective-1.sh
+./scripts/verify-objective-2.sh
+./tests/telemetry-policy/run.sh
 
 if command -v shellcheck >/dev/null 2>&1; then
   mapfile -t shell_files < <(find scripts tests -type f -name '*.sh' -print | sort)

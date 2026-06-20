@@ -1,8 +1,1 @@
-2026-06-20 08:00:00 INFO service started
-2026-06-20 08:00:01 ERROR request processing failed
-java.lang.IllegalStateException: example failure
-    at com.example.Service.process(Service.java:42)
-    at com.example.Application.main(Application.java:10)
-Caused by: java.net.ConnectException: connection refused
-    at java.base/sun.nio.ch.Net.connect0(Native Method)
-
+2026-06-20T09:50:56+12:00 INFO first event after rotation

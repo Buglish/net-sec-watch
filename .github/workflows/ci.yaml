@@ -52,3 +52,6 @@ jobs:
 
       - name: Run collection integration tests
         run: make test-integration
+
+      - name: Run redundant receiver and failover tests
+        run: make test-failover

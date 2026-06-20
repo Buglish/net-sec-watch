@@ -1,0 +1,5 @@
+<34>1 2026-06-20T10:00:00.000Z fw01.example.lan sshd 1234 ID42 [exampleSDID@32473 eventSource="sshd"] Failed password for invalid user admin from 203.0.113.1 port 12345 ssh2
+<165>1 2026-06-20T10:00:05.123Z fw01.example.lan kernel - - - [net_ratelimit] 2 callbacks suppressed
+<34>1 2026-06-20T10:00:10.456Z fw01.example.lan sshd 5678 - - Accepted publickey for deploy from 192.168.1.50 port 54321 ssh2: RSA SHA256:AAAA
+<38>1 2026-06-20T10:00:15.000Z sw01.example.lan snmpd 2222 - [meta sequenceId="1"] Link up: GigabitEthernet1/0/1
+<14>1 2026-06-20T10:00:20.789Z fw01.example.lan firewalld 3000 - - BLOCK IN=eth0 OUT= SRC=203.0.113.5 DST=192.168.1.50 PROTO=TCP DPT=22

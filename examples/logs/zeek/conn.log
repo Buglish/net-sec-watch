@@ -1,0 +1,1 @@
+{"ts":1781967000.125,"uid":"CZeekIntegration001","id.orig_h":"192.0.2.10","id.orig_p":52344,"id.resp_h":"198.51.100.20","id.resp_p":443,"proto":"tcp","service":"ssl","duration":0.432,"orig_bytes":517,"resp_bytes":4210,"conn_state":"SF"}

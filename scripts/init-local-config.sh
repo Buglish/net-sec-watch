@@ -19,7 +19,11 @@ copy_if_missing() {
 
 copy_if_missing .env.example .env
 copy_if_missing config/fluent-bit.local.conf.example config/fluent-bit.local.conf
+copy_if_missing \
+  config/traffic-telemetry-policy.example.yaml \
+  config/traffic-telemetry-policy.yaml
+
+mkdir -p runtime/zeek
 
 echo
 echo "Local files are Git-ignored. Review .env before running Docker Compose."
-

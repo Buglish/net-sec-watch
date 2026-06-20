@@ -1,19 +1,69 @@
 services:
   fluent-bit:
     image: ${FLUENT_BIT_IMAGE:-fluent/fluent-bit:4.0}
-    container_name: net-sec-watch-fluent-bit
     restart: unless-stopped
     command: ["/fluent-bit/bin/fluent-bit", "-c", "/fluent-bit/etc/fluent-bit.conf"]
     ports:
       - "${FLUENT_BIT_HTTP_BIND:-127.0.0.1}:${FLUENT_BIT_HTTP_PORT:-2020}:2020"
+      - "${SYSLOG_BIND:-0.0.0.0}:${SYSLOG_UDP_PORT:-514}:5514/udp"
+      - "${SYSLOG_BIND:-0.0.0.0}:${SYSLOG_TCP_PORT:-514}:5514/tcp"
+      - "${SYSLOG_BIND:-0.0.0.0}:${SYSLOG_TLS_PORT:-6514}:6514/tcp"
     volumes:
       - ${FLUENT_BIT_CONFIG_PATH:-./config/fluent-bit.conf}:/fluent-bit/etc/fluent-bit.conf:ro
       - ./config/fluent-bit.conf:/fluent-bit/etc/fluent-bit.base.conf:ro
       - ./config/parsers-custom.conf:/fluent-bit/etc/parsers-custom.conf:ro
+      - ./config/scripts:/fluent-bit/etc/scripts:ro
+      - ${TLS_CERT_DIR:-./config/tls}:/fluent-bit/etc/tls:ro
       - ./examples/logs:/logs:ro
       - ${HOST_LOG_ROOT:-./examples/logs/system}:/host/var/log:ro
       - ${CONTAINER_LOG_ROOT:-./examples/logs/containers}:/host/var/lib/docker/containers:ro
+      - ${ZEEK_LOG_VOLUME:-zeek-logs}:/zeek/logs:ro
+      - ${SURICATA_LOG_VOLUME:-suricata-logs}:/suricata/logs:ro
       - fluent-bit-state:/fluent-bit/state
+
+  zeek:
+    image: ${ZEEK_IMAGE:-zeek/zeek:lts}
+    profiles: ["zeek"]
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    command:
+      - zeek
+      - -i
+      - ${ZEEK_INTERFACE:-eth0}
+      - -C
+      - LogAscii::use_json=T
+    working_dir: /zeek/logs
+    volumes:
+      - ${ZEEK_LOG_VOLUME:-zeek-logs}:/zeek/logs
+
+  suricata:
+    image: ${SURICATA_IMAGE:-jasonish/suricata:8.0.5}
+    profiles: ["suricata"]
+    restart: unless-stopped
+    network_mode: host
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+      - SYS_NICE
+    command:
+      - -i
+      - ${SURICATA_INTERFACE:-eth0}
+      - --set
+      - outputs.1.eve-log.community-id=true
+    volumes:
+      - ${SURICATA_LOG_VOLUME:-suricata-logs}:/var/log/suricata
+      - suricata-rules:/var/lib/suricata
+
+  suricata-update:
+    image: ${SURICATA_IMAGE:-jasonish/suricata:8.0.5}
+    profiles: ["tools"]
+    entrypoint: ["suricata-update"]
+    command: ["--no-reload", "--fail"]
+    volumes:
+      - suricata-rules:/var/lib/suricata
 
   audit-runtime-sbom:
     image: ${SYFT_IMAGE:-anchore/syft:v1.45.1}
@@ -52,3 +102,6 @@ services:
 volumes:
   fluent-bit-state:
   grype-db:
+  zeek-logs:
+  suricata-logs:
+  suricata-rules:
