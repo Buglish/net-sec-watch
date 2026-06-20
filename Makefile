@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-opensearch up-zeek up-suricata update-suricata-rules down logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -17,6 +17,19 @@ up:
 
 up-opensearch:
 	docker compose --env-file .env --profile opensearch up -d opensearch
+
+up-opensearch-secure:
+	FLUENT_BIT_CONFIG_PATH=./config/fluent-bit.opensearch.conf \
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--profile opensearch up -d opensearch fluent-bit
+
+down-opensearch-secure:
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--profile opensearch down
 
 up-zeek:
 	docker compose --env-file .env --profile zeek up -d
@@ -65,6 +78,9 @@ test-golden:
 
 test-opensearch:
 	./tests/opensearch/smoke.sh
+
+test-opensearch-secure:
+	./tests/opensearch/secure-ingestion.sh
 
 test-failover:
 	./tests/failover/run-failover.sh

@@ -1,0 +1,22 @@
+services:
+  opensearch:
+    environment:
+      DISABLE_INSTALL_DEMO_CONFIG: "false"
+      DISABLE_SECURITY_PLUGIN: "false"
+      OPENSEARCH_INITIAL_ADMIN_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl --fail --insecure --silent
+          --user admin:"$$OPENSEARCH_INITIAL_ADMIN_PASSWORD"
+          https://127.0.0.1:9200/_cluster/health
+          >/dev/null
+
+  fluent-bit:
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    environment:
+      OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
+      OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}

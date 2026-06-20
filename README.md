@@ -251,6 +251,17 @@ for development. See
 [docs/phase-4-opensearch-development.md](docs/phase-4-opensearch-development.md)
 before enabling it.
 
+To test authenticated HTTPS ingestion instead:
+
+```bash
+make init
+make up-opensearch-secure
+```
+
+This uses the ignored `.env` password and
+`config/fluent-bit.opensearch.conf`. See
+[docs/phase-4-authenticated-ingestion.md](docs/phase-4-authenticated-ingestion.md).
+
 The service should report `Up`. Follow its output:
 
 ```bash
