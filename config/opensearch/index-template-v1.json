@@ -1,0 +1,215 @@
+{
+  "index_patterns": [
+    "net-sec-watch-*"
+  ],
+  "priority": 200,
+  "version": 1,
+  "_meta": {
+    "description": "Net Sec Watch canonical event mappings",
+    "schema_version": "1.0.0"
+  },
+  "template": {
+    "settings": {
+      "index.number_of_shards": 1,
+      "index.number_of_replicas": 0,
+      "index.mapping.total_fields.limit": 1000,
+      "index.mapping.depth.limit": 20,
+      "index.mapping.field_name_length.limit": 128
+    },
+    "mappings": {
+      "dynamic": false,
+      "date_detection": false,
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "message": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword",
+              "ignore_above": 1024
+            }
+          }
+        },
+        "event": {
+          "properties": {
+            "observed": {"type": "date"},
+            "ingested": {"type": "date"},
+            "dataset": {"type": "keyword"},
+            "kind": {"type": "keyword"},
+            "category": {"type": "keyword"},
+            "type": {"type": "keyword"},
+            "action": {"type": "keyword"},
+            "outcome": {"type": "keyword"},
+            "severity": {"type": "integer"},
+            "original": {"type": "match_only_text"},
+            "schema_version": {"type": "keyword"},
+            "parser_version": {"type": "keyword"},
+            "timezone": {"type": "keyword"},
+            "timestamp_inferred": {"type": "boolean"},
+            "clock_skew_seconds": {"type": "double"},
+            "field_count": {"type": "integer"},
+            "id": {"type": "keyword"},
+            "classification": {"type": "keyword"},
+            "threat_level": {"type": "keyword"},
+            "threat_score": {"type": "float"},
+            "ml_model_id": {"type": "keyword"},
+            "ml_confidence": {"type": "float"},
+            "correlation_key": {"type": "keyword"},
+            "observation_id": {"type": "keyword"}
+          }
+        },
+        "log": {
+          "properties": {
+            "level": {"type": "keyword"},
+            "severity": {
+              "properties": {
+                "number": {"type": "short"}
+              }
+            },
+            "file": {
+              "properties": {
+                "path": {"type": "keyword", "ignore_above": 2048}
+              }
+            },
+            "syslog": {
+              "properties": {
+                "facility": {
+                  "properties": {
+                    "code": {"type": "short"},
+                    "name": {"type": "keyword"}
+                  }
+                },
+                "severity": {
+                  "properties": {
+                    "code": {"type": "short"},
+                    "name": {"type": "keyword"}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "source": {
+          "properties": {
+            "ip": {"type": "ip"},
+            "port": {"type": "integer"},
+            "bytes": {"type": "long"},
+            "packets": {"type": "long"}
+          }
+        },
+        "destination": {
+          "properties": {
+            "ip": {"type": "ip"},
+            "port": {"type": "integer"},
+            "bytes": {"type": "long"},
+            "packets": {"type": "long"}
+          }
+        },
+        "network": {
+          "properties": {
+            "transport": {"type": "keyword"},
+            "protocol": {"type": "keyword"},
+            "community_id": {"type": "keyword"},
+            "bytes": {"type": "long"}
+          }
+        },
+        "host": {
+          "properties": {
+            "name": {"type": "keyword"}
+          }
+        },
+        "service": {
+          "properties": {
+            "name": {"type": "keyword"}
+          }
+        },
+        "device": {
+          "properties": {
+            "id": {"type": "keyword"},
+            "name": {"type": "keyword"}
+          }
+        },
+        "deployment": {
+          "properties": {
+            "environment": {
+              "properties": {
+                "name": {"type": "keyword"}
+              }
+            }
+          }
+        },
+        "site": {
+          "properties": {
+            "name": {"type": "keyword"}
+          }
+        },
+        "collector": {
+          "properties": {
+            "name": {"type": "keyword"},
+            "type": {"type": "keyword"},
+            "version": {"type": "keyword"}
+          }
+        },
+        "observer": {
+          "properties": {
+            "name": {"type": "keyword"},
+            "vendor": {"type": "keyword"},
+            "product": {"type": "keyword"}
+          }
+        },
+        "error": {
+          "properties": {
+            "type": {"type": "keyword"},
+            "message": {"type": "text"},
+            "stage": {"type": "keyword"},
+            "source_dataset": {"type": "keyword"}
+          }
+        },
+        "rule": {
+          "properties": {
+            "id": {"type": "keyword"},
+            "name": {"type": "keyword"},
+            "category": {"type": "keyword"}
+          }
+        },
+        "dns": {
+          "properties": {
+            "question": {
+              "properties": {
+                "name": {"type": "keyword"},
+                "type": {"type": "keyword"}
+              }
+            }
+          }
+        },
+        "url": {
+          "properties": {
+            "domain": {"type": "keyword"},
+            "path": {"type": "wildcard"}
+          }
+        },
+        "http": {
+          "properties": {
+            "request": {
+              "properties": {
+                "method": {"type": "keyword"}
+              }
+            }
+          }
+        },
+        "tls": {
+          "properties": {
+            "server": {
+              "properties": {
+                "name": {"type": "keyword"}
+              }
+            },
+            "version": {"type": "keyword"}
+          }
+        }
+      }
+    }
+  }
+}

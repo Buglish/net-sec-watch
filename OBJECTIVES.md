@@ -11,7 +11,7 @@ evidence are complete.
 - [x] Phase 0 - Project foundation
 - [x] Phase 1 - File and workload log collection
 - [ ] Phase 2 - Network-device and syslog collection
-- [ ] Phase 3 - Event normalization and data quality
+- [x] Phase 3 - Event normalization and data quality
 - [ ] Phase 4 - OpenSearch storage and lifecycle
 - [ ] Phase 5 - Search, dashboards, and analyst experience
 - [ ] Phase 6 - Security, privacy, and access control
@@ -127,7 +127,7 @@ network TAP, or supported gateway deployment.
   produce connection and protocol metadata.
 - [x] Add representative, sanitized Zeek fixtures with automated ingestion tests.
 - [x] Add representative, sanitized Suricata fixtures with automated ingestion tests.
-- [ ] Normalize router firewall, Zeek, and Suricata events without treating
+- [x] Normalize router firewall, Zeek, and Suricata events without treating
   duplicate observations as separate incidents.
 - [x] Document storage-volume, privacy, packet-loss, and retention implications
   before enabling high-volume traffic telemetry.
@@ -150,20 +150,20 @@ network TAP, or supported gateway deployment.
 **Outcome:** Different sources produce a consistent, vendor-neutral event
 schema while retaining the original log.
 
-- [ ] Define the canonical event schema and field naming conventions.
-- [ ] Align appropriate fields with OpenTelemetry log conventions.
-- [ ] Define security fields for source, destination, action, outcome, and severity.
-- [ ] Preserve every raw source message in `event.original`.
-- [ ] Normalize timestamps to UTC and preserve source timezone information.
-- [ ] Add timestamp inference and clock-skew indicators.
-- [ ] Normalize log levels and syslog severities.
-- [ ] Add host, service, device, environment, site, and collector metadata.
-- [ ] Add controlled parsing-error fields and dead-letter routing.
-- [ ] Prevent uncontrolled dynamic fields and mapping explosion.
-- [ ] Add golden input/output parser tests for every supported source.
-- [ ] Add parser version metadata to normalized events.
-- [ ] Document schema compatibility and migration rules.
-- [ ] Reserve the ML enrichment field namespace (`event.classification`,
+- [x] Define the canonical event schema and field naming conventions.
+- [x] Align appropriate fields with OpenTelemetry log conventions.
+- [x] Define security fields for source, destination, action, outcome, and severity.
+- [x] Preserve every raw source message in `event.original`.
+- [x] Normalize timestamps to UTC and preserve source timezone information.
+- [x] Add timestamp inference and clock-skew indicators.
+- [x] Normalize log levels and syslog severities.
+- [x] Add host, service, device, environment, site, and collector metadata.
+- [x] Add controlled parsing-error fields and dead-letter routing.
+- [x] Prevent uncontrolled dynamic fields and mapping explosion.
+- [x] Add golden input/output parser tests for every supported source.
+- [x] Add parser version metadata to normalized events.
+- [x] Document schema compatibility and migration rules.
+- [x] Reserve the ML enrichment field namespace (`event.classification`,
   `event.threat_level`, `event.threat_score`, `event.ml_model_id`,
   `event.ml_confidence`) as defined but initially unpopulated, so Phase 11
   live classification can write to these fields without schema conflicts or
@@ -171,9 +171,9 @@ schema while retaining the original log.
 
 ### Completion gate
 
-- [ ] Golden parser tests pass for all onboarded source types.
-- [ ] Required normalized fields are populated or carry an explicit error reason.
-- [ ] Parser changes are versioned, reviewable, and backward-compatible or migrated.
+- [x] Golden parser tests pass for all onboarded source types.
+- [x] Required normalized fields are populated or carry an explicit error reason.
+- [x] Parser changes are versioned, reviewable, and backward-compatible or migrated.
 
 ---
 
@@ -182,10 +182,10 @@ schema while retaining the original log.
 **Outcome:** Normalized events are securely indexed, searchable, retained, and
 recoverable using a self-hosted OpenSearch cluster.
 
-- [ ] Add an OpenSearch development deployment.
-- [ ] Add authenticated TLS ingestion from Fluent Bit to OpenSearch.
-- [ ] Store credentials using ignored environment files or mounted secrets.
-- [ ] Define index templates and explicit field mappings.
+- [x] Add an OpenSearch development deployment.
+- [x] Add authenticated TLS ingestion from Fluent Bit to OpenSearch.
+- [x] Store credentials using ignored environment files or mounted secrets.
+- [x] Define index templates and explicit field mappings.
 - [ ] Define data streams by log class and environment.
 - [ ] Configure rollover based on age and size.
 - [ ] Configure hot, warm, archive, and deletion policies as required.

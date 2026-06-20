@@ -5,6 +5,7 @@
 
 # Machine-specific collector configuration.
 config/fluent-bit.local.conf
+config/fluent-bit.opensearch.conf
 config/*.local.conf
 config/traffic-telemetry-policy.yaml
 config/private/

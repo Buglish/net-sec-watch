@@ -21,8 +21,12 @@ cleanup() {
 
 fail() {
   echo "FAIL: $*" >&2
+  echo "--- Docker Compose status ---" >&2
   compose ps >&2 || true
-  compose logs --no-color >&2 || true
+  echo "--- Last 250 collector log lines ---" >&2
+  compose logs --no-color collector 2>/dev/null | tail -n 250 >&2 || true
+  echo "--- Last 250 receiver log lines ---" >&2
+  compose logs --no-color receiver 2>/dev/null | tail -n 250 >&2 || true
   exit 1
 }
 
@@ -31,9 +35,13 @@ wait_for_log() {
   local marker="$2"
   local timeout="${3:-45}"
   local deadline=$((SECONDS + timeout))
+  local logs
 
   while (( SECONDS < deadline )); do
-    if compose logs --no-color "$service" 2>/dev/null | grep -Fq "$marker"; then
+    # Capture first so grep -q cannot close the compose pipe early. With
+    # pipefail enabled, that SIGPIPE can turn a successful match into failure.
+    logs="$(compose logs --no-color "$service" 2>/dev/null || true)"
+    if grep -Fq "$marker" <<<"$logs"; then
       return 0
     fi
     sleep 1
@@ -91,6 +99,192 @@ test_initial_collection() {
   wait_for_log receiver "$system_marker"
   wait_for_log receiver "$container_marker"
   echo "PASS: all sample source types were collected"
+}
+
+assert_canonical_event() {
+  local marker="$1"
+  local expected_dataset="$2"
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+
+  grep -Fq '"event.original":' <<<"$event" ||
+    fail "$expected_dataset did not preserve event.original"
+  grep -Fq '"event.schema_version":"1.0.0"' <<<"$event" ||
+    fail "$expected_dataset did not receive the canonical schema version"
+  grep -Fq "\"event.dataset\":\"${expected_dataset}\"" <<<"$event" ||
+    fail "$expected_dataset dataset was not normalized"
+  grep -Fq '"event.parser_version":' <<<"$event" ||
+    fail "$expected_dataset parser version was not recorded"
+  grep -Fq '"@timestamp":' <<<"$event" ||
+    fail "$expected_dataset UTC timestamp was not recorded"
+  grep -Fq '"event.observed":' <<<"$event" ||
+    fail "$expected_dataset observation time was not recorded"
+  grep -Fq '"event.timestamp_inferred":' <<<"$event" ||
+    fail "$expected_dataset timestamp inference status was not recorded"
+  grep -Fq '"event.clock_skew_seconds":' <<<"$event" ||
+    fail "$expected_dataset clock skew was not recorded"
+  grep -Fq '"collector.name":"integration-collector"' <<<"$event" ||
+    fail "$expected_dataset collector metadata was not recorded"
+  grep -Fq '"site.name":"integration-site"' <<<"$event" ||
+    fail "$expected_dataset site metadata was not recorded"
+}
+
+test_canonical_normalization() {
+  local text_marker="phase3-text-$RANDOM-$RANDOM"
+  local app_marker="phase3-app-$RANDOM-$RANDOM"
+  local app_z_marker="phase3-app-z-$RANDOM-$RANDOM"
+  local app_fraction_marker="phase3-app-fraction-$RANDOM-$RANDOM"
+  local system_marker="phase3-system-$RANDOM-$RANDOM"
+  local container_marker="phase3-container-$RANDOM-$RANDOM"
+
+  printf '%s WARN %s\n' "$(date --iso-8601=seconds)" "$text_marker" \
+    >> "$runtime/logs/text/service.log"
+  {
+    printf '{"timestamp":"%s","level":"ERROR","service":"phase3-test","environment":"integration","message":"%s"}\n' \
+      "$(date --iso-8601=seconds)" "$app_marker"
+    printf '{"timestamp":"2026-06-20T08:00:00Z","level":"INFO","service":"phase3-test","message":"%s"}\n' \
+      "$app_z_marker"
+    printf '{"timestamp":"2026-06-20T08:00:00.123+1200","level":"INFO","service":"phase3-test","message":"%s"}\n' \
+      "$app_fraction_marker"
+  } >> "$runtime/logs/app/application.json.log"
+  printf '%s phase3-host phase3[1]: %s\n' \
+    "$(date '+%b %d %H:%M:%S')" "$system_marker" \
+    >> "$runtime/logs/system/syslog"
+  printf '{"log":"%s\\n","stream":"stderr","time":"%s"}\n' \
+    "$container_marker" "$(date --utc '+%Y-%m-%dT%H:%M:%S.000000000Z')" \
+    >> "$runtime/logs/containers/demo/demo-json.log"
+
+  wait_for_log receiver "$text_marker"
+  wait_for_log receiver "$app_marker"
+  wait_for_log receiver "$app_z_marker"
+  wait_for_log receiver "$app_fraction_marker"
+  wait_for_log receiver "$system_marker"
+  wait_for_log receiver "$container_marker"
+
+  assert_canonical_event "$text_marker" "file.text"
+  assert_canonical_event "$app_marker" "application.json"
+  assert_canonical_event "$system_marker" "host.system"
+  assert_canonical_event "$container_marker" "container.docker"
+
+  local text_event app_event
+  text_event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$text_marker" | tail -n 1)"
+  app_event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$app_marker" | tail -n 1)"
+  grep -Fq '"event.timestamp_inferred":false' <<<"$text_event" ||
+    fail "ISO 8601 text timestamp was not recognized"
+  grep -Fq '"log.level":"warn"' <<<"$text_event" ||
+    fail "plain-text log level was not normalized"
+  grep -Fq '"log.severity.number":13' <<<"$text_event" ||
+    fail "plain-text severity was not mapped to OpenTelemetry"
+  grep -Fq '"log.level":"error"' <<<"$app_event" ||
+    fail "application log level was not normalized"
+  grep -Fq '"log.severity.number":17' <<<"$app_event" ||
+    fail "application severity was not mapped to OpenTelemetry"
+  grep -Fq '"service.name":"phase3-test"' <<<"$app_event" ||
+    fail "application service metadata was not normalized"
+  grep -Fq '"deployment.environment.name":"integration"' <<<"$app_event" ||
+    fail "application environment metadata was not normalized"
+
+  local collector_logs
+  collector_logs="$(compose logs --no-color collector 2>/dev/null)"
+  ! grep -Fq "invalid time format" <<<"$collector_logs" ||
+    fail "application parser emitted a timestamp-format warning"
+
+  echo "PASS: canonical metadata, timestamps, severity, and raw events were normalized"
+}
+
+assert_deadletter_event() {
+  local marker="$1"
+  local expected_source="$2"
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "$expected_source parse failure was not marked as a pipeline error"
+  grep -Fq '"event.dataset":"pipeline.deadletter"' <<<"$event" ||
+    fail "$expected_source parse failure was not assigned to dead-letter"
+  grep -Fq '"error.type":"parsing_error"' <<<"$event" ||
+    fail "$expected_source parse failure type was not recorded"
+  grep -Fq '"error.stage":"source_parser"' <<<"$event" ||
+    fail "$expected_source parse failure stage was not recorded"
+  grep -Fq "\"error.source_dataset\":\"${expected_source}\"" <<<"$event" ||
+    fail "$expected_source source dataset was not retained"
+  grep -Fq '"_dead_letter":true' <<<"$event" ||
+    fail "$expected_source dead-letter marker was not recorded"
+  grep -Fq '"event.original":' <<<"$event" ||
+    fail "$expected_source malformed source record was not preserved"
+}
+
+test_structured_deadletter_routing() {
+  local app_marker="bad-app-$RANDOM-$RANDOM"
+  local container_marker="bad-container-$RANDOM-$RANDOM"
+  local zeek_marker="bad-zeek-$RANDOM-$RANDOM"
+  local suricata_marker="bad-suricata-$RANDOM-$RANDOM"
+
+  printf '{"message":"%s"\n' "$app_marker" \
+    >> "$runtime/logs/app/application.json.log"
+  printf '{"log":"%s\\n","stream":\n' "$container_marker" \
+    >> "$runtime/logs/containers/demo/demo-json.log"
+  printf '{"uid":"%s"\n' "$zeek_marker" \
+    >> "$runtime/logs/zeek/conn.log"
+  printf '{"flow_id":"%s"\n' "$suricata_marker" \
+    >> "$runtime/logs/suricata/eve.json"
+
+  wait_for_log receiver "$app_marker"
+  wait_for_log receiver "$container_marker"
+  wait_for_log receiver "$zeek_marker"
+  wait_for_log receiver "$suricata_marker"
+
+  assert_deadletter_event "$app_marker" "application.json"
+  assert_deadletter_event "$container_marker" "container.docker"
+  assert_deadletter_event "$zeek_marker" "zeek.conn"
+  assert_deadletter_event "$suricata_marker" "suricata.unknown"
+
+  echo "PASS: malformed structured records were routed to dead-letter"
+}
+
+test_mapping_explosion_guard() {
+  local marker="mapping-guard-$RANDOM-$RANDOM"
+
+  python3 - "$runtime/logs/app/application.json.log" "$marker" <<'EOF'
+import json
+import sys
+
+event = {
+    "timestamp": "2026-06-20T08:00:00Z",
+    "level": "INFO",
+    "service": "mapping-guard-test",
+    "message": sys.argv[2],
+}
+for number in range(140):
+    event[f"attacker_controlled_{number:03d}"] = number
+
+with open(sys.argv[1], "a", encoding="utf-8") as handle:
+    handle.write(json.dumps(event, separators=(",", ":")) + "\n")
+EOF
+
+  wait_for_log receiver "$marker"
+
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "oversized dynamic event was not marked as a pipeline error"
+  grep -Fq '"event.dataset":"pipeline.deadletter"' <<<"$event" ||
+    fail "oversized dynamic event was not routed to dead-letter"
+  grep -Fq '"error.type":"mapping_guard_error"' <<<"$event" ||
+    fail "mapping guard error type was not recorded"
+  grep -Fq '"error.stage":"schema_guard"' <<<"$event" ||
+    fail "mapping guard stage was not recorded"
+  grep -Fq '"error.message":"maximum field count exceeded"' <<<"$event" ||
+    fail "mapping guard limit reason was not recorded"
+  grep -Fq '"error.source_dataset":"application.json"' <<<"$event" ||
+    fail "mapping guard source dataset was not retained"
+
+  echo "PASS: mapping explosion guard rejected an excessive dynamic event"
 }
 
 test_rotation() {
@@ -183,6 +377,20 @@ test_syslog_udp() {
   ts="$(date '+%b %e %H:%M:%S')"
   send_udp 127.0.0.1 15514 "<134>${ts} testhost sshd[1234]: ${marker}"
   wait_for_log receiver "$marker"
+
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"event.dataset":"syslog.rfc3164"' <<<"$event" ||
+    fail "generic syslog dataset was not normalized"
+  grep -Fq '"event.parser_version":"syslog-rfc3164-1"' <<<"$event" ||
+    fail "generic syslog parser version was not recorded"
+  grep -Fq '"log.level":"info"' <<<"$event" ||
+    fail "syslog severity text was not normalized"
+  grep -Fq '"log.severity.number":9' <<<"$event" ||
+    fail "syslog severity was not mapped to OpenTelemetry"
+  grep -Fq '"host.name":"testhost"' <<<"$event" ||
+    fail "syslog host metadata was not normalized"
   echo "PASS: UDP syslog was collected"
 }
 
@@ -205,10 +413,15 @@ test_syslog_deadletter() {
   # Two spaces after the timestamp produce an empty host field, triggering dead-letter.
   send_udp 127.0.0.1 15514 "<134>${ts}  sshd[1234]: ${marker}"
   wait_for_log receiver "$marker"
-  if ! compose logs --no-color receiver 2>/dev/null |
-      grep -F "$marker" | grep -Fq '"_dead_letter"'; then
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+  grep -Fq '"_dead_letter":true' <<<"$event" ||
     fail "malformed syslog record was not routed to dead-letter stream"
-  fi
+  grep -Fq '"event.kind":"pipeline_error"' <<<"$event" ||
+    fail "malformed syslog record was not marked as a pipeline error"
+  grep -Fq '"error.stage":"syslog_input"' <<<"$event" ||
+    fail "malformed syslog error stage was not recorded"
   echo "PASS: malformed syslog record was routed to dead-letter stream"
 }
 
@@ -267,6 +480,13 @@ test_zeek_collection() {
   local dhcp_marker="demo-client"
   local notice_marker="Sanitized example scan notice"
 
+  # Append fixtures after startup so assertions do not depend on initial tail
+  # discovery and forward-output connection timing.
+  for fixture in conn dhcp dns http notice ssl; do
+    cat "$repo_root/examples/logs/zeek/${fixture}.log" \
+      >> "$runtime/logs/zeek/${fixture}.log"
+  done
+
   wait_for_log receiver "$conn_marker"
   wait_for_log receiver "$dns_marker"
   wait_for_log receiver "$http_marker"
@@ -316,6 +536,10 @@ test_suricata_collection() {
   local http_marker="suricata-http.example"
   local tls_marker="suricata-tls.example"
 
+  # Append a fresh copy after startup for the same reason as Zeek above.
+  cat "$repo_root/examples/logs/suricata/eve.json" \
+    >> "$runtime/logs/suricata/eve.json"
+
   wait_for_log receiver "$alert_marker"
   wait_for_log receiver "$flow_marker"
   wait_for_log receiver "$dns_marker"
@@ -352,6 +576,71 @@ test_suricata_collection() {
   echo "PASS: Suricata alert, flow, DNS, HTTP, and TLS events were collected"
 }
 
+correlation_key_from_event() {
+  sed -n 's/.*"event.correlation_key":"\([^"]*\)".*/\1/p' <<<"$1"
+}
+
+test_cross_source_correlation() {
+  local source_port=$((20000 + RANDOM % 30000))
+  local marker="cross-source-$RANDOM-$RANDOM"
+  local epoch
+  epoch="$(date +%s)"
+
+  printf '{"ts":%s,"uid":"%s-zeek","id.orig_h":"192.0.2.90","id.orig_p":%s,"id.resp_h":"198.51.100.90","id.resp_p":443,"proto":"tcp","service":"ssl"}\n' \
+    "$epoch" "$marker" "$source_port" >> "$runtime/logs/zeek/conn.log"
+  printf '{"timestamp":"%s","flow_id":"%s-suricata","event_type":"flow","src_ip":"192.0.2.90","src_port":%s,"dest_ip":"198.51.100.90","dest_port":443,"proto":"TCP","app_proto":"tls"}\n' \
+    "$(date --utc '+%Y-%m-%dT%H:%M:%S.000000+0000')" "$marker" "$source_port" \
+    >> "$runtime/logs/suricata/eve.json"
+  send_udp 127.0.0.1 15514 \
+    "<4>$(date '+%b %e %H:%M:%S') RT-AC68U-TEST kernel: DROP IN=eth0 OUT= SRC=192.0.2.90 DST=198.51.100.90 PROTO=TCP SPT=${source_port} DPT=443 MARKER=${marker}-asus"
+
+  wait_for_log receiver "$marker-zeek"
+  wait_for_log receiver "$marker-suricata"
+  wait_for_log receiver "$marker-asus"
+
+  local logs zeek_event suricata_event asus_event
+  local zeek_key suricata_key asus_key
+  logs="$(compose logs --no-color receiver 2>/dev/null)"
+  zeek_event="$(grep -F "$marker-zeek" <<<"$logs" | tail -n 1)"
+  suricata_event="$(grep -F "$marker-suricata" <<<"$logs" | tail -n 1)"
+  asus_event="$(grep -F "$marker-asus" <<<"$logs" | tail -n 1)"
+  zeek_key="$(correlation_key_from_event "$zeek_event")"
+  suricata_key="$(correlation_key_from_event "$suricata_event")"
+  asus_key="$(correlation_key_from_event "$asus_event")"
+
+  [[ -n "$zeek_key" ]] || fail "Zeek correlation key was not generated"
+  [[ "$zeek_key" == "$suricata_key" ]] ||
+    fail "Zeek and Suricata observations did not share a correlation key"
+  [[ "$zeek_key" == "$asus_key" ]] ||
+    fail "ASUS and sensor observations did not share a correlation key"
+
+  grep -Fq '"event.deduplication.strategy":"correlate-preserve"' <<<"$zeek_event" ||
+    fail "cross-source duplicate strategy was not recorded"
+  grep -Fq '"event.schema_version":"1.0.0"' <<<"$asus_event" ||
+    fail "shared network schema version was not recorded"
+  [[ "$zeek_event" != "$suricata_event" && "$zeek_event" != "$asus_event" ]] ||
+    fail "source observations were collapsed instead of preserved"
+
+  echo "PASS: related ASUS, Zeek, and Suricata observations were correlated without data loss"
+}
+
+test_golden_parser_outputs() {
+  local ts
+  ts="$(date '+%b %e %H:%M:%S')"
+
+  send_udp 127.0.0.1 15514 \
+    "<134>${ts} golden-router golden[42]: golden-rfc3164-event"
+  send_udp 127.0.0.1 15514 \
+    "<4>${ts} RT-AC68U-GOLDEN kernel: DROP IN=eth0 OUT= SRC=192.0.2.45 DST=198.51.100.7 PROTO=UDP SPT=45001 DPT=6667 GOLDEN=asus-firewall"
+
+  wait_for_log receiver "golden-rfc3164-event"
+  wait_for_log receiver "GOLDEN=asus-firewall"
+
+  local output="$runtime/golden-output.log"
+  compose logs --no-color receiver > "$output"
+  python3 "$repo_root/tests/golden/verify.py" --logs "$output"
+}
+
 main() {
   command -v docker >/dev/null 2>&1 || {
     echo "Docker is required. Enable Docker Desktop WSL integration for Ubuntu." >&2
@@ -375,10 +664,11 @@ main() {
   sleep 5
 
   test_initial_collection
+  test_canonical_normalization
+  test_structured_deadletter_routing
+  test_mapping_explosion_guard
   test_multiline
   test_rotation
-  test_restart_offsets
-  test_buffer_recovery
 
   test_syslog_udp
   test_syslog_tcp
@@ -387,6 +677,10 @@ main() {
   test_asus_firewall_parsing
   test_zeek_collection
   test_suricata_collection
+  test_restart_offsets
+  test_cross_source_correlation
+  test_golden_parser_outputs
+  test_buffer_recovery
 
   echo "PASS: all integration tests completed"
 }
