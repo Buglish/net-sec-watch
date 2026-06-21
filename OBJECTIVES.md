@@ -188,10 +188,10 @@ recoverable using a self-hosted OpenSearch cluster.
 - [x] Define index templates and explicit field mappings.
 - [x] Define data streams by log class and environment.
 - [x] Configure rollover based on age and size.
-- [ ] Configure hot, warm, archive, and deletion policies as required.
-- [ ] Configure replica counts and disk watermarks.
-- [ ] Add a dead-letter data stream.
-- [ ] Add snapshot repository configuration.
+- [x] Configure hot, warm, archive, and deletion policies as required.
+- [x] Configure replica counts and disk watermarks.
+- [x] Add a dead-letter data stream.
+- [x] Add snapshot repository configuration.
 - [ ] Test snapshot creation and restoration.
 - [ ] Measure raw-to-indexed storage expansion using representative logs.
 - [ ] Document capacity formulas and scaling thresholds.

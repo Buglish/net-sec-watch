@@ -24,6 +24,18 @@ grep -Fq 'source: opensearch-data' <<<"$compose_config" || {
   echo "OpenSearch persistent data volume is missing." >&2
   exit 1
 }
+grep -Fq 'path.repo: /usr/share/opensearch/snapshots' <<<"$compose_config" || {
+  echo "OpenSearch snapshot path allow-list is missing." >&2
+  exit 1
+}
+grep -Fq 'source: opensearch-snapshots' <<<"$compose_config" || {
+  echo "OpenSearch snapshot volume is missing." >&2
+  exit 1
+}
+grep -Fq 'opensearch-snapshot-init:' <<<"$compose_config" || {
+  echo "OpenSearch snapshot volume initializer is missing." >&2
+  exit 1
+}
 
 echo "OpenSearch development Compose configuration is valid."
 
@@ -62,13 +74,18 @@ grep -Fq 'tls                  On' \
   echo "TLS is not enabled in the Fluent Bit OpenSearch output." >&2
   exit 1
 }
-for stream in application system network pipeline; do
+for stream in application system network dead-letter; do
   grep -Fq "Index                net-sec-watch-${stream}-\${DEPLOYMENT_ENVIRONMENT}" \
     config/fluent-bit.opensearch.conf.example || {
     echo "Missing OpenSearch data-stream route for class: $stream" >&2
     exit 1
   }
 done
+grep -A4 -F 'Match        net.syslog.deadletter' config/fluent-bit.conf |
+  grep -Fq 'pipeline.deadletter' || {
+  echo "Malformed syslog is not retagged for the dead-letter stream." >&2
+  exit 1
+}
 write_operation_count="$(
   grep -Fc 'Write_Operation      create' \
     config/fluent-bit.opensearch.conf.example
@@ -110,6 +127,16 @@ rollover = json.loads(
         encoding="utf-8"
     )
 )
+cluster_settings = json.loads(
+    Path("config/opensearch/cluster-settings-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
+snapshot_repository = json.loads(
+    Path("config/opensearch/snapshot-repository-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
 mapping = template["template"]["mappings"]
 settings = template["template"]["settings"]
 
@@ -127,7 +154,7 @@ assert mapping["dynamic"] is False
 assert mapping["date_detection"] is False
 assert template["data_stream"] == {}
 assert template["index_patterns"] == ["net-sec-watch-*-*"]
-assert template["version"] == 2
+assert template["version"] == 3
 assert mapping["properties"]["@timestamp"]["type"] == "date"
 assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
 assert mapping["properties"]["message"]["type"] == "text"
@@ -141,7 +168,25 @@ assert settings["index.mapping.depth.limit"] == policy[
 assert settings["index.mapping.field_name_length.limit"] == policy[
     "opensearch_defaults"
 ]["index.mapping.field_name_length.limit"]
+assert settings["index.number_of_replicas"] == 0
+assert settings["index.auto_expand_replicas"] == "0-1"
 assert template["_meta"]["schema_version"] == "1.0.0"
+
+persistent = cluster_settings["persistent"]
+assert persistent["cluster.routing.allocation.disk.threshold_enabled"] is True
+assert persistent["cluster.routing.allocation.disk.watermark.low"] == "75%"
+assert persistent["cluster.routing.allocation.disk.watermark.high"] == "85%"
+assert persistent[
+    "cluster.routing.allocation.disk.watermark.flood_stage"
+] == "90%"
+assert persistent["cluster.info.update.interval"] == "30s"
+assert snapshot_repository == {
+    "type": "fs",
+    "settings": {
+        "location": "/usr/share/opensearch/snapshots/net-sec-watch",
+        "compress": True,
+    },
+}
 
 rollover_policy = rollover["policy"]
 assert rollover_policy["default_state"] == "hot"
@@ -150,9 +195,27 @@ assert rollover_policy["ism_template"]["index_patterns"] == [
 ]
 assert rollover_policy["ism_template"]["priority"] == 200
 rollover_action = rollover_policy["states"][0]["actions"][0]["rollover"]
+states = {state["name"]: state for state in rollover_policy["states"]}
+assert set(states) == {"hot", "warm", "archive", "delete"}
 assert rollover_action["min_index_age"] == "1d"
 assert rollover_action["min_size"] == "20gb"
+assert states["hot"]["transitions"] == [
+    {"state_name": "warm", "conditions": {"min_index_age": "7d"}}
+]
+assert states["warm"]["actions"] == [
+    {"force_merge": {"max_num_segments": 1}}
+]
+assert states["warm"]["transitions"] == [
+    {"state_name": "archive", "conditions": {"min_index_age": "30d"}}
+]
+assert states["archive"]["actions"] == [{"read_only": {}}]
+assert states["archive"]["transitions"] == [
+    {"state_name": "delete", "conditions": {"min_index_age": "90d"}}
+]
+assert states["delete"]["actions"] == [{"delete": {}}]
 
 print("OpenSearch explicit mapping contract is valid.")
-print("OpenSearch age-and-size rollover policy is valid.")
+print("OpenSearch hot-warm-archive-delete lifecycle policy is valid.")
+print("OpenSearch replica and disk watermark configuration is valid.")
+print("OpenSearch filesystem snapshot repository configuration is valid.")
 PY

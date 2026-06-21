@@ -69,6 +69,12 @@ printf '<134>%s stream-router data-stream-test: network stream marker\n' \
   "$(date '+%b %d %H:%M:%S')" |
   nc -u -w1 127.0.0.1 15141
 
+dead_letter_marker="DeadLetterRoute001"
+printf '<134>%s  deadletter[1234]: %s\n' \
+  "$(date '+%b %e %H:%M:%S')" \
+  "$dead_letter_marker" |
+  nc -u -w1 127.0.0.1 15141
+
 template="$(
   curl --fail-with-body --insecure --silent --show-error \
     --user "$credentials" \
@@ -78,11 +84,59 @@ python3 -c '
 import json, sys
 template = json.load(sys.stdin)["index_templates"][0]["index_template"]
 mapping = template["template"]["mappings"]
+settings = template["template"]["settings"]
 assert "data_stream" in template
 assert mapping["dynamic"] is False
 assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
 assert mapping["properties"]["event"]["properties"]["observed"]["type"] == "date"
+index_settings = settings.get("index", settings)
+assert index_settings["number_of_replicas"] == "0"
+assert index_settings["auto_expand_replicas"] == "0-1"
 ' <<<"$template"
+
+cluster_settings="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_cluster/settings?flat_settings=true"
+)"
+python3 -c '
+import json, sys
+persistent = json.load(sys.stdin)["persistent"]
+assert persistent["cluster.routing.allocation.disk.threshold_enabled"] == "true"
+assert persistent["cluster.routing.allocation.disk.watermark.low"] == "75%"
+assert persistent["cluster.routing.allocation.disk.watermark.high"] == "85%"
+assert persistent[
+    "cluster.routing.allocation.disk.watermark.flood_stage"
+] == "90%"
+assert persistent["cluster.info.update.interval"] == "30s"
+' <<<"$cluster_settings"
+
+snapshot_repository="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_snapshot/net-sec-watch-local"
+)"
+python3 -c '
+import json, sys
+repository = json.load(sys.stdin)["net-sec-watch-local"]
+assert repository["type"] == "fs"
+assert repository["settings"]["location"] == (
+    "/usr/share/opensearch/snapshots/net-sec-watch"
+)
+assert repository["settings"]["compress"] == "true"
+' <<<"$snapshot_repository"
+
+snapshot_verification="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    --request POST \
+    "https://127.0.0.1:${port}/_snapshot/net-sec-watch-local/_verify"
+)"
+python3 -c '
+import json, sys
+nodes = json.load(sys.stdin)["nodes"]
+assert nodes
+' <<<"$snapshot_verification"
 
 rollover_policy="$(
   curl --fail --insecure --silent \
@@ -97,9 +151,34 @@ ism_templates = policy["ism_template"]
 if isinstance(ism_templates, dict):
     ism_templates = [ism_templates]
 assert ism_templates[0]["index_patterns"] == [".ds-net-sec-watch-*-*"]
-action = policy["states"][0]["actions"][0]["rollover"]
-assert action["min_index_age"] == "1d"
-assert action["min_size"] == "20gb"
+states = {state["name"]: state for state in policy["states"]}
+assert set(states) == {"hot", "warm", "archive", "delete"}
+
+def get_action(state_name, action_name):
+    return next(
+        item[action_name]
+        for item in states[state_name]["actions"]
+        if action_name in item
+    )
+
+rollover_action = get_action("hot", "rollover")
+assert rollover_action["min_index_age"] == "1d"
+assert rollover_action["min_size"] == "20gb"
+assert states["hot"]["transitions"][0] == {
+    "state_name": "warm",
+    "conditions": {"min_index_age": "7d"},
+}
+assert get_action("warm", "force_merge")["max_num_segments"] == 1
+assert states["warm"]["transitions"][0] == {
+    "state_name": "archive",
+    "conditions": {"min_index_age": "30d"},
+}
+assert get_action("archive", "read_only") == {}
+assert states["archive"]["transitions"][0] == {
+    "state_name": "delete",
+    "conditions": {"min_index_age": "90d"},
+}
+assert get_action("delete", "delete") == {}
 ' <<<"$rollover_policy"
 
 # Re-run bootstrap against the same cluster to exercise idempotent policy
@@ -128,6 +207,7 @@ required_streams=(
   net-sec-watch-application-development
   net-sec-watch-system-development
   net-sec-watch-network-development
+  net-sec-watch-dead-letter-development
 )
 deadline=$((SECONDS + 90))
 while true; do
@@ -156,6 +236,72 @@ PY
   fi
   sleep 2
 done
+
+deadline=$((SECONDS + 60))
+dead_letter_event=""
+until [[ -n "$dead_letter_event" ]]; do
+  dead_letter_event="$(
+    curl --fail --insecure --silent \
+      --user "$credentials" \
+      "https://127.0.0.1:${port}/net-sec-watch-dead-letter-development/_search?q=${dead_letter_marker}" |
+      python3 -c '
+import json, sys
+hits = json.load(sys.stdin)["hits"]["hits"]
+print(json.dumps(hits[0]["_source"]) if hits else "")
+' 2>/dev/null || true
+  )"
+  if ((SECONDS >= deadline)); then
+    compose logs --no-color fluent-bit >&2 || true
+    echo "FAIL: malformed event did not reach the dead-letter stream." >&2
+    exit 1
+  fi
+  sleep 2
+done
+python3 - "$dead_letter_event" "$dead_letter_marker" <<'PY'
+import json, sys
+event = json.loads(sys.argv[1])
+assert sys.argv[2] in event["event.original"]
+assert event["event.dataset"] == "pipeline.deadletter"
+assert event["event.kind"] == "pipeline_error"
+assert event["error.type"] == "parsing_error"
+assert event["error.stage"] == "syslog_input"
+assert event["error.source_dataset"] == "syslog"
+PY
+
+network_copy_count="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/net-sec-watch-network-development/_count?q=${dead_letter_marker}" |
+    python3 -c 'import json,sys; print(json.load(sys.stdin)["count"])'
+)"
+[[ "$network_copy_count" -eq 0 ]] || {
+  echo "FAIL: malformed event was duplicated into the network stream." >&2
+  exit 1
+}
+
+backing_index="$(
+  python3 - "$streams" <<'PY'
+import json, sys
+streams = json.loads(sys.argv[1])["data_streams"]
+application = next(
+    stream
+    for stream in streams
+    if stream["name"] == "net-sec-watch-application-development"
+)
+print(application["indices"][-1]["index_name"])
+PY
+)"
+backing_settings="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/${backing_index}/_settings?flat_settings=true"
+)"
+python3 - "$backing_settings" "$backing_index" <<'PY'
+import json, sys
+settings = json.loads(sys.argv[1])[sys.argv[2]]["settings"]
+assert settings["index.number_of_replicas"] == "0"
+assert settings["index.auto_expand_replicas"] == "0-1"
+PY
 
 curl --fail --insecure --silent \
   --user "$credentials" \
@@ -221,4 +367,7 @@ assert set(result["conditions"]) == {
 
 echo "PASS: authenticated TLS ingestion indexed $count events into class data streams"
 echo "PASS: explicit mappings installed and dynamic fields stayed unindexed"
-echo "PASS: age-and-size rollover policy and data-stream rollover are valid"
+echo "PASS: hot-warm-archive-delete lifecycle and data-stream rollover are valid"
+echo "PASS: adaptive replicas and disk allocation watermarks are active"
+echo "PASS: malformed events are isolated in the dedicated dead-letter stream"
+echo "PASS: filesystem snapshot repository is registered and writable"

@@ -16,6 +16,15 @@ are retagged as `pipeline.deadletter`, allowing the Phase 4 storage layer to
 write them to a separate data stream without duplicating the failed record in
 the normal source stream.
 
+Phase 4 stores these records in:
+
+`net-sec-watch-dead-letter-<environment>`
+
+Malformed syslog is retagged after canonical error enrichment so it does not
+remain under `net.*` and cannot be duplicated into the normal network stream.
+The dead-letter stream uses the same explicit mappings, rollover, lifecycle,
+replica, and disk-protection settings as other Net Sec Watch data streams.
+
 Supported dead-letter detection currently covers application JSON, Docker JSON,
 Zeek JSON, Suricata EVE JSON, and malformed syslog. Parser failures must never
 copy arbitrary source content into field names or into `error.message`.

@@ -31,6 +31,7 @@ services:
     environment:
       discovery.type: single-node
       bootstrap.memory_lock: "true"
+      path.repo: /usr/share/opensearch/snapshots
       OPENSEARCH_JAVA_OPTS: ${OPENSEARCH_JAVA_OPTS:--Xms512m -Xmx512m}
       DISABLE_INSTALL_DEMO_CONFIG: "true"
       DISABLE_SECURITY_PLUGIN: "true"
@@ -56,6 +57,22 @@ services:
         hard: 65536
     volumes:
       - opensearch-data:/usr/share/opensearch/data
+      - opensearch-snapshots:/usr/share/opensearch/snapshots
+    depends_on:
+      opensearch-snapshot-init:
+        condition: service_completed_successfully
+
+  opensearch-snapshot-init:
+    image: ${OPENSEARCH_IMAGE:-opensearchproject/opensearch:3.7.0}
+    profiles: ["opensearch"]
+    user: "0"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        chown -R 1000:1000 /usr/share/opensearch/snapshots
+    restart: "no"
+    volumes:
+      - opensearch-snapshots:/usr/share/opensearch/snapshots
 
   zeek:
     image: ${ZEEK_IMAGE:-zeek/zeek:lts}
@@ -138,6 +155,7 @@ services:
 volumes:
   fluent-bit-state:
   opensearch-data:
+  opensearch-snapshots:
   grype-db:
   zeek-logs:
   suricata-logs:

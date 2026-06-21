@@ -1,0 +1,9 @@
+{
+  "persistent": {
+    "cluster.routing.allocation.disk.threshold_enabled": true,
+    "cluster.routing.allocation.disk.watermark.low": "75%",
+    "cluster.routing.allocation.disk.watermark.high": "85%",
+    "cluster.routing.allocation.disk.watermark.flood_stage": "90%",
+    "cluster.info.update.interval": "30s"
+  }
+}

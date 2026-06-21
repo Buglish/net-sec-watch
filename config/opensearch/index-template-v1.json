@@ -3,7 +3,7 @@
     "net-sec-watch-*-*"
   ],
   "priority": 200,
-  "version": 2,
+  "version": 3,
   "data_stream": {},
   "_meta": {
     "description": "Net Sec Watch canonical event data-stream mappings",
@@ -13,6 +13,7 @@
     "settings": {
       "index.number_of_shards": 1,
       "index.number_of_replicas": 0,
+      "index.auto_expand_replicas": "0-1",
       "index.mapping.total_fields.limit": 1000,
       "index.mapping.depth.limit": 20,
       "index.mapping.field_name_length.limit": 128

@@ -103,7 +103,7 @@
     Match                pipeline.*
     Host                 opensearch
     Port                 9200
-    Index                net-sec-watch-pipeline-${DEPLOYMENT_ENVIRONMENT}
+    Index                net-sec-watch-dead-letter-${DEPLOYMENT_ENVIRONMENT}
     HTTP_User            ${OPENSEARCH_USERNAME}
     HTTP_Passwd          ${OPENSEARCH_PASSWORD}
     Suppress_Type_Name   On

@@ -23,6 +23,29 @@ retains it. To intentionally delete development data, use:
 docker compose --env-file .env --profile opensearch down --volumes
 ```
 
+## Snapshot repository
+
+The OpenSearch profile provisions a separate `opensearch-snapshots` Docker
+volume and allows it through `path.repo`. Secure bootstrap registers the
+filesystem repository as `net-sec-watch-local` at:
+
+`/usr/share/opensearch/snapshots/net-sec-watch`
+
+Repository registration verifies that every eligible OpenSearch node can write
+to and read from the shared path. Check it manually with:
+
+```bash
+credentials="admin:<password-from-.env>"
+curl --fail --insecure --user "$credentials" \
+  --request POST \
+  https://127.0.0.1:9200/_snapshot/net-sec-watch-local/_verify
+```
+
+The snapshot volume is separate from live index data but remains on the same
+Docker host. For production disaster recovery, use supported remote storage or
+replicate snapshot files off-host. Snapshot creation and restoration are
+tested in the following Phase 4 objective.
+
 ## Development security boundary
 
 This first Phase 4 profile follows the official single-node Docker pattern and
