@@ -1,0 +1,114 @@
+{
+  "index_patterns": [
+    "net-sec-watch-model-metadata"
+  ],
+  "priority": 400,
+  "version": 1,
+  "_meta": {
+    "description": "Phase 11 machine-learning model registry metadata",
+    "schema_version": "1.0.0"
+  },
+  "template": {
+    "settings": {
+      "index.number_of_shards": 1,
+      "index.number_of_replicas": 0,
+      "index.auto_expand_replicas": "0-1",
+      "index.mapping.total_fields.limit": 256
+    },
+    "mappings": {
+      "dynamic": false,
+      "date_detection": false,
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "model": {
+          "properties": {
+            "id": {
+              "type": "keyword"
+            },
+            "version": {
+              "type": "keyword"
+            },
+            "name": {
+              "type": "keyword"
+            },
+            "task": {
+              "type": "keyword"
+            },
+            "framework": {
+              "type": "keyword"
+            },
+            "status": {
+              "type": "keyword"
+            },
+            "artifact_uri": {
+              "type": "keyword",
+              "ignore_above": 2048
+            },
+            "artifact_sha256": {
+              "type": "keyword"
+            },
+            "features": {
+              "type": "keyword"
+            },
+            "owner": {
+              "type": "keyword"
+            },
+            "trained_at": {
+              "type": "date"
+            },
+            "registered_at": {
+              "type": "date"
+            },
+            "notes": {
+              "type": "text"
+            }
+          }
+        },
+        "training": {
+          "properties": {
+            "dataset": {
+              "type": "keyword"
+            },
+            "schema_version": {
+              "type": "keyword"
+            },
+            "event_count": {
+              "type": "long"
+            },
+            "time_range": {
+              "properties": {
+                "start": {
+                  "type": "date"
+                },
+                "end": {
+                  "type": "date"
+                }
+              }
+            }
+          }
+        },
+        "metrics": {
+          "properties": {
+            "precision": {
+              "type": "float"
+            },
+            "recall": {
+              "type": "float"
+            },
+            "f1": {
+              "type": "float"
+            },
+            "roc_auc": {
+              "type": "float"
+            },
+            "false_positive_rate": {
+              "type": "float"
+            }
+          }
+        }
+      }
+    }
+  }
+}

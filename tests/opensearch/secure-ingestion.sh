@@ -94,6 +94,96 @@ assert index_settings["number_of_replicas"] == "0"
 assert index_settings["auto_expand_replicas"] == "0-1"
 ' <<<"$template"
 
+predictions_template="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_index_template/net-sec-watch-predictions-v1"
+)"
+model_template="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_index_template/net-sec-watch-model-metadata-v1"
+)"
+python3 - "$predictions_template" "$model_template" <<'PY'
+import json, sys
+
+prediction = json.loads(sys.argv[1])["index_templates"][0]["index_template"]
+model = json.loads(sys.argv[2])["index_templates"][0]["index_template"]
+assert "data_stream" in prediction
+assert prediction["priority"] == 300
+assert "data_stream" not in model
+assert model["priority"] == 400
+PY
+
+model_stream_lookup="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_data_stream/net-sec-watch-model-metadata"
+)"
+python3 -c '
+import json, sys
+assert json.load(sys.stdin)["data_streams"] == []
+' <<<"$model_stream_lookup"
+
+curl --fail --insecure --silent \
+  --user "$credentials" \
+  --request PUT \
+  "https://127.0.0.1:${port}/_data_stream/net-sec-watch-predictions-development" \
+  >/dev/null
+
+curl --fail --insecure --silent \
+  --user "$credentials" \
+  --header 'Content-Type: application/json' \
+  --request PUT \
+  --data '{"@timestamp":"2026-06-21T01:00:00Z","record":{"kind":"prediction"},"prediction":{"id":"prediction-test-001","source_event_id":"event-test-001","source_index":"net-sec-watch-network-development","classification":"suspicious_network_activity","threat_level":"medium","score":0.82,"confidence":0.91,"model_id":"network-classifier","model_version":"1.0.0","created_at":"2026-06-21T01:00:00Z","explanation":"Unusual destination and port combination"},"deployment":{"environment":{"name":"development"}}}' \
+  "https://127.0.0.1:${port}/net-sec-watch-predictions-development/_create/prediction-test-001?refresh=true" \
+  >/dev/null
+
+curl --fail --insecure --silent \
+  --user "$credentials" \
+  --header 'Content-Type: application/json' \
+  --request PUT \
+  --data '{"@timestamp":"2026-06-21T01:05:00Z","record":{"kind":"feedback"},"feedback":{"id":"feedback-test-001","prediction_id":"prediction-test-001","analyst_id":"analyst-test","verdict":"true_positive","disposition":"confirmed","comment":"Confirmed during integration verification","created_at":"2026-06-21T01:05:00Z"},"deployment":{"environment":{"name":"development"}}}' \
+  "https://127.0.0.1:${port}/net-sec-watch-predictions-development/_create/feedback-test-001?refresh=true" \
+  >/dev/null
+
+curl --fail --insecure --silent \
+  --user "$credentials" \
+  --header 'Content-Type: application/json' \
+  --request PUT \
+  --data '{"@timestamp":"2026-06-21T00:30:00Z","model":{"id":"network-classifier","version":"1.0.0","name":"Network threat classifier","task":"event_classification","framework":"scikit-learn","status":"candidate","artifact_uri":"models/network-classifier/1.0.0/model.bin","artifact_sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","features":["destination.port","network.transport","event.action"],"owner":"secops-ml","trained_at":"2026-06-20T22:00:00Z","registered_at":"2026-06-21T00:30:00Z","notes":"Integration metadata record"},"training":{"dataset":"net-sec-watch-network-training-v1","schema_version":"1.0.0","event_count":12000,"time_range":{"start":"2026-05-01T00:00:00Z","end":"2026-05-31T23:59:59Z"}},"metrics":{"precision":0.91,"recall":0.88,"f1":0.895,"roc_auc":0.94,"false_positive_rate":0.04}}' \
+  "https://127.0.0.1:${port}/net-sec-watch-model-metadata/_doc/network-classifier-1.0.0?refresh=true" \
+  >/dev/null
+
+prediction_search="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/net-sec-watch-predictions-development/_search?q=prediction.id:prediction-test-001"
+)"
+feedback_search="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/net-sec-watch-predictions-development/_search?q=feedback.prediction_id:prediction-test-001"
+)"
+model_search="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/net-sec-watch-model-metadata/_search?q=model.id:network-classifier"
+)"
+python3 - "$prediction_search" "$feedback_search" "$model_search" <<'PY'
+import json, sys
+
+prediction = json.loads(sys.argv[1])["hits"]["hits"][0]["_source"]
+feedback = json.loads(sys.argv[2])["hits"]["hits"][0]["_source"]
+model = json.loads(sys.argv[3])["hits"]["hits"][0]["_source"]
+assert prediction["record"]["kind"] == "prediction"
+assert prediction["prediction"]["score"] == 0.82
+assert feedback["record"]["kind"] == "feedback"
+assert feedback["feedback"]["verdict"] == "true_positive"
+assert model["model"]["version"] == "1.0.0"
+assert model["metrics"]["f1"] == 0.895
+PY
+
 cluster_settings="$(
   curl --fail --insecure --silent \
     --user "$credentials" \
@@ -371,3 +461,4 @@ echo "PASS: hot-warm-archive-delete lifecycle and data-stream rollover are valid
 echo "PASS: adaptive replicas and disk allocation watermarks are active"
 echo "PASS: malformed events are isolated in the dedicated dead-letter stream"
 echo "PASS: filesystem snapshot repository is registered and writable"
+echo "PASS: prediction, analyst feedback, and model registry storage are queryable"

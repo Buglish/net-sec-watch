@@ -137,6 +137,16 @@ snapshot_repository = json.loads(
         encoding="utf-8"
     )
 )
+predictions_template = json.loads(
+    Path("config/opensearch/predictions-template-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
+model_template = json.loads(
+    Path("config/opensearch/model-metadata-template-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
 mapping = template["template"]["mappings"]
 settings = template["template"]["settings"]
 
@@ -188,6 +198,36 @@ assert snapshot_repository == {
     },
 }
 
+assert predictions_template["index_patterns"] == [
+    "net-sec-watch-predictions-*"
+]
+assert predictions_template["priority"] > template["priority"]
+assert predictions_template["data_stream"] == {}
+prediction_properties = predictions_template["template"]["mappings"][
+    "properties"
+]
+assert prediction_properties["prediction"]["properties"]["score"]["type"] == (
+    "float"
+)
+assert prediction_properties["feedback"]["properties"]["verdict"]["type"] == (
+    "keyword"
+)
+assert prediction_properties["record"]["properties"]["kind"]["type"] == (
+    "keyword"
+)
+
+assert model_template["index_patterns"] == ["net-sec-watch-model-metadata"]
+assert model_template["priority"] > predictions_template["priority"]
+assert "data_stream" not in model_template
+model_properties = model_template["template"]["mappings"]["properties"]
+assert model_properties["model"]["properties"]["artifact_sha256"]["type"] == (
+    "keyword"
+)
+assert model_properties["metrics"]["properties"]["f1"]["type"] == "float"
+assert model_properties["training"]["properties"]["event_count"]["type"] == (
+    "long"
+)
+
 rollover_policy = rollover["policy"]
 assert rollover_policy["default_state"] == "hot"
 assert rollover_policy["ism_template"]["index_patterns"] == [
@@ -218,4 +258,5 @@ print("OpenSearch explicit mapping contract is valid.")
 print("OpenSearch hot-warm-archive-delete lifecycle policy is valid.")
 print("OpenSearch replica and disk watermark configuration is valid.")
 print("OpenSearch filesystem snapshot repository configuration is valid.")
+print("OpenSearch Phase 11 prediction and model registry templates are valid.")
 PY

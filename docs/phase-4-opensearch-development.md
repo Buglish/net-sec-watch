@@ -44,7 +44,32 @@ curl --fail --insecure --user "$credentials" \
 The snapshot volume is separate from live index data but remains on the same
 Docker host. For production disaster recovery, use supported remote storage or
 replicate snapshot files off-host. Snapshot creation and restoration are
-tested in the following Phase 4 objective.
+tested with:
+
+```bash
+make test-opensearch-restore
+```
+
+The test creates a data stream and marker event, writes a completed snapshot,
+stops the test deployment, deletes only its live `opensearch-data` volume, and
+starts a clean cluster while preserving the snapshot volume. It then restores
+the data stream and verifies that the marker is searchable. The test uses its
+own Compose project and removes all test volumes when complete.
+
+## Retention lifecycle verification
+
+The production ISM policy rolls streams over after 1 day or 20 GB and deletes
+data after 90 days. Verify the same automatic rollover and deletion actions in
+an isolated, accelerated test cluster with:
+
+```bash
+make test-opensearch-retention
+```
+
+The test takes approximately five minutes because it waits for real ISM
+scheduler cycles. It does not call the rollover or index deletion APIs.
+See [Automatic retention lifecycle verification](phase-4-retention-verification.md)
+for the test design and baseline result.
 
 ## Development security boundary
 

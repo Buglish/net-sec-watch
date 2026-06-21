@@ -33,6 +33,8 @@ done < <(find scripts tests -type f -name '*.sh' -print | sort)
 ./scripts/verify-objective-2.sh
 ./tests/telemetry-policy/run.sh
 python3 ./tests/schema/test-schema-contract.py
+python3 ./tests/opensearch/test-capacity-calculator.py
+python3 ./tests/opensearch/searchability-slo.py --help >/dev/null
 ./tests/opensearch/check-config.sh
 
 if command -v shellcheck >/dev/null 2>&1; then
