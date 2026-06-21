@@ -16,15 +16,98 @@
     Remove  environment
     Remove  level
 
+# Route stable tag families into low-cardinality data streams. Source detail
+# remains available in event.dataset inside each document.
 [OUTPUT]
     Name                 opensearch
-    Match                *
+    Match                file.*
     Host                 opensearch
     Port                 9200
-    Index                net-sec-watch-development
+    Index                net-sec-watch-application-${DEPLOYMENT_ENVIRONMENT}
     HTTP_User            ${OPENSEARCH_USERNAME}
     HTTP_Passwd          ${OPENSEARCH_PASSWORD}
     Suppress_Type_Name   On
+    Write_Operation      create
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off
+
+[OUTPUT]
+    Name                 opensearch
+    Match                container.*
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-application-${DEPLOYMENT_ENVIRONMENT}
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Write_Operation      create
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off
+
+[OUTPUT]
+    Name                 opensearch
+    Match                host.*
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-system-${DEPLOYMENT_ENVIRONMENT}
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Write_Operation      create
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off
+
+[OUTPUT]
+    Name                 opensearch
+    Match                sensor.*
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-network-${DEPLOYMENT_ENVIRONMENT}
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Write_Operation      create
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off
+
+[OUTPUT]
+    Name                 opensearch
+    Match                net.*
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-network-${DEPLOYMENT_ENVIRONMENT}
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Write_Operation      create
+    Generate_ID          On
+    Retry_Limit          False
+    storage.total_limit_size 100M
+    tls                  On
+    tls.verify           Off
+
+[OUTPUT]
+    Name                 opensearch
+    Match                pipeline.*
+    Host                 opensearch
+    Port                 9200
+    Index                net-sec-watch-pipeline-${DEPLOYMENT_ENVIRONMENT}
+    HTTP_User            ${OPENSEARCH_USERNAME}
+    HTTP_Passwd          ${OPENSEARCH_PASSWORD}
+    Suppress_Type_Name   On
+    Write_Operation      create
     Generate_ID          On
     Retry_Limit          False
     storage.total_limit_size 100M

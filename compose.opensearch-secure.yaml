@@ -24,6 +24,7 @@ services:
     environment:
       OPENSEARCH_USERNAME: ${OPENSEARCH_USERNAME:-admin}
       OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+      DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT:-development}
 
   opensearch-bootstrap:
     image: ${CURL_IMAGE:-curlimages/curl:8.17.0}

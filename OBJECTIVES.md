@@ -186,7 +186,7 @@ recoverable using a self-hosted OpenSearch cluster.
 - [x] Add authenticated TLS ingestion from Fluent Bit to OpenSearch.
 - [x] Store credentials using ignored environment files or mounted secrets.
 - [x] Define index templates and explicit field mappings.
-- [ ] Define data streams by log class and environment.
+- [x] Define data streams by log class and environment.
 - [ ] Configure rollover based on age and size.
 - [ ] Configure hot, warm, archive, and deletion policies as required.
 - [ ] Configure replica counts and disk watermarks.

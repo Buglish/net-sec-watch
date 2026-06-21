@@ -54,6 +54,21 @@ status="$(
   exit 1
 }
 
+deadline=$((SECONDS + 30))
+until curl --fail --silent \
+  http://127.0.0.1:12021/api/v1/health >/dev/null; do
+  if ((SECONDS >= deadline)); then
+    compose logs --no-color fluent-bit >&2 || true
+    echo "FAIL: Fluent Bit did not become ready for test input." >&2
+    exit 1
+  fi
+  sleep 1
+done
+
+printf '<134>%s stream-router data-stream-test: network stream marker\n' \
+  "$(date '+%b %d %H:%M:%S')" |
+  nc -u -w1 127.0.0.1 15141
+
 template="$(
   curl --fail --insecure --silent \
     --user "$credentials" \
@@ -63,6 +78,7 @@ python3 -c '
 import json, sys
 template = json.load(sys.stdin)["index_templates"][0]["index_template"]
 mapping = template["template"]["mappings"]
+assert "data_stream" in template
 assert mapping["dynamic"] is False
 assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
 assert mapping["properties"]["event"]["properties"]["observed"]["type"] == "date"
@@ -79,25 +95,58 @@ until ((count > 0)); do
   count="$(
     curl --fail --insecure --silent \
       --user "$credentials" \
-      "https://127.0.0.1:${port}/net-sec-watch-development/_count" |
+      "https://127.0.0.1:${port}/net-sec-watch-*-development/_count" |
       python3 -c 'import json,sys; print(json.load(sys.stdin).get("count", 0))' \
       2>/dev/null || echo 0
   )"
   sleep 2
 done
 
+required_streams=(
+  net-sec-watch-application-development
+  net-sec-watch-system-development
+  net-sec-watch-network-development
+)
+deadline=$((SECONDS + 90))
+while true; do
+  streams="$(
+    curl --fail --insecure --silent \
+      --user "$credentials" \
+      "https://127.0.0.1:${port}/_data_stream/net-sec-watch-*-development"
+  )"
+  if python3 - "$streams" "${required_streams[@]}" <<'PY'
+import json, sys
+names = {
+    stream["name"]
+    for stream in json.loads(sys.argv[1])["data_streams"]
+}
+required = set(sys.argv[2:])
+raise SystemExit(0 if required <= names else 1)
+PY
+  then
+    break
+  fi
+  if ((SECONDS >= deadline)); then
+    compose logs --no-color fluent-bit >&2 || true
+    echo "Observed data streams: $streams" >&2
+    echo "FAIL: expected log-class data streams were not created." >&2
+    exit 1
+  fi
+  sleep 2
+done
+
 curl --fail --insecure --silent \
   --user "$credentials" \
   --header 'Content-Type: application/json' \
-  --request POST \
+  --request PUT \
   --data '{"@timestamp":"2026-06-20T00:00:00Z","event":{"dataset":"mapping-test"},"unknown_attacker_field":"retained"}' \
-  "https://127.0.0.1:${port}/net-sec-watch-development/_doc?refresh=true" \
+  "https://127.0.0.1:${port}/net-sec-watch-application-development/_create/mapping-test?refresh=true" \
   >/dev/null
 
 source_value="$(
   curl --fail --insecure --silent \
     --user "$credentials" \
-    "https://127.0.0.1:${port}/net-sec-watch-development/_search?q=event.dataset:mapping-test" |
+    "https://127.0.0.1:${port}/net-sec-watch-application-development/_search?q=event.dataset:mapping-test" |
     python3 -c 'import json,sys; print(json.load(sys.stdin)["hits"]["hits"][0]["_source"]["unknown_attacker_field"])'
 )"
 [[ "$source_value" == "retained" ]] || {
@@ -108,12 +157,12 @@ source_value="$(
 field_caps="$(
   curl --fail --insecure --silent \
     --user "$credentials" \
-    "https://127.0.0.1:${port}/net-sec-watch-development/_field_caps?fields=unknown_attacker_field"
+    "https://127.0.0.1:${port}/net-sec-watch-application-development/_field_caps?fields=unknown_attacker_field"
 )"
 python3 -c '
 import json, sys
 assert "unknown_attacker_field" not in json.load(sys.stdin)["fields"]
 ' <<<"$field_caps"
 
-echo "PASS: authenticated TLS ingestion indexed $count events"
+echo "PASS: authenticated TLS ingestion indexed $count events into class data streams"
 echo "PASS: explicit mappings installed and dynamic fields stayed unindexed"
