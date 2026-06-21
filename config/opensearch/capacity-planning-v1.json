@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "measurement": {
+    "average_raw_bytes_per_event": 560.99,
+    "measured_primary_store_ratio": 0.6057,
+    "ratio_safety_multiplier": 1.5,
+    "minimum_planning_ratio": 1.0
+  },
+  "storage": {
+    "target_disk_utilization": 0.7,
+    "rollover_size_gb": 20,
+    "default_retention_days": 90,
+    "default_replicas": 1,
+    "default_snapshot_full_equivalents": 1.0
+  },
+  "topology": {
+    "default_active_streams": 5,
+    "maximum_shards_per_data_node": 600,
+    "minimum_production_data_nodes": 2
+  },
+  "thresholds": {
+    "disk_plan_percent": 70,
+    "disk_low_watermark_percent": 75,
+    "disk_high_watermark_percent": 85,
+    "disk_flood_stage_percent": 90,
+    "heap_scale_percent": 75,
+    "cpu_scale_percent": 70,
+    "searchable_within_seconds": 10,
+    "searchable_success_percent": 95
+  }
+}

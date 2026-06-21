@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -81,6 +81,24 @@ test-opensearch:
 
 test-opensearch-secure:
 	./tests/opensearch/secure-ingestion.sh
+
+test-opensearch-restore:
+	./tests/opensearch/snapshot-restore.sh
+
+test-opensearch-searchability:
+	./tests/opensearch/searchability-slo.sh
+
+test-opensearch-retention:
+	./tests/opensearch/retention-lifecycle.sh
+
+measure-opensearch-storage:
+	./tests/opensearch/storage-expansion.sh
+
+capacity-plan:
+	./scripts/calculate-capacity.py
+
+test-capacity-plan:
+	python3 ./tests/opensearch/test-capacity-calculator.py
 
 test-failover:
 	./tests/failover/run-failover.sh

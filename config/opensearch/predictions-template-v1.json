@@ -1,0 +1,109 @@
+{
+  "index_patterns": [
+    "net-sec-watch-predictions-*"
+  ],
+  "priority": 300,
+  "version": 1,
+  "data_stream": {},
+  "_meta": {
+    "description": "Phase 11 classification predictions and analyst feedback",
+    "schema_version": "1.0.0"
+  },
+  "template": {
+    "settings": {
+      "index.number_of_shards": 1,
+      "index.number_of_replicas": 0,
+      "index.auto_expand_replicas": "0-1",
+      "index.mapping.total_fields.limit": 256
+    },
+    "mappings": {
+      "dynamic": false,
+      "date_detection": false,
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "record": {
+          "properties": {
+            "kind": {
+              "type": "keyword"
+            }
+          }
+        },
+        "prediction": {
+          "properties": {
+            "id": {
+              "type": "keyword"
+            },
+            "source_event_id": {
+              "type": "keyword"
+            },
+            "source_index": {
+              "type": "keyword"
+            },
+            "classification": {
+              "type": "keyword"
+            },
+            "threat_level": {
+              "type": "keyword"
+            },
+            "score": {
+              "type": "float"
+            },
+            "confidence": {
+              "type": "float"
+            },
+            "model_id": {
+              "type": "keyword"
+            },
+            "model_version": {
+              "type": "keyword"
+            },
+            "created_at": {
+              "type": "date"
+            },
+            "explanation": {
+              "type": "text"
+            }
+          }
+        },
+        "feedback": {
+          "properties": {
+            "id": {
+              "type": "keyword"
+            },
+            "prediction_id": {
+              "type": "keyword"
+            },
+            "analyst_id": {
+              "type": "keyword"
+            },
+            "verdict": {
+              "type": "keyword"
+            },
+            "disposition": {
+              "type": "keyword"
+            },
+            "comment": {
+              "type": "text"
+            },
+            "created_at": {
+              "type": "date"
+            }
+          }
+        },
+        "deployment": {
+          "properties": {
+            "environment": {
+              "properties": {
+                "name": {
+                  "type": "keyword"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

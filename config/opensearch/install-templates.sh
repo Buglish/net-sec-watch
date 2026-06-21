@@ -3,6 +3,8 @@ set -eu
 
 endpoint="${OPENSEARCH_ENDPOINT:-https://opensearch:9200}"
 template="/opensearch-config/index-template-v1.json"
+predictions_template="/opensearch-config/predictions-template-v1.json"
+model_metadata_template="/opensearch-config/model-metadata-template-v1.json"
 policy="/opensearch-config/rollover-policy-v1.json"
 cluster_settings="/opensearch-config/cluster-settings-v1.json"
 snapshot_repository="/opensearch-config/snapshot-repository-v1.json"
@@ -97,3 +99,48 @@ curl --fail --insecure --silent --show-error \
 
 echo
 echo "Installed OpenSearch index template net-sec-watch-events-v1"
+
+curl --fail --insecure --silent --show-error \
+  --user "$credentials" \
+  --header "Content-Type: application/json" \
+  --request PUT \
+  --data-binary "@${predictions_template}" \
+  "${endpoint}/_index_template/net-sec-watch-predictions-v1"
+
+echo
+echo "Installed OpenSearch index template net-sec-watch-predictions-v1"
+
+curl --fail --insecure --silent --show-error \
+  --user "$credentials" \
+  --header "Content-Type: application/json" \
+  --request PUT \
+  --data-binary "@${model_metadata_template}" \
+  "${endpoint}/_index_template/net-sec-watch-model-metadata-v1"
+
+echo
+echo "Installed OpenSearch index template net-sec-watch-model-metadata-v1"
+
+model_index_status="$(
+  curl --insecure --silent \
+    --user "$credentials" \
+    --output /dev/null \
+    --write-out "%{http_code}" \
+    --head \
+    "${endpoint}/net-sec-watch-model-metadata"
+)"
+case "$model_index_status" in
+  200)
+    ;;
+  404)
+    curl --fail --insecure --silent --show-error \
+      --user "$credentials" \
+      --request PUT \
+      "${endpoint}/net-sec-watch-model-metadata"
+    echo
+    echo "Created OpenSearch index net-sec-watch-model-metadata"
+    ;;
+  *)
+    echo "Could not inspect model metadata index (HTTP ${model_index_status})." >&2
+    exit 1
+    ;;
+esac

@@ -12,7 +12,7 @@ evidence are complete.
 - [x] Phase 1 - File and workload log collection
 - [ ] Phase 2 - Network-device and syslog collection
 - [x] Phase 3 - Event normalization and data quality
-- [ ] Phase 4 - OpenSearch storage and lifecycle
+- [x] Phase 4 - OpenSearch storage and lifecycle
 - [ ] Phase 5 - Search, dashboards, and analyst experience
 - [ ] Phase 6 - Security, privacy, and access control
 - [ ] Phase 7 - Reliability, operations, and disaster recovery
@@ -192,19 +192,19 @@ recoverable using a self-hosted OpenSearch cluster.
 - [x] Configure replica counts and disk watermarks.
 - [x] Add a dead-letter data stream.
 - [x] Add snapshot repository configuration.
-- [ ] Test snapshot creation and restoration.
-- [ ] Measure raw-to-indexed storage expansion using representative logs.
-- [ ] Document capacity formulas and scaling thresholds.
-- [ ] Define a predictions data stream and a model-metadata index for Phase 11
+- [x] Test snapshot creation and restoration.
+- [x] Measure raw-to-indexed storage expansion using representative logs.
+- [x] Document capacity formulas and scaling thresholds.
+- [x] Define a predictions data stream and a model-metadata index for Phase 11
   classification write-back, model registry queries, and analyst feedback
   storage. These streams do not need to be populated until Phase 11 but must
   not conflict with existing index templates.
 
 ### Completion gate
 
-- [ ] At least 95% of accepted events are searchable within 10 seconds at normal load.
-- [ ] Retention policies roll over and delete test data automatically.
-- [ ] A snapshot restores successfully into a clean test environment.
+- [x] At least 95% of accepted events are searchable within 10 seconds at normal load.
+- [x] Retention policies roll over and delete test data automatically.
+- [x] A snapshot restores successfully into a clean test environment.
 
 ---
 
