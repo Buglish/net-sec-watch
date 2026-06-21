@@ -44,6 +44,10 @@ grep -Fq 'OPENSEARCH_PASSWORD:' <<<"$secure_config" || {
   echo "Fluent Bit does not receive its ignored OpenSearch credential." >&2
   exit 1
 }
+grep -Fq 'DEPLOYMENT_ENVIRONMENT: development' <<<"$secure_config" || {
+  echo "Fluent Bit does not receive the data-stream environment." >&2
+  exit 1
+}
 grep -Fq 'opensearch-bootstrap:' <<<"$secure_config" || {
   echo "OpenSearch template bootstrap service is missing." >&2
   exit 1
@@ -56,6 +60,21 @@ grep -Fq "HTTP_User            \${OPENSEARCH_USERNAME}" \
 grep -Fq 'tls                  On' \
   config/fluent-bit.opensearch.conf.example || {
   echo "TLS is not enabled in the Fluent Bit OpenSearch output." >&2
+  exit 1
+}
+for stream in application system network pipeline; do
+  grep -Fq "Index                net-sec-watch-${stream}-\${DEPLOYMENT_ENVIRONMENT}" \
+    config/fluent-bit.opensearch.conf.example || {
+    echo "Missing OpenSearch data-stream route for class: $stream" >&2
+    exit 1
+  }
+done
+write_operation_count="$(
+  grep -Fc 'Write_Operation      create' \
+    config/fluent-bit.opensearch.conf.example
+)"
+[[ "$write_operation_count" -eq 6 ]] || {
+  echo "Every OpenSearch route must use create operations for data streams." >&2
   exit 1
 }
 grep -Fq '/config/fluent-bit.opensearch.conf' <<<"$secure_config" || {
@@ -101,6 +120,9 @@ def mapped_fields(properties, prefix=""):
 
 assert mapping["dynamic"] is False
 assert mapping["date_detection"] is False
+assert template["data_stream"] == {}
+assert template["index_patterns"] == ["net-sec-watch-*-*"]
+assert template["version"] == 2
 assert mapping["properties"]["@timestamp"]["type"] == "date"
 assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
 assert mapping["properties"]["message"]["type"] == "text"

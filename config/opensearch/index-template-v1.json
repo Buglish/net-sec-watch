@@ -1,11 +1,12 @@
 {
   "index_patterns": [
-    "net-sec-watch-*"
+    "net-sec-watch-*-*"
   ],
   "priority": 200,
-  "version": 1,
+  "version": 2,
+  "data_stream": {},
   "_meta": {
-    "description": "Net Sec Watch canonical event mappings",
+    "description": "Net Sec Watch canonical event data-stream mappings",
     "schema_version": "1.0.0"
   },
   "template": {

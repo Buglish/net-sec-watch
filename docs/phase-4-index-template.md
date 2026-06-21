@@ -6,7 +6,7 @@ The secure OpenSearch profile installs
 complete successfully. This prevents early documents from creating accidental
 dynamic mappings.
 
-The template applies to `net-sec-watch-*` indexes and defines:
+The template applies to `net-sec-watch-*-*` data streams and defines:
 
 - UTC event and observation timestamps as `date`;
 - source and destination addresses as `ip`;
@@ -19,6 +19,30 @@ The template applies to `net-sec-watch-*` indexes and defines:
 Dynamic mapping is disabled. Unknown source-native fields remain in `_source`
 for evidence and future reprocessing, but OpenSearch does not index them or add
 them to the field mapping.
+
+## Data-stream routing
+
+Fluent Bit routes normalized records into data streams named:
+
+`net-sec-watch-<log-class>-<environment>`
+
+The committed routes are:
+
+| Log class | Fluent Bit tags | Example development stream |
+| --- | --- | --- |
+| `application` | `file.*`, `container.*` | `net-sec-watch-application-development` |
+| `system` | `host.*` | `net-sec-watch-system-development` |
+| `network` | `sensor.*`, `net.*` | `net-sec-watch-network-development` |
+| `pipeline` | `pipeline.*` | `net-sec-watch-pipeline-development` |
+
+Set `DEPLOYMENT_ENVIRONMENT` in the ignored `.env` file to a lowercase,
+hyphen-safe environment name such as `development`, `test`, or `production`.
+The detailed source and record type remain in `event.dataset`; they are not
+encoded into the stream name, which avoids unbounded stream creation.
+
+Data streams require create-only writes, so every Fluent Bit OpenSearch output
+uses `Write_Operation create` and generated document IDs. OpenSearch owns the
+hidden backing-index names and future rollover generations.
 
 ## Updating the template
 
