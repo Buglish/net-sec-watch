@@ -44,6 +44,26 @@ Data streams require create-only writes, so every Fluent Bit OpenSearch output
 uses `Write_Operation create` and generated document IDs. OpenSearch owns the
 hidden backing-index names and future rollover generations.
 
+## Rollover policy
+
+The bootstrap installs the `net-sec-watch-rollover-v1` Index State Management
+policy from `config/opensearch/rollover-policy-v1.json` before installing the
+data-stream template. The policy automatically applies to Net Sec Watch backing
+indexes and rolls the write index when either threshold is reached:
+
+- backing-index age of 24 hours;
+- backing-index size of 20 GB.
+
+These limits bound shard size and the time range affected by recovery or
+reindexing. Each stream currently has one primary shard, so backing-index size
+and primary-shard size are equivalent. They do not delete data. Retention and
+hot/warm/archive transitions are separate lifecycle tasks so they can be
+reviewed without changing the rollover safety boundary.
+
+Run `make test-opensearch-secure` to verify that the installed policy contains
+both thresholds and that OpenSearch accepts those conditions for a dry-run
+rollover of a real Net Sec Watch data stream.
+
 ## Updating the template
 
 Mapping changes must:

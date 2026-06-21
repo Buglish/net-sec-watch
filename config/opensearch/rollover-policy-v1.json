@@ -1,0 +1,27 @@
+{
+  "policy": {
+    "description": "Roll over Net Sec Watch data-stream backing indexes after 24 hours or 20 GB",
+    "default_state": "hot",
+    "schema_version": 1,
+    "states": [
+      {
+        "name": "hot",
+        "actions": [
+          {
+            "rollover": {
+              "min_index_age": "1d",
+              "min_size": "20gb"
+            }
+          }
+        ],
+        "transitions": []
+      }
+    ],
+    "ism_template": {
+      "index_patterns": [
+        ".ds-net-sec-watch-*-*"
+      ],
+      "priority": 200
+    }
+  }
+}
