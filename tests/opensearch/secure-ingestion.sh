@@ -70,7 +70,7 @@ printf '<134>%s stream-router data-stream-test: network stream marker\n' \
   nc -u -w1 127.0.0.1 15141
 
 template="$(
-  curl --fail --insecure --silent \
+  curl --fail-with-body --insecure --silent --show-error \
     --user "$credentials" \
     "https://127.0.0.1:${port}/_index_template/net-sec-watch-events-v1"
 )"
@@ -83,6 +83,28 @@ assert mapping["dynamic"] is False
 assert mapping["properties"]["source"]["properties"]["ip"]["type"] == "ip"
 assert mapping["properties"]["event"]["properties"]["observed"]["type"] == "date"
 ' <<<"$template"
+
+rollover_policy="$(
+  curl --fail --insecure --silent \
+    --user "$credentials" \
+    "https://127.0.0.1:${port}/_plugins/_ism/policies/net-sec-watch-rollover-v1"
+)"
+python3 -c '
+import json, sys
+policy = json.load(sys.stdin)["policy"]
+assert policy["default_state"] == "hot"
+ism_templates = policy["ism_template"]
+if isinstance(ism_templates, dict):
+    ism_templates = [ism_templates]
+assert ism_templates[0]["index_patterns"] == [".ds-net-sec-watch-*-*"]
+action = policy["states"][0]["actions"][0]["rollover"]
+assert action["min_index_age"] == "1d"
+assert action["min_size"] == "20gb"
+' <<<"$rollover_policy"
+
+# Re-run bootstrap against the same cluster to exercise idempotent policy
+# updates using the current sequence number and primary term.
+compose run --rm opensearch-bootstrap >/dev/null
 
 deadline=$((SECONDS + 90))
 count=0
@@ -164,5 +186,39 @@ import json, sys
 assert "unknown_attacker_field" not in json.load(sys.stdin)["fields"]
 ' <<<"$field_caps"
 
+rollover_response="/tmp/net-sec-watch-rollover-check.json"
+rollover_status="$(
+  curl --insecure --silent --show-error \
+    --user "$credentials" \
+    --header 'Content-Type: application/json' \
+    --request POST \
+    --data '{"conditions":{"max_age":"1d","max_size":"20gb"}}' \
+    --output "$rollover_response" \
+    --write-out '%{http_code}' \
+    "https://127.0.0.1:${port}/net-sec-watch-application-development/_rollover?dry_run"
+)"
+if [[ "$rollover_status" != "200" ]]; then
+  cat "$rollover_response" >&2
+  echo "FAIL: data-stream rollover API returned HTTP $rollover_status." >&2
+  exit 1
+fi
+rollover_check="$(cat "$rollover_response")"
+python3 -c '
+import json, sys
+result = json.load(sys.stdin)
+assert result["dry_run"] is True
+assert result["old_index"].startswith(
+    ".ds-net-sec-watch-application-development-"
+)
+assert result["new_index"].startswith(
+    ".ds-net-sec-watch-application-development-"
+)
+assert set(result["conditions"]) == {
+    "[max_age: 1d]",
+    "[max_size: 20gb]",
+}
+' <<<"$rollover_check"
+
 echo "PASS: authenticated TLS ingestion indexed $count events into class data streams"
 echo "PASS: explicit mappings installed and dynamic fields stayed unindexed"
+echo "PASS: age-and-size rollover policy and data-stream rollover are valid"

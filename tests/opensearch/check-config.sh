@@ -105,6 +105,11 @@ canonical = json.loads(
 policy = json.loads(
     Path("config/schema/mapping-policy-v1.json").read_text(encoding="utf-8")
 )
+rollover = json.loads(
+    Path("config/opensearch/rollover-policy-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
 mapping = template["template"]["mappings"]
 settings = template["template"]["settings"]
 
@@ -138,5 +143,16 @@ assert settings["index.mapping.field_name_length.limit"] == policy[
 ]["index.mapping.field_name_length.limit"]
 assert template["_meta"]["schema_version"] == "1.0.0"
 
+rollover_policy = rollover["policy"]
+assert rollover_policy["default_state"] == "hot"
+assert rollover_policy["ism_template"]["index_patterns"] == [
+    ".ds-net-sec-watch-*-*"
+]
+assert rollover_policy["ism_template"]["priority"] == 200
+rollover_action = rollover_policy["states"][0]["actions"][0]["rollover"]
+assert rollover_action["min_index_age"] == "1d"
+assert rollover_action["min_size"] == "20gb"
+
 print("OpenSearch explicit mapping contract is valid.")
+print("OpenSearch age-and-size rollover policy is valid.")
 PY
