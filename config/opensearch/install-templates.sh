@@ -4,10 +4,41 @@ set -eu
 endpoint="${OPENSEARCH_ENDPOINT:-https://opensearch:9200}"
 template="/opensearch-config/index-template-v1.json"
 policy="/opensearch-config/rollover-policy-v1.json"
+cluster_settings="/opensearch-config/cluster-settings-v1.json"
+snapshot_repository="/opensearch-config/snapshot-repository-v1.json"
+snapshot_repository_name="net-sec-watch-local"
 policy_id="net-sec-watch-rollover-v1"
 credentials="$(printf '%s:%s' \
   "$OPENSEARCH_USERNAME" \
   "$OPENSEARCH_PASSWORD")"
+
+curl --fail --insecure --silent --show-error \
+  --user "$credentials" \
+  --header "Content-Type: application/json" \
+  --request PUT \
+  --data-binary "@${cluster_settings}" \
+  "${endpoint}/_cluster/settings"
+
+echo
+echo "Installed OpenSearch disk allocation watermarks"
+
+curl --fail --insecure --silent --show-error \
+  --user "$credentials" \
+  --header "Content-Type: application/json" \
+  --request PUT \
+  --data-binary "@${snapshot_repository}" \
+  "${endpoint}/_snapshot/${snapshot_repository_name}"
+
+echo
+echo "Registered OpenSearch snapshot repository ${snapshot_repository_name}"
+
+curl --fail --insecure --silent --show-error \
+  --user "$credentials" \
+  --request POST \
+  "${endpoint}/_snapshot/${snapshot_repository_name}/_verify"
+
+echo
+echo "Verified OpenSearch snapshot repository ${snapshot_repository_name}"
 
 policy_response="/tmp/${policy_id}.json"
 policy_status="$(
