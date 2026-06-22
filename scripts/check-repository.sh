@@ -37,6 +37,9 @@ python3 ./tests/opensearch/test-capacity-calculator.py
 python3 ./tests/opensearch/searchability-slo.py --help >/dev/null
 python3 ./tests/dashboards/test-search-examples.py
 python3 ./tests/dashboards/test-saved-searches.py
+python3 ./tests/dashboards/test-dashboards.py
+python3 ./tests/dashboards/test-export-events.py
+python3 ./tests/dashboards/test-ingestion-status.py
 ./tests/opensearch/check-config.sh
 
 if command -v shellcheck >/dev/null 2>&1; then

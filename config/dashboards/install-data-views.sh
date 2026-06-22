@@ -7,6 +7,8 @@ credentials="$(printf '%s:%s' \
   "$OPENSEARCH_DASHBOARDS_PASSWORD")"
 data_views="/dashboards-config/data-views-v1.ndjson"
 saved_searches="/dashboards-config/saved-searches-v1.ndjson"
+dashboards="/dashboards-config/dashboards-v1.ndjson"
+analyst_states="/dashboards-config/analyst-states-v1.ndjson"
 discover_settings="/dashboards-config/discover-settings-v1.json"
 attempt=0
 
@@ -38,6 +40,24 @@ curl --fail --silent --show-error \
 
 echo
 echo "Installed Net Sec Watch saved investigations"
+
+curl --fail --silent --show-error \
+  --user "$credentials" \
+  --header "osd-xsrf: true" \
+  --form "file=@${analyst_states};type=application/ndjson" \
+  "${endpoint}/api/saved_objects/_import?overwrite=true"
+
+echo
+echo "Installed Net Sec Watch analyst-state guidance"
+
+curl --fail --silent --show-error \
+  --user "$credentials" \
+  --header "osd-xsrf: true" \
+  --form "file=@${dashboards};type=application/ndjson" \
+  "${endpoint}/api/saved_objects/_import?overwrite=true"
+
+echo
+echo "Installed Net Sec Watch investigation dashboards"
 
 curl --fail --silent --show-error \
   --user "$credentials" \

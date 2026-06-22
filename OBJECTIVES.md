@@ -1,6 +1,6 @@
 # Net Sec Watch objectives and delivery roadmap
 
-**Author:** Salomon du Preez
+**Author:** SJ du Preez
 
 This roadmap breaks the project into independently verifiable phases. Check an
 item only when its implementation, tests, documentation, and operational
@@ -219,9 +219,9 @@ visualizing, saving, and exporting log evidence.
 - [x] Configure time selection, histograms, filters, and event expansion.
 - [x] Display normalized fields and `event.original`.
 - [x] Create saved searches for common operational and security investigations.
-- [ ] Create infrastructure, application, network, and security dashboards.
-- [ ] Add bounded CSV or JSON export.
-- [ ] Add clear empty-result, query-error, and delayed-ingestion states.
+- [x] Create infrastructure, application, network, and security dashboards.
+- [x] Add bounded CSV or JSON export.
+- [x] Add clear empty-result, query-error, and delayed-ingestion states.
 - [ ] Document query syntax and analyst workflows.
 - [ ] Perform usability testing with target users.
 

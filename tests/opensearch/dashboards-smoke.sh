@@ -143,6 +143,55 @@ assert payload["references"][0]["type"] == "index-pattern"
 PY
 done
 
+for dashboard in infrastructure application network security; do
+  saved_dashboard="$(
+    curl --fail --silent \
+      --user "admin:${admin_credential}" \
+      "http://127.0.0.1:${dashboards_port}/api/saved_objects/dashboard/net-sec-watch-${dashboard}"
+  )"
+  python3 - "$saved_dashboard" "$dashboard" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+dashboard = sys.argv[2]
+assert payload["id"] == f"net-sec-watch-{dashboard}"
+assert payload["type"] == "dashboard"
+assert payload["attributes"]["title"] == (
+    f"Net Sec Watch - {dashboard.title()}"
+)
+panels = json.loads(payload["attributes"]["panelsJSON"])
+assert panels
+assert len(panels) == len(payload["references"])
+assert all(panel["panelRefName"] for panel in panels)
+assert any(
+    ref == {
+        "name": "panel_guide",
+        "type": "visualization",
+        "id": "net-sec-watch-analyst-state-guide",
+    }
+    for ref in payload["references"]
+)
+PY
+done
+
+state_guide="$(
+  curl --fail --silent \
+    --user "admin:${admin_credential}" \
+    "http://127.0.0.1:${dashboards_port}/api/saved_objects/visualization/net-sec-watch-analyst-state-guide"
+)"
+python3 - "$state_guide" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+state = json.loads(payload["attributes"]["visState"])
+assert state["type"] == "markdown"
+markdown = state["params"]["markdown"]
+for phrase in ("No matching events", "Delayed ingestion", "Query error"):
+    assert phrase in markdown
+PY
+
 settings="$(
   curl --fail --silent \
     --user "admin:${admin_credential}" \
@@ -180,5 +229,7 @@ echo "PASS: anonymous status access is rejected"
 echo "PASS: browser login endpoint is reachable on localhost"
 echo "PASS: approved application, system, network, and dead-letter data views exist"
 echo "PASS: four reproducible operational and security saved searches exist"
+echo "PASS: infrastructure, application, network, and security dashboards exist"
+echo "PASS: dashboards explain empty, delayed-ingestion, and query-error states"
 echo "PASS: Discover time, histogram, result, and event-table defaults are configured"
 echo "PASS: normalized context and event.original are visible by default"

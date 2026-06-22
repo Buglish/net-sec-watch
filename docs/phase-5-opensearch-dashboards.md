@@ -81,6 +81,87 @@ Definitions are stored in
 references to the managed data views. Startup imports them with overwrite
 enabled, making updates reproducible without creating duplicates.
 
+## Investigation dashboards
+
+Bootstrap imports four dashboards:
+
+| Dashboard | Panels |
+| --- | --- |
+| Net Sec Watch - Infrastructure | Authentication failures and parser failures |
+| Net Sec Watch - Application | Application errors |
+| Net Sec Watch - Network | Suspicious network activity |
+| Net Sec Watch - Security | Authentication failures, suspicious network activity, and parser failures |
+
+Panels embed the versioned saved investigations, inherit the active time
+picker, and support direct drill-down into Discover. Empty panels are valid
+when no event currently matches the investigation query.
+
+Definitions are stored in `config/dashboards/dashboards-v1.ndjson`. Stable
+dashboard IDs, panel references, and grid positions make imports reproducible
+and allow the complete analyst experience to be exported or restored.
+
+## Empty, delayed, and error states
+
+Every managed dashboard includes an analyst-state guide:
+
+- **No matching events:** the query completed successfully but found nothing
+  in the selected time range. Broaden the time picker or remove filters.
+- **Delayed ingestion:** the newest event is older than the approved freshness
+  threshold. Treat dashboard results as incomplete and inspect collection.
+- **Query error:** Dashboards displays an error banner or failed panel. Review
+  DQL syntax, field names, permissions, and OpenSearch health before changing
+  the investigation conclusion.
+
+Check stream freshness from the repository without opening containers:
+
+```bash
+export OPENSEARCH_PASSWORD='<password-from-.env>'
+make ingestion-status
+```
+
+The command reports `current`, `empty`, `delayed`, or `query_error` for every
+approved log class. It defaults to the `development` environment and a
+five-minute freshness threshold. Use `--environment`, `--max-age-seconds`, and
+`--json` for automation.
+
+An empty stream means OpenSearch has no events for that class and environment;
+it is distinct from a valid dashboard query that happens to return no matches.
+The command exits nonzero for delayed or query-error states so monitoring can
+consume it. Empty streams are reported clearly but do not fail a fresh
+installation.
+
+## Bounded evidence export
+
+Export a selected time range from an approved stream as CSV or JSON Lines:
+
+```bash
+export OPENSEARCH_PASSWORD='<password-from-.env>'
+
+./scripts/export-events.py \
+  --stream network \
+  --start 2026-06-22T00:00:00Z \
+  --end 2026-06-23T00:00:00Z \
+  --query 'event.action: dropped' \
+  --format csv \
+  --output network-drops.csv \
+  --insecure
+```
+
+The exporter accepts only `application`, `system`, `network`, or `dead-letter`
+streams. Every request requires explicit UTC start and end timestamps. The
+default limit is 1,000 rows, the hard maximum is 5,000 rows, and the maximum
+time range is seven days.
+
+Use `--fields` to select mapped fields. The defaults include `@timestamp`,
+normalized investigation context, `message`, and `event.original`. CSV values
+beginning with spreadsheet formula characters are prefixed with an apostrophe
+to prevent formula execution when evidence is opened in office software.
+
+The endpoint defaults to `https://127.0.0.1:9200`. Set `OPENSEARCH_USERNAME`
+and `OPENSEARCH_PASSWORD` through the environment; credentials are never
+written into the export. `--insecure` is intended only for the local demo
+certificate.
+
 ## Discover investigation behavior
 
 Bootstrap applies consistent defaults from

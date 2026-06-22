@@ -1,6 +1,6 @@
 # Net Sec Watch
 
-**Author:** Salomon du Preez
+**Author:** SJ du Preez
 
 **License:** [Apache License 2.0](LICENSE)
 
