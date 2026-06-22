@@ -60,6 +60,27 @@ The versioned machine-readable catalog is stored in
 referenced field exists in the canonical OpenSearch mapping and each data-view
 identifier is approved.
 
+## Saved investigations
+
+Bootstrap imports four managed saved searches:
+
+| Saved search | Data view | Purpose |
+| --- | --- | --- |
+| Net Sec Watch - Authentication Failures | System | Review failed authentication activity by host and source |
+| Net Sec Watch - Parser Failures | Dead letter | Diagnose malformed or unsupported records |
+| Net Sec Watch - Suspicious Network Activity | Network | Triage warnings, denied traffic, and high-severity network events |
+| Net Sec Watch - Application Errors | Application | Investigate error-level application events |
+
+Each search uses DQL, sorts newest events first, selects investigation-specific
+normalized fields, and includes `event.original`. The searches intentionally
+inherit the active Discover time picker instead of embedding a fixed date
+range.
+
+Definitions are stored in
+`config/dashboards/saved-searches-v1.ndjson` with stable IDs and explicit
+references to the managed data views. Startup imports them with overwrite
+enabled, making updates reproducible without creating duplicates.
+
 ## Discover investigation behavior
 
 Bootstrap applies consistent defaults from
@@ -70,6 +91,20 @@ Bootstrap applies consistent defaults from
 - target histogram density: 50 time buckets;
 - maximum displayed sample: 500 events;
 - timestamp column: visible in the event table.
+
+The default event table displays:
+
+- `message`;
+- `event.dataset`, `event.action`, and `event.outcome`;
+- `source.ip` and `destination.ip`;
+- `host.name`;
+- `event.original`.
+
+Fields that do not apply to a particular event remain empty. Analysts can add,
+remove, or reorder columns for an investigation without changing indexed data.
+`event.original` is the immutable source record captured before normalization;
+compare it with normalized fields when validating parser behavior or preserving
+evidence.
 
 Analysts can override the time range or refresh interval for an individual
 investigation. Prefer relative ranges such as **Last 15 minutes**, **Last 24
@@ -91,8 +126,10 @@ To create a structured filter:
    context.
 
 Click the expand control beside an event to inspect the normalized field table
-and JSON representation. Use the field-table actions to include or exclude a
-value as a filter. Expansion does not alter the indexed event.
+and JSON representation. The expanded view exposes all mapped normalized
+fields plus `event.original`, even when they are not table columns. Use the
+field-table actions to include or exclude a value as a filter. Expansion does
+not alter the indexed event.
 
 Follow startup logs with:
 

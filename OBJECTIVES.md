@@ -217,8 +217,8 @@ visualizing, saving, and exporting log evidence.
 - [x] Configure data views for each approved log class.
 - [x] Provide free-text and fielded search examples.
 - [x] Configure time selection, histograms, filters, and event expansion.
-- [ ] Display normalized fields and `event.original`.
-- [ ] Create saved searches for common operational and security investigations.
+- [x] Display normalized fields and `event.original`.
+- [x] Create saved searches for common operational and security investigations.
 - [ ] Create infrastructure, application, network, and security dashboards.
 - [ ] Add bounded CSV or JSON export.
 - [ ] Add clear empty-result, query-error, and delayed-ingestion states.

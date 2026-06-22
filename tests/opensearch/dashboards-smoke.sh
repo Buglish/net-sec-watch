@@ -113,6 +113,36 @@ assert payload["attributes"]["timeFieldName"] == "@timestamp"
 PY
 done
 
+for search in \
+  authentication-failures \
+  parser-failures \
+  suspicious-network-activity \
+  application-errors; do
+  saved_search="$(
+    curl --fail --silent \
+      --user "admin:${admin_credential}" \
+      "http://127.0.0.1:${dashboards_port}/api/saved_objects/search/net-sec-watch-${search}"
+  )"
+  python3 - "$saved_search" "$search" <<'PY'
+import json
+import sys
+
+payload = json.loads(sys.argv[1])
+search = sys.argv[2]
+assert payload["id"] == f"net-sec-watch-{search}"
+assert payload["type"] == "search"
+assert payload["attributes"]["sort"] == [["@timestamp", "desc"]]
+assert "event.original" in payload["attributes"]["columns"]
+source = json.loads(
+    payload["attributes"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
+)
+assert source["query"]["language"] == "kuery"
+assert source["query"]["query"]
+assert len(payload["references"]) == 1
+assert payload["references"][0]["type"] == "index-pattern"
+PY
+done
+
 settings="$(
   curl --fail --silent \
     --user "admin:${admin_credential}" \
@@ -133,10 +163,22 @@ assert json.loads(
 assert settings["histogram:barTarget"]["userValue"] == 50
 assert settings["discover:sampleSize"]["userValue"] == 500
 assert settings["doc_table:hideTimeColumn"]["userValue"] is False
+assert settings["defaultColumns"]["userValue"] == [
+    "message",
+    "event.dataset",
+    "event.action",
+    "event.outcome",
+    "source.ip",
+    "destination.ip",
+    "host.name",
+    "event.original",
+]
 PY
 
 echo "PASS: secured OpenSearch Dashboards status is available"
 echo "PASS: anonymous status access is rejected"
 echo "PASS: browser login endpoint is reachable on localhost"
 echo "PASS: approved application, system, network, and dead-letter data views exist"
+echo "PASS: four reproducible operational and security saved searches exist"
 echo "PASS: Discover time, histogram, result, and event-table defaults are configured"
+echo "PASS: normalized context and event.original are visible by default"

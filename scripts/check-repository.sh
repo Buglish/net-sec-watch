@@ -36,6 +36,7 @@ python3 ./tests/schema/test-schema-contract.py
 python3 ./tests/opensearch/test-capacity-calculator.py
 python3 ./tests/opensearch/searchability-slo.py --help >/dev/null
 python3 ./tests/dashboards/test-search-examples.py
+python3 ./tests/dashboards/test-saved-searches.py
 ./tests/opensearch/check-config.sh
 
 if command -v shellcheck >/dev/null 2>&1; then

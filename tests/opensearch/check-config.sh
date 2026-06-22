@@ -120,6 +120,38 @@ assert json.loads(settings["timepicker:refreshIntervalDefaults"]) == {
 assert settings["histogram:barTarget"] == 50
 assert settings["discover:sampleSize"] == 500
 assert settings["doc_table:hideTimeColumn"] is False
+expected_columns = [
+    "message",
+    "event.dataset",
+    "event.action",
+    "event.outcome",
+    "source.ip",
+    "destination.ip",
+    "host.name",
+    "event.original",
+]
+assert settings["defaultColumns"] == expected_columns
+
+template = json.loads(
+    Path("config/opensearch/index-template-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+def mapped_fields(properties, prefix=""):
+    fields = set()
+    for name, definition in properties.items():
+        path = f"{prefix}.{name}" if prefix else name
+        fields.add(path)
+        if "properties" in definition:
+            fields.update(mapped_fields(definition["properties"], path))
+    return fields
+
+properties = template["template"]["mappings"]["properties"]
+assert set(expected_columns) <= mapped_fields(properties)
+assert properties["event"]["properties"]["original"]["type"] == (
+    "match_only_text"
+)
 PY
 python3 - <<'PY'
 import json
