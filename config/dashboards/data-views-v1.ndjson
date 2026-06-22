@@ -1,0 +1,4 @@
+{"id":"net-sec-watch-application","type":"index-pattern","attributes":{"title":"net-sec-watch-application-*","timeFieldName":"@timestamp"},"references":[]}
+{"id":"net-sec-watch-system","type":"index-pattern","attributes":{"title":"net-sec-watch-system-*","timeFieldName":"@timestamp"},"references":[]}
+{"id":"net-sec-watch-network","type":"index-pattern","attributes":{"title":"net-sec-watch-network-*","timeFieldName":"@timestamp"},"references":[]}
+{"id":"net-sec-watch-dead-letter","type":"index-pattern","attributes":{"title":"net-sec-watch-dead-letter-*","timeFieldName":"@timestamp"},"references":[]}

@@ -35,6 +35,7 @@ done < <(find scripts tests -type f -name '*.sh' -print | sort)
 python3 ./tests/schema/test-schema-contract.py
 python3 ./tests/opensearch/test-capacity-calculator.py
 python3 ./tests/opensearch/searchability-slo.py --help >/dev/null
+python3 ./tests/dashboards/test-search-examples.py
 ./tests/opensearch/check-config.sh
 
 if command -v shellcheck >/dev/null 2>&1; then
