@@ -67,10 +67,9 @@ The event flow is:
 ## Current implementation status
 
 Net Sec Watch is being developed into a SIEM. The runnable platform currently
-implements collection and normalization plus an optional single-node
-OpenSearch development deployment. OpenSearch production security and
-lifecycle controls, Dashboards, detections, alerting, and machine learning are
-tracked in [OBJECTIVES.md](OBJECTIVES.md).
+implements collection, normalization, managed OpenSearch storage, and an
+optional OpenSearch Dashboards analyst interface. Detections, alerting, access
+control, and machine learning are tracked in [OBJECTIVES.md](OBJECTIVES.md).
 
 The current collector supports:
 
@@ -261,6 +260,17 @@ make up-opensearch-secure
 This uses the ignored `.env` password and
 `config/fluent-bit.opensearch.conf`. See
 [docs/phase-4-authenticated-ingestion.md](docs/phase-4-authenticated-ingestion.md).
+
+To start the secured OpenSearch Dashboards interface:
+
+```bash
+make up-dashboards-secure
+```
+
+Open <http://127.0.0.1:5601> and sign in as `admin` using the generated
+`OPENSEARCH_INITIAL_ADMIN_PASSWORD` from the ignored `.env` file. The interface
+is localhost-only. See
+[docs/phase-5-opensearch-dashboards.md](docs/phase-5-opensearch-dashboards.md).
 
 The service should report `Up`. Follow its output:
 

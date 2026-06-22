@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "language": "DQL",
+  "examples": [
+    {"id":"application-free-text-error","title":"Free-text application errors","data_view":"application","query":"error","fields":[]},
+    {"id":"application-connection-refused","title":"Exact connection failure phrase","data_view":"application","query":"message: \"connection refused\"","fields":["message"]},
+    {"id":"system-authentication-failures","title":"Failed authentication events","data_view":"system","query":"event.action: authentication AND event.outcome: failure","fields":["event.action","event.outcome"]},
+    {"id":"system-high-severity","title":"High-severity system events","data_view":"system","query":"event.severity >= 7","fields":["event.severity"]},
+    {"id":"network-source-ip","title":"Traffic from one source address","data_view":"network","query":"source.ip: \"192.168.1.50\"","fields":["source.ip"]},
+    {"id":"network-dns-prefix","title":"DNS names under a test domain","data_view":"network","query":"dns.question.name: \"*.example.test\"","fields":["dns.question.name"]},
+    {"id":"network-sensitive-post","title":"POST requests to sensitive paths","data_view":"network","query":"http.request.method: \"POST\" AND url.path: \"/admin*\"","fields":["http.request.method","url.path"]},
+    {"id":"network-low-port-scan","title":"Traffic targeting low destination ports","data_view":"network","query":"destination.port >= 1 AND destination.port <= 1024 AND source.ip: *","fields":["destination.port","source.ip"]},
+    {"id":"dead-letter-parsing-errors","title":"Parser failures","data_view":"dead-letter","query":"error.type: parsing_error","fields":["error.type"]},
+    {"id":"missing-host-name","title":"Events missing a host name","data_view":"all","query":"NOT host.name: *","fields":["host.name"]}
+  ]
+}

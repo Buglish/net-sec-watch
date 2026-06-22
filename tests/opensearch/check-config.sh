@@ -32,6 +32,21 @@ grep -Fq 'source: opensearch-snapshots' <<<"$compose_config" || {
   echo "OpenSearch snapshot volume is missing." >&2
   exit 1
 }
+grep -Fq 'opensearchproject/opensearch-dashboards:3.7.0' \
+  <<<"$compose_config" || {
+  echo "OpenSearch Dashboards image is not pinned to the cluster version." >&2
+  exit 1
+}
+grep -A20 -F 'opensearch-dashboards:' <<<"$compose_config" |
+  grep -Fq 'host_ip: 127.0.0.1' || {
+  echo "OpenSearch Dashboards is not restricted to localhost." >&2
+  exit 1
+}
+grep -Fq 'DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"' \
+  <<<"$compose_config" || {
+  echo "Development Dashboards security mode is not explicit." >&2
+  exit 1
+}
 grep -Fq 'opensearch-snapshot-init:' <<<"$compose_config" || {
   echo "OpenSearch snapshot volume initializer is missing." >&2
   exit 1
@@ -64,6 +79,103 @@ grep -Fq 'opensearch-bootstrap:' <<<"$secure_config" || {
   echo "OpenSearch template bootstrap service is missing." >&2
   exit 1
 }
+grep -Fq 'DISABLE_SECURITY_DASHBOARDS_PLUGIN: "false"' \
+  <<<"$secure_config" || {
+  echo "Secure Dashboards does not enable the Security plugin." >&2
+  exit 1
+}
+grep -Fq 'OPENSEARCH_SSL_VERIFICATIONMODE: none' <<<"$secure_config" || {
+  echo "Secure Dashboards does not declare demo-certificate handling." >&2
+  exit 1
+}
+grep -Fq 'OPENSEARCH_USERNAME: kibanaserver' <<<"$secure_config" || {
+  echo "Secure Dashboards service identity is missing." >&2
+  exit 1
+}
+grep -Fq 'opensearch-dashboards-bootstrap:' <<<"$secure_config" || {
+  echo "OpenSearch Dashboards data-view bootstrap service is missing." >&2
+  exit 1
+}
+grep -Fq '/dashboards-config/install-data-views.sh' <<<"$secure_config" || {
+  echo "OpenSearch Dashboards data-view installer is not mounted." >&2
+  exit 1
+}
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+settings = json.loads(
+    Path("config/dashboards/discover-settings-v1.json").read_text(
+        encoding="utf-8"
+    )
+)["changes"]
+assert json.loads(settings["timepicker:timeDefaults"]) == {
+    "from": "now-24h",
+    "to": "now",
+}
+assert json.loads(settings["timepicker:refreshIntervalDefaults"]) == {
+    "pause": True,
+    "value": 0,
+}
+assert settings["histogram:barTarget"] == 50
+assert settings["discover:sampleSize"] == 500
+assert settings["doc_table:hideTimeColumn"] is False
+expected_columns = [
+    "message",
+    "event.dataset",
+    "event.action",
+    "event.outcome",
+    "source.ip",
+    "destination.ip",
+    "host.name",
+    "event.original",
+]
+assert settings["defaultColumns"] == expected_columns
+
+template = json.loads(
+    Path("config/opensearch/index-template-v1.json").read_text(
+        encoding="utf-8"
+    )
+)
+
+def mapped_fields(properties, prefix=""):
+    fields = set()
+    for name, definition in properties.items():
+        path = f"{prefix}.{name}" if prefix else name
+        fields.add(path)
+        if "properties" in definition:
+            fields.update(mapped_fields(definition["properties"], path))
+    return fields
+
+properties = template["template"]["mappings"]["properties"]
+assert set(expected_columns) <= mapped_fields(properties)
+assert properties["event"]["properties"]["original"]["type"] == (
+    "match_only_text"
+)
+PY
+python3 - <<'PY'
+import json
+from pathlib import Path
+
+objects = [
+    json.loads(line)
+    for line in Path("config/dashboards/data-views-v1.ndjson")
+    .read_text(encoding="utf-8")
+    .splitlines()
+    if line
+]
+expected = {"application", "system", "network", "dead-letter"}
+assert {
+    item["id"].removeprefix("net-sec-watch-")
+    for item in objects
+} == expected
+for item in objects:
+    view = item["id"].removeprefix("net-sec-watch-")
+    assert item["type"] == "index-pattern"
+    assert item["attributes"]["title"] == f"net-sec-watch-{view}-*"
+    assert item["attributes"]["timeFieldName"] == "@timestamp"
+    assert item["references"] == []
+PY
 grep -Fq "HTTP_User            \${OPENSEARCH_USERNAME}" \
   config/fluent-bit.opensearch.conf.example || {
   echo "OpenSearch HTTP authentication is missing from the Fluent Bit example." >&2

@@ -26,6 +26,32 @@ services:
       OPENSEARCH_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
       DEPLOYMENT_ENVIRONMENT: ${DEPLOYMENT_ENVIRONMENT:-development}
 
+  opensearch-dashboards:
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch:9200"]'
+      OPENSEARCH_SSL_VERIFICATIONMODE: none
+      OPENSEARCH_USERNAME: kibanaserver
+      OPENSEARCH_PASSWORD: kibanaserver
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "false"
+    depends_on:
+      opensearch-bootstrap:
+        condition: service_completed_successfully
+
+  opensearch-dashboards-bootstrap:
+    image: ${CURL_IMAGE:-curlimages/curl:8.17.0}
+    profiles: ["opensearch"]
+    depends_on:
+      opensearch-dashboards:
+        condition: service_started
+    environment:
+      OPENSEARCH_DASHBOARDS_ENDPOINT: http://opensearch-dashboards:5601
+      OPENSEARCH_DASHBOARDS_USERNAME: ${OPENSEARCH_USERNAME:-admin}
+      OPENSEARCH_DASHBOARDS_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+    entrypoint: ["/bin/sh", "/dashboards-config/install-data-views.sh"]
+    restart: "no"
+    volumes:
+      - ./config/dashboards:/dashboards-config:ro
+
   opensearch-bootstrap:
     image: ${CURL_IMAGE:-curlimages/curl:8.17.0}
     profiles: ["opensearch"]

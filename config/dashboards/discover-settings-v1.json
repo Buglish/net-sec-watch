@@ -1,0 +1,19 @@
+{
+  "changes": {
+    "timepicker:timeDefaults": "{\"from\":\"now-24h\",\"to\":\"now\"}",
+    "timepicker:refreshIntervalDefaults": "{\"pause\":true,\"value\":0}",
+    "histogram:barTarget": 50,
+    "discover:sampleSize": 500,
+    "doc_table:hideTimeColumn": false,
+    "defaultColumns": [
+      "message",
+      "event.dataset",
+      "event.action",
+      "event.outcome",
+      "source.ip",
+      "destination.ip",
+      "host.name",
+      "event.original"
+    ]
+  }
+}

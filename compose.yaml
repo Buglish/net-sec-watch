@@ -74,6 +74,19 @@ services:
     volumes:
       - opensearch-snapshots:/usr/share/opensearch/snapshots
 
+  opensearch-dashboards:
+    image: ${OPENSEARCH_DASHBOARDS_IMAGE:-opensearchproject/opensearch-dashboards:3.7.0}
+    profiles: ["opensearch"]
+    restart: unless-stopped
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
+    ports:
+      - "${OPENSEARCH_DASHBOARDS_BIND:-127.0.0.1}:${OPENSEARCH_DASHBOARDS_PORT:-5601}:5601"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+
   zeek:
     image: ${ZEEK_IMAGE:-zeek/zeek:lts}
     profiles: ["zeek"]

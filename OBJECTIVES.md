@@ -213,12 +213,12 @@ recoverable using a self-hosted OpenSearch cluster.
 **Outcome:** Users have a Kibana-like interface for finding, filtering,
 visualizing, saving, and exporting log evidence.
 
-- [ ] Deploy OpenSearch Dashboards.
-- [ ] Configure data views for each approved log class.
-- [ ] Provide free-text and fielded search examples.
-- [ ] Configure time selection, histograms, filters, and event expansion.
-- [ ] Display normalized fields and `event.original`.
-- [ ] Create saved searches for common operational and security investigations.
+- [x] Deploy OpenSearch Dashboards.
+- [x] Configure data views for each approved log class.
+- [x] Provide free-text and fielded search examples.
+- [x] Configure time selection, histograms, filters, and event expansion.
+- [x] Display normalized fields and `event.original`.
+- [x] Create saved searches for common operational and security investigations.
 - [ ] Create infrastructure, application, network, and security dashboards.
 - [ ] Add bounded CSV or JSON export.
 - [ ] Add clear empty-result, query-error, and delayed-ingestion states.

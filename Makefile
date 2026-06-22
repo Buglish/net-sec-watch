@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-dashboards logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -25,6 +25,17 @@ up-opensearch-secure:
 		--file compose.opensearch-secure.yaml \
 		--profile opensearch up -d opensearch fluent-bit
 
+up-dashboards:
+	docker compose --env-file .env --profile opensearch \
+		up -d opensearch opensearch-dashboards
+
+up-dashboards-secure:
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--profile opensearch \
+		up -d opensearch-dashboards-bootstrap
+
 down-opensearch-secure:
 	docker compose --env-file .env \
 		--file compose.yaml \
@@ -49,6 +60,10 @@ logs:
 
 logs-opensearch:
 	docker compose --env-file .env --profile opensearch logs -f opensearch
+
+logs-dashboards:
+	docker compose --env-file .env --profile opensearch \
+		logs -f opensearch-dashboards
 
 logs-zeek:
 	docker compose --env-file .env --profile zeek logs -f zeek fluent-bit
@@ -90,6 +105,9 @@ test-opensearch-searchability:
 
 test-opensearch-retention:
 	./tests/opensearch/retention-lifecycle.sh
+
+test-opensearch-dashboards:
+	./tests/opensearch/dashboards-smoke.sh
 
 measure-opensearch-storage:
 	./tests/opensearch/storage-expansion.sh
