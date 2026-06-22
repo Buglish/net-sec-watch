@@ -113,7 +113,30 @@ assert payload["attributes"]["timeFieldName"] == "@timestamp"
 PY
 done
 
+settings="$(
+  curl --fail --silent \
+    --user "admin:${admin_credential}" \
+    "http://127.0.0.1:${dashboards_port}/api/opensearch-dashboards/settings"
+)"
+python3 - "$settings" <<'PY'
+import json
+import sys
+
+settings = json.loads(sys.argv[1])["settings"]
+assert json.loads(settings["timepicker:timeDefaults"]["userValue"]) == {
+    "from": "now-24h",
+    "to": "now",
+}
+assert json.loads(
+    settings["timepicker:refreshIntervalDefaults"]["userValue"]
+) == {"pause": True, "value": 0}
+assert settings["histogram:barTarget"]["userValue"] == 50
+assert settings["discover:sampleSize"]["userValue"] == 500
+assert settings["doc_table:hideTimeColumn"]["userValue"] is False
+PY
+
 echo "PASS: secured OpenSearch Dashboards status is available"
 echo "PASS: anonymous status access is rejected"
 echo "PASS: browser login endpoint is reachable on localhost"
 echo "PASS: approved application, system, network, and dead-letter data views exist"
+echo "PASS: Discover time, histogram, result, and event-table defaults are configured"

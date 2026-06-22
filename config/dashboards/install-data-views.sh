@@ -6,6 +6,7 @@ credentials="$(printf '%s:%s' \
   "$OPENSEARCH_DASHBOARDS_USERNAME" \
   "$OPENSEARCH_DASHBOARDS_PASSWORD")"
 data_views="/dashboards-config/data-views-v1.ndjson"
+discover_settings="/dashboards-config/discover-settings-v1.json"
 attempt=0
 
 until curl --fail --silent --show-error \
@@ -27,3 +28,14 @@ curl --fail --silent --show-error \
 
 echo
 echo "Installed Net Sec Watch OpenSearch Dashboards data views"
+
+curl --fail --silent --show-error \
+  --user "$credentials" \
+  --header "Content-Type: application/json" \
+  --header "osd-xsrf: true" \
+  --request POST \
+  --data-binary "@${discover_settings}" \
+  "${endpoint}/api/opensearch-dashboards/settings"
+
+echo
+echo "Installed Net Sec Watch Discover investigation defaults"

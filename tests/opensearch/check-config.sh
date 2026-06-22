@@ -104,6 +104,27 @@ python3 - <<'PY'
 import json
 from pathlib import Path
 
+settings = json.loads(
+    Path("config/dashboards/discover-settings-v1.json").read_text(
+        encoding="utf-8"
+    )
+)["changes"]
+assert json.loads(settings["timepicker:timeDefaults"]) == {
+    "from": "now-24h",
+    "to": "now",
+}
+assert json.loads(settings["timepicker:refreshIntervalDefaults"]) == {
+    "pause": True,
+    "value": 0,
+}
+assert settings["histogram:barTarget"] == 50
+assert settings["discover:sampleSize"] == 500
+assert settings["doc_table:hideTimeColumn"] is False
+PY
+python3 - <<'PY'
+import json
+from pathlib import Path
+
 objects = [
     json.loads(line)
     for line in Path("config/dashboards/data-views-v1.ndjson")

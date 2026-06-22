@@ -60,6 +60,40 @@ The versioned machine-readable catalog is stored in
 referenced field exists in the canonical OpenSearch mapping and each data-view
 identifier is approved.
 
+## Discover investigation behavior
+
+Bootstrap applies consistent defaults from
+`config/dashboards/discover-settings-v1.json`:
+
+- default time range: previous 24 hours through now;
+- automatic refresh: paused, preventing surprise query load;
+- target histogram density: 50 time buckets;
+- maximum displayed sample: 500 events;
+- timestamp column: visible in the event table.
+
+Analysts can override the time range or refresh interval for an individual
+investigation. Prefer relative ranges such as **Last 15 minutes**, **Last 24
+hours**, or **Last 7 days** for repeatable operational work. Use absolute start
+and end times when preserving incident evidence.
+
+The Discover histogram groups matching events over `@timestamp`. Drag across a
+histogram interval to narrow the time range, or use the time picker to enter an
+exact range.
+
+To create a structured filter:
+
+1. Select **Add filter**.
+2. Choose a normalized field such as `source.ip`, `event.action`, or
+   `log.level`.
+3. Select an operator and value.
+4. Pin the filter only when it should follow the analyst between views.
+5. Disable a filter to compare results without deleting the investigation
+   context.
+
+Click the expand control beside an event to inspect the normalized field table
+and JSON representation. Use the field-table actions to include or exclude a
+value as a filter. Expansion does not alter the indexed event.
+
 Follow startup logs with:
 
 ```bash
