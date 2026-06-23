@@ -30,3 +30,8 @@ runtime/
 security/audits/*
 !security/audits/README.md
 !security/audits/.gitkeep
+
+# Raw, potentially sensitive usability observations stay local. Commit only a
+# reviewed aggregate report under docs/test-results/.
+usability/results/*
+!usability/results/README.md

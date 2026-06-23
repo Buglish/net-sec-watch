@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-dashboards logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-zeek up-suricata update-suricata-rules down down-opensearch-secure logs logs-opensearch logs-dashboards logs-zeek logs-suricata generate rotate verify gen-tls-certs test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -11,6 +11,12 @@ telemetry-readiness:
 
 security-audit:
 	./scripts/security-audit.sh
+
+ingestion-status:
+	./scripts/check-ingestion-status.py
+
+dashboards-bundle:
+	./scripts/build-dashboards-bundle.py
 
 up:
 	docker compose --env-file .env up -d
@@ -108,6 +114,21 @@ test-opensearch-retention:
 
 test-opensearch-dashboards:
 	./tests/opensearch/dashboards-smoke.sh
+
+test-dashboards-reproducibility:
+	./tests/opensearch/dashboards-reproducibility.sh
+
+test-event-export:
+	./tests/opensearch/export-events.sh
+
+test-analyst-states:
+	./tests/opensearch/analyst-states.sh
+
+test-usability-study:
+	python3 ./tests/dashboards/test-usability-study.py
+
+test-seven-day-searches:
+	./scripts/benchmark-seven-day-searches.py --insecure
 
 measure-opensearch-storage:
 	./tests/opensearch/storage-expansion.sh

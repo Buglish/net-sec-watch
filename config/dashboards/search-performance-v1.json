@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "objective": "NFR-03",
+  "window_days": 7,
+  "first_page_size": 50,
+  "warmup_iterations": 2,
+  "measured_iterations": 20,
+  "response_time_seconds": 3.0,
+  "required_percent": 95.0,
+  "design_load": {
+    "events_per_second": 100,
+    "minimum_total_documents": 60480000,
+    "minimum_documents_per_stream": 1000,
+    "description": "Seven days at the capacity-planning reference rate of 100 events per second."
+  }
+}

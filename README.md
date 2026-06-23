@@ -1,6 +1,6 @@
 # Net Sec Watch
 
-**Author:** Salomon du Preez
+**Author:** SJ du Preez
 
 **License:** [Apache License 2.0](LICENSE)
 
@@ -271,6 +271,17 @@ Open <http://127.0.0.1:5601> and sign in as `admin` using the generated
 `OPENSEARCH_INITIAL_ADMIN_PASSWORD` from the ignored `.env` file. The interface
 is localhost-only. See
 [docs/phase-5-opensearch-dashboards.md](docs/phase-5-opensearch-dashboards.md).
+Analysts should use
+[docs/phase-5-analyst-workflows.md](docs/phase-5-analyst-workflows.md) for DQL
+syntax, investigation playbooks, freshness checks, and bounded evidence export.
+The repeatable target-user study and anonymized result process are documented
+in
+[docs/phase-5-usability-test-plan.md](docs/phase-5-usability-test-plan.md).
+Seven-day first-page latency is measured against the versioned design-load
+profile described in
+[docs/phase-5-search-performance.md](docs/phase-5-search-performance.md).
+Managed Dashboards objects are packaged and round-trip tested as documented in
+[docs/phase-5-saved-object-reproducibility.md](docs/phase-5-saved-object-reproducibility.md).
 
 The service should report `Up`. Follow its output:
 
