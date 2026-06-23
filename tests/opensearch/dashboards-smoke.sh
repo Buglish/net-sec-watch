@@ -33,6 +33,7 @@ diagnostics() {
 
 trap cleanup EXIT
 cleanup
+"$repo_root/scripts/gen-tls-certs.sh"
 if ! compose up -d opensearch-dashboards-bootstrap; then
   diagnostics
   echo "FAIL: Dashboards data-view bootstrap did not complete." >&2
@@ -48,8 +49,9 @@ deadline=$((SECONDS + 240))
 status=""
 until status="$(
   curl --fail --silent \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
-    "http://127.0.0.1:${dashboards_port}/api/status"
+    "https://127.0.0.1:${dashboards_port}/api/status"
 )"; do
   if ((SECONDS >= deadline)); then
     diagnostics
@@ -72,9 +74,10 @@ PY
 
 anonymous_status="$(
   curl --silent \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --output /dev/null \
     --write-out '%{http_code}' \
-    "http://127.0.0.1:${dashboards_port}/api/status"
+    "https://127.0.0.1:${dashboards_port}/api/status"
 )"
 [[ "$anonymous_status" == "401" ]] || {
   diagnostics
@@ -84,9 +87,10 @@ anonymous_status="$(
 
 login_status="$(
   curl --silent \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --output /dev/null \
     --write-out '%{http_code}' \
-    "http://127.0.0.1:${dashboards_port}/app/login"
+    "https://127.0.0.1:${dashboards_port}/app/login"
 )"
 [[ "$login_status" =~ ^(200|302)$ ]] || {
   diagnostics
@@ -97,8 +101,9 @@ login_status="$(
 for view in application system network dead-letter; do
   saved_object="$(
     curl --fail --silent \
+      --cacert "$repo_root/config/tls/ca.crt" \
       --user "admin:${admin_credential}" \
-      "http://127.0.0.1:${dashboards_port}/api/saved_objects/index-pattern/net-sec-watch-${view}"
+      "https://127.0.0.1:${dashboards_port}/api/saved_objects/index-pattern/net-sec-watch-${view}"
   )"
   python3 - "$saved_object" "$view" <<'PY'
 import json
@@ -120,8 +125,9 @@ for search in \
   application-errors; do
   saved_search="$(
     curl --fail --silent \
+      --cacert "$repo_root/config/tls/ca.crt" \
       --user "admin:${admin_credential}" \
-      "http://127.0.0.1:${dashboards_port}/api/saved_objects/search/net-sec-watch-${search}"
+      "https://127.0.0.1:${dashboards_port}/api/saved_objects/search/net-sec-watch-${search}"
   )"
   python3 - "$saved_search" "$search" <<'PY'
 import json
@@ -146,8 +152,9 @@ done
 for dashboard in infrastructure application network security; do
   saved_dashboard="$(
     curl --fail --silent \
+      --cacert "$repo_root/config/tls/ca.crt" \
       --user "admin:${admin_credential}" \
-      "http://127.0.0.1:${dashboards_port}/api/saved_objects/dashboard/net-sec-watch-${dashboard}"
+      "https://127.0.0.1:${dashboards_port}/api/saved_objects/dashboard/net-sec-watch-${dashboard}"
   )"
   python3 - "$saved_dashboard" "$dashboard" <<'PY'
 import json
@@ -177,8 +184,9 @@ done
 
 state_guide="$(
   curl --fail --silent \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
-    "http://127.0.0.1:${dashboards_port}/api/saved_objects/visualization/net-sec-watch-analyst-state-guide"
+    "https://127.0.0.1:${dashboards_port}/api/saved_objects/visualization/net-sec-watch-analyst-state-guide"
 )"
 python3 - "$state_guide" <<'PY'
 import json
@@ -194,8 +202,9 @@ PY
 
 settings="$(
   curl --fail --silent \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
-    "http://127.0.0.1:${dashboards_port}/api/opensearch-dashboards/settings"
+    "https://127.0.0.1:${dashboards_port}/api/opensearch-dashboards/settings"
 )"
 python3 - "$settings" <<'PY'
 import json
@@ -227,6 +236,7 @@ PY
 echo "PASS: secured OpenSearch Dashboards status is available"
 echo "PASS: anonymous status access is rejected"
 echo "PASS: browser login endpoint is reachable on localhost"
+echo "PASS: browser traffic uses a CA-verified HTTPS endpoint"
 echo "PASS: approved application, system, network, and dead-letter data views exist"
 echo "PASS: four reproducible operational and security saved searches exist"
 echo "PASS: infrastructure, application, network, and security dashboards exist"

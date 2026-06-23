@@ -1,0 +1,53 @@
+services:
+  keycloak:
+    image: ${KEYCLOAK_IMAGE:-quay.io/keycloak/keycloak:26.2.5}
+    profiles: ["identity"]
+    command:
+      - start-dev
+      - --import-realm
+      - --hostname=http://127.0.0.1:18080
+      - --hostname-backchannel-dynamic=true
+      - --health-enabled=true
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-identity-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Run make init}
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?Run make init}
+      OIDC_TEST_USER_PASSWORD: ${OIDC_TEST_USER_PASSWORD:?Run make init}
+    ports:
+      - "${KEYCLOAK_BIND:-127.0.0.1}:${KEYCLOAK_PORT:-18080}:8080"
+    volumes:
+      - ./config/identity:/opt/keycloak/data/import:ro
+      - keycloak-data:/opt/keycloak/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000;
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3;
+          grep -q '"status": "UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  opensearch:
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ./config/opensearch-security/config-oidc.yml:/usr/share/opensearch/config/opensearch-security/config.yml:ro
+
+  opensearch-dashboards:
+    environment:
+      OPENSEARCH_DASHBOARDS_SERVICE_USERNAME: kibanaserver
+      OPENSEARCH_DASHBOARDS_SERVICE_PASSWORD: kibanaserver
+      OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?Run make init}
+      OIDC_BASE_REDIRECT_URL: https://127.0.0.1:${OPENSEARCH_DASHBOARDS_PORT:-5601}
+    depends_on:
+      keycloak:
+        condition: service_healthy
+    volumes:
+      - ./config/dashboards/opensearch_dashboards.identity.yml:/usr/share/opensearch-dashboards/config/opensearch_dashboards.yml:ro
+
+volumes:
+  keycloak-data:

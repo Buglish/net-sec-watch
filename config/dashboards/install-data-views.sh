@@ -2,6 +2,7 @@
 set -eu
 
 endpoint="${OPENSEARCH_DASHBOARDS_ENDPOINT:-http://opensearch-dashboards:5601}"
+ca_file="${OPENSEARCH_DASHBOARDS_CA_FILE:-/dashboards-tls/ca.crt}"
 credentials="$(printf '%s:%s' \
   "$OPENSEARCH_DASHBOARDS_USERNAME" \
   "$OPENSEARCH_DASHBOARDS_PASSWORD")"
@@ -10,6 +11,7 @@ discover_settings="/dashboards-config/discover-settings-v1.json"
 attempt=0
 
 until curl --fail --silent --show-error \
+  --cacert "$ca_file" \
   --user "$credentials" \
   "${endpoint}/api/status" >/dev/null; do
   attempt=$((attempt + 1))
@@ -21,6 +23,7 @@ until curl --fail --silent --show-error \
 done
 
 curl --fail --silent --show-error \
+  --cacert "$ca_file" \
   --user "$credentials" \
   --header "osd-xsrf: true" \
   --form "file=@${managed_objects};type=application/ndjson" \
@@ -30,6 +33,7 @@ echo
 echo "Installed Net Sec Watch managed saved-object bundle"
 
 curl --fail --silent --show-error \
+  --cacert "$ca_file" \
   --user "$credentials" \
   --header "Content-Type: application/json" \
   --header "osd-xsrf: true" \

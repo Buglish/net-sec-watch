@@ -2,3 +2,4 @@
 {"log":"example warning from container\n","stream":"stderr","time":"2026-06-19T20:00:02.000000000Z"}
 
 {"log":"generated container event\n","stream":"stdout","time":"2026-06-19T21:50:50.000000000Z"}
+{"log":"generated container event\n","stream":"stdout","time":"2026-06-23T08:29:30.000000000Z"}

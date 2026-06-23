@@ -1,0 +1,39 @@
+_meta:
+  type: "config"
+  config_version: 2
+
+config:
+  dynamic:
+    http:
+      anonymous_auth_enabled: false
+      xff:
+        enabled: false
+    authc:
+      basic_internal_auth_domain:
+        description: "Emergency and service authentication"
+        http_enabled: true
+        transport_enabled: true
+        order: 0
+        http_authenticator:
+          type: basic
+          challenge: false
+        authentication_backend:
+          type: internal
+      oidc_auth_domain:
+        description: "Centralized Net Sec Watch OIDC authentication"
+        http_enabled: true
+        transport_enabled: true
+        order: 1
+        http_authenticator:
+          type: openid
+          challenge: false
+          config:
+            subject_key: preferred_username
+            roles_key: roles
+            required_audience: net-sec-watch-dashboards
+            required_issuer: http://127.0.0.1:18080/realms/net-sec-watch
+            openid_connect_url: http://keycloak:8080/realms/net-sec-watch/.well-known/openid-configuration
+            jwt_clock_skew_tolerance_seconds: 30
+        authentication_backend:
+          type: noop
+    authz: {}

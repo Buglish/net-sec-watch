@@ -33,9 +33,15 @@ services:
       OPENSEARCH_USERNAME: kibanaserver
       OPENSEARCH_PASSWORD: kibanaserver
       DISABLE_SECURITY_DASHBOARDS_PLUGIN: "false"
+      SERVER_SSL_ENABLED: "true"
+      SERVER_SSL_CERTIFICATE: /usr/share/opensearch-dashboards/config/tls/dashboards.crt
+      SERVER_SSL_KEY: /usr/share/opensearch-dashboards/config/tls/dashboards.key
+      SERVER_SSL_SUPPORTEDPROTOCOLS: '["TLSv1.2","TLSv1.3"]'
     depends_on:
       opensearch-bootstrap:
         condition: service_completed_successfully
+    volumes:
+      - ${TLS_CERT_DIR:-./config/tls}:/usr/share/opensearch-dashboards/config/tls:ro
 
   opensearch-dashboards-bootstrap:
     image: ${CURL_IMAGE:-curlimages/curl:8.17.0}
@@ -44,13 +50,15 @@ services:
       opensearch-dashboards:
         condition: service_started
     environment:
-      OPENSEARCH_DASHBOARDS_ENDPOINT: http://opensearch-dashboards:5601
+      OPENSEARCH_DASHBOARDS_ENDPOINT: https://opensearch-dashboards:5601
       OPENSEARCH_DASHBOARDS_USERNAME: ${OPENSEARCH_USERNAME:-admin}
       OPENSEARCH_DASHBOARDS_PASSWORD: ${OPENSEARCH_INITIAL_ADMIN_PASSWORD:?Run make init}
+      OPENSEARCH_DASHBOARDS_CA_FILE: /dashboards-tls/ca.crt
     entrypoint: ["/bin/sh", "/dashboards-config/install-data-views.sh"]
     restart: "no"
     volumes:
       - ./config/dashboards:/dashboards-config:ro
+      - ${TLS_CERT_DIR:-./config/tls}:/dashboards-tls:ro
 
   opensearch-bootstrap:
     image: ${CURL_IMAGE:-curlimages/curl:8.17.0}
