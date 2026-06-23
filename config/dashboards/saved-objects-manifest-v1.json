@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "bundle": "managed-saved-objects-v1.ndjson",
+  "sources": [
+    "data-views-v1.ndjson",
+    "saved-searches-v1.ndjson",
+    "analyst-states-v1.ndjson",
+    "dashboards-v1.ndjson"
+  ],
+  "expected_types": {
+    "index-pattern": 4,
+    "search": 4,
+    "visualization": 1,
+    "dashboard": 4
+  }
+}

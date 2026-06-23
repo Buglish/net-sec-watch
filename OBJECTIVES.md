@@ -222,14 +222,14 @@ visualizing, saving, and exporting log evidence.
 - [x] Create infrastructure, application, network, and security dashboards.
 - [x] Add bounded CSV or JSON export.
 - [x] Add clear empty-result, query-error, and delayed-ingestion states.
-- [ ] Document query syntax and analyst workflows.
+- [x] Document query syntax and analyst workflows.
 - [ ] Perform usability testing with target users.
 
 ### Completion gate
 
 - [ ] An analyst can complete the agreed investigation scenarios without direct server access.
 - [ ] Standard seven-day searches meet the agreed response-time target.
-- [ ] Saved searches and dashboards are exportable and reproducible.
+- [x] Saved searches and dashboards are exportable and reproducible.
 
 ---
 

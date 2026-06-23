@@ -40,6 +40,13 @@ python3 ./tests/dashboards/test-saved-searches.py
 python3 ./tests/dashboards/test-dashboards.py
 python3 ./tests/dashboards/test-export-events.py
 python3 ./tests/dashboards/test-ingestion-status.py
+python3 ./tests/dashboards/test-analyst-workflows.py
+python3 ./tests/dashboards/test-usability-study.py
+python3 ./tests/dashboards/test-search-performance.py
+python3 ./tests/dashboards/test-saved-object-bundle.py
+./scripts/build-dashboards-bundle.py --check
+python3 ./scripts/compare-dashboards-export.py --help >/dev/null
+python3 ./scripts/benchmark-seven-day-searches.py --help >/dev/null
 ./tests/opensearch/check-config.sh
 
 if command -v shellcheck >/dev/null 2>&1; then

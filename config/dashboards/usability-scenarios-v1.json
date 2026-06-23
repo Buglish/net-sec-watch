@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "study_id": "phase-5-analyst-usability",
+  "minimum_participants": 3,
+  "approved_profiles": [
+    "security-analyst",
+    "network-analyst",
+    "operations-engineer"
+  ],
+  "acceptance": {
+    "minimum_profile_count": 2,
+    "minimum_scenario_success_rate": 0.8,
+    "maximum_server_access_uses": 0,
+    "maximum_median_difficulty": 3,
+    "minimum_mean_confidence": 4
+  },
+  "scenarios": [
+    {
+      "id": "authentication-failure-triage",
+      "title": "Triage failed authentication activity",
+      "time_limit_seconds": 600,
+      "starting_point": "OpenSearch Dashboards home",
+      "success_criteria": [
+        "Opens the managed authentication-failures investigation",
+        "Sets and records an appropriate time range",
+        "Identifies source and affected host fields",
+        "Verifies a representative event against event.original"
+      ]
+    },
+    {
+      "id": "firewall-drop-investigation",
+      "title": "Investigate denied router or firewall traffic",
+      "time_limit_seconds": 600,
+      "starting_point": "OpenSearch Dashboards home",
+      "success_criteria": [
+        "Opens the managed suspicious-network investigation",
+        "Narrows results using source or destination fields",
+        "Identifies the action, protocol, and endpoint tuple",
+        "Verifies a representative event against event.original"
+      ]
+    },
+    {
+      "id": "parser-failure-diagnosis",
+      "title": "Diagnose a parser or dead-letter event",
+      "time_limit_seconds": 480,
+      "starting_point": "OpenSearch Dashboards home",
+      "success_criteria": [
+        "Opens the managed parser-failures investigation",
+        "Identifies the source dataset and failed stage",
+        "Finds a representative original record",
+        "Explains why empty results and ingestion failure differ"
+      ]
+    },
+    {
+      "id": "application-incident-investigation",
+      "title": "Investigate an application failure",
+      "time_limit_seconds": 600,
+      "starting_point": "OpenSearch Dashboards home",
+      "success_criteria": [
+        "Opens the managed application-errors investigation",
+        "Narrows results by service or host",
+        "Finds the earliest relevant failure in the incident window",
+        "Records evidence fields without direct server access"
+      ]
+    }
+  ]
+}

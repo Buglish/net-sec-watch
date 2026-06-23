@@ -19,6 +19,16 @@ Open <http://127.0.0.1:5601> and sign in with:
 - password: the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` value in the ignored
   `.env` file
 
+For step-by-step query syntax, investigation scenarios, freshness checks, and
+evidence handling, use the
+[analyst query and investigation guide](phase-5-analyst-workflows.md).
+Target-user validation follows the
+[Phase 5 usability test plan](phase-5-usability-test-plan.md).
+The NFR-03 response-time gate follows the
+[seven-day search performance procedure](phase-5-search-performance.md).
+Export and clean-restore verification follow the
+[saved-object reproducibility procedure](phase-5-saved-object-reproducibility.md).
+
 Startup idempotently imports these approved data views:
 
 | Data view | Index pattern | Time field |
