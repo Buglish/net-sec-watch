@@ -1,0 +1,23 @@
+server.name: net-sec-watch
+server.host: "0.0.0.0"
+server.ssl.enabled: true
+server.ssl.certificate: /usr/share/opensearch-dashboards/config/tls/dashboards.crt
+server.ssl.key: /usr/share/opensearch-dashboards/config/tls/dashboards.key
+server.ssl.supportedProtocols: ["TLSv1.2", "TLSv1.3"]
+
+opensearch.hosts: ["https://opensearch:9200"]
+opensearch.ssl.verificationMode: none
+opensearch.username: ${OPENSEARCH_DASHBOARDS_SERVICE_USERNAME}
+opensearch.password: >-
+  ${OPENSEARCH_DASHBOARDS_SERVICE_PASSWORD}
+opensearch.requestHeadersAllowlist: ["Authorization", "securitytenant"]
+
+opensearch_security.auth.multiple_auth_enabled: true
+opensearch_security.auth.type: ["basicauth", "openid"]
+opensearch_security.ui.openid.login.buttonname: "Net Sec Watch SSO"
+opensearch_security.openid.connect_url: "http://keycloak:8080/realms/net-sec-watch/.well-known/openid-configuration"
+opensearch_security.openid.client_id: "net-sec-watch-dashboards"
+opensearch_security.openid.client_secret: >-
+  ${OIDC_CLIENT_SECRET}
+opensearch_security.openid.base_redirect_url: ${OIDC_BASE_REDIRECT_URL}
+opensearch_security.cookie.secure: true

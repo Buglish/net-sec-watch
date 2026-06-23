@@ -84,8 +84,17 @@ grep -Fq 'DISABLE_SECURITY_DASHBOARDS_PLUGIN: "false"' \
   echo "Secure Dashboards does not enable the Security plugin." >&2
   exit 1
 }
+grep -Fq 'SERVER_SSL_ENABLED: "true"' <<<"$secure_config" || {
+  echo "Secure Dashboards does not enable browser HTTPS." >&2
+  exit 1
+}
+grep -Fq '/usr/share/opensearch-dashboards/config/tls/dashboards.crt' \
+  <<<"$secure_config" || {
+  echo "Secure Dashboards certificate is not mounted." >&2
+  exit 1
+}
 grep -Fq 'OPENSEARCH_SSL_VERIFICATIONMODE: none' <<<"$secure_config" || {
-  echo "Secure Dashboards does not declare demo-certificate handling." >&2
+  echo "Secure Dashboards does not declare the OpenSearch demo-CA exception." >&2
   exit 1
 }
 grep -Fq 'OPENSEARCH_USERNAME: kibanaserver' <<<"$secure_config" || {
@@ -186,6 +195,16 @@ grep -Fq 'tls                  On' \
   echo "TLS is not enabled in the Fluent Bit OpenSearch output." >&2
   exit 1
 }
+grep -Fq 'Port               6514' \
+  config/fluent-bit.opensearch.conf.example || {
+  echo "TLS syslog input is missing from the secure collector profile." >&2
+  exit 1
+}
+grep -Fq 'tls.crt_file       /fluent-bit/etc/tls/server.crt' \
+  config/fluent-bit.opensearch.conf.example || {
+  echo "TLS syslog certificate is missing from the secure collector profile." >&2
+  exit 1
+}
 for stream in application system network dead-letter; do
   grep -Fq "Index                net-sec-watch-${stream}-\${DEPLOYMENT_ENVIRONMENT}" \
     config/fluent-bit.opensearch.conf.example || {
@@ -218,6 +237,50 @@ for private_file in .env config/fluent-bit.opensearch.conf; do
 done
 
 echo "Authenticated TLS ingestion configuration is valid."
+
+identity_config="$(
+  docker compose \
+    --env-file .env \
+    --file compose.yaml \
+    --file compose.opensearch-secure.yaml \
+    --file compose.identity.yaml \
+    --profile opensearch \
+    --profile identity config
+)"
+grep -Fq 'quay.io/keycloak/keycloak:26.2.5' <<<"$identity_config" || {
+  echo "Keycloak image is not pinned to the approved version." >&2
+  exit 1
+}
+grep -Fq 'opensearch_dashboards.identity.yml' <<<"$identity_config" || {
+  echo "Dashboards identity configuration is not mounted." >&2
+  exit 1
+}
+grep -Fq 'config-oidc.yml' <<<"$identity_config" || {
+  echo "OpenSearch OIDC security configuration is not mounted." >&2
+  exit 1
+}
+grep -Fq 'openid_connect_url:' \
+  config/opensearch-security/config-oidc.yml || {
+  echo "OpenSearch OIDC discovery configuration is missing." >&2
+  exit 1
+}
+grep -Fq 'opensearch_security.auth.multiple_auth_enabled: true' \
+  config/dashboards/opensearch_dashboards.identity.yml || {
+  echo "Dashboards multiple authentication is not enabled." >&2
+  exit 1
+}
+grep -Fq 'opensearch_security.auth.type: ["basicauth", "openid"]' \
+  config/dashboards/opensearch_dashboards.identity.yml || {
+  echo "Dashboards OIDC authentication types are missing." >&2
+  exit 1
+}
+grep -Fq "\${OIDC_CLIENT_SECRET}" \
+  config/identity/net-sec-watch-realm.json || {
+  echo "Keycloak realm does not use the runtime client-secret placeholder." >&2
+  exit 1
+}
+
+echo "Centralized OIDC identity configuration is valid."
 
 python3 - <<'PY'
 import json

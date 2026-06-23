@@ -33,7 +33,7 @@
 #     Mem_Buf_Limit      20M
 #     tls                on
 #     tls.verify         off
-#     tls.cert_file      /fluent-bit/etc/tls/server.crt
+#     tls.crt_file       /fluent-bit/etc/tls/server.crt
 #     tls.key_file       /fluent-bit/etc/tls/server.key
 #
 # Add the transport and enrichment filters for the TLS input:

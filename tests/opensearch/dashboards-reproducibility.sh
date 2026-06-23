@@ -39,25 +39,28 @@ diagnostics() {
 export_objects() {
   local output="$1"
   curl --fail --silent --show-error \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
     --header "Content-Type: application/json" \
     --header "osd-xsrf: true" \
     --request POST \
     --data-binary "@${request_file}" \
-    "http://127.0.0.1:${dashboards_port}/api/saved_objects/_export" \
+    "https://127.0.0.1:${dashboards_port}/api/saved_objects/_export" \
     --output "$output"
 }
 
 import_bundle() {
   curl --fail --silent --show-error \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
     --header "osd-xsrf: true" \
     --form "file=@${bundle};type=application/ndjson" \
-    "http://127.0.0.1:${dashboards_port}/api/saved_objects/_import?overwrite=true"
+    "https://127.0.0.1:${dashboards_port}/api/saved_objects/_import?overwrite=true"
 }
 
 trap cleanup EXIT
 cleanup
+"$repo_root/scripts/gen-tls-certs.sh"
 
 "$repo_root/scripts/build-dashboards-bundle.py" --check
 
@@ -94,8 +97,9 @@ fi
 
 deadline=$((SECONDS + 240))
 until curl --fail --silent \
+  --cacert "$repo_root/config/tls/ca.crt" \
   --user "admin:${admin_credential}" \
-  "http://127.0.0.1:${dashboards_port}/api/status" >/dev/null; do
+  "https://127.0.0.1:${dashboards_port}/api/status" >/dev/null; do
   if ((SECONDS >= deadline)); then
     diagnostics
     echo "FAIL: OpenSearch Dashboards did not become reachable." >&2
@@ -109,10 +113,11 @@ export_objects "$initial_export"
 
 while IFS=$'\t' read -r type object_id; do
   curl --fail --silent --show-error \
+    --cacert "$repo_root/config/tls/ca.crt" \
     --user "admin:${admin_credential}" \
     --header "osd-xsrf: true" \
     --request DELETE \
-    "http://127.0.0.1:${dashboards_port}/api/saved_objects/${type}/${object_id}" \
+    "https://127.0.0.1:${dashboards_port}/api/saved_objects/${type}/${object_id}" \
     >/dev/null
 done < <(
   python3 - "$bundle" <<'PY'
@@ -130,10 +135,11 @@ PY
 while IFS=$'\t' read -r type object_id; do
   status="$(
     curl --silent \
+      --cacert "$repo_root/config/tls/ca.crt" \
       --user "admin:${admin_credential}" \
       --output /dev/null \
       --write-out '%{http_code}' \
-      "http://127.0.0.1:${dashboards_port}/api/saved_objects/${type}/${object_id}"
+      "https://127.0.0.1:${dashboards_port}/api/saved_objects/${type}/${object_id}"
   )"
   [[ "$status" == "404" ]] || {
     echo "FAIL: ${type}/${object_id} remained after clean-up." >&2

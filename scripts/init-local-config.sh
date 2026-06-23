@@ -44,5 +44,25 @@ if ! grep -Eq '^OPENSEARCH_INITIAL_ADMIN_PASSWORD=.+$' .env; then
   echo "Generated OPENSEARCH_INITIAL_ADMIN_PASSWORD in ignored .env"
 fi
 
+generate_if_missing() {
+  local name="$1"
+  local prefix="$2"
+  if grep -Eq "^${name}=.+$" .env; then
+    return
+  fi
+  local generated_value
+  generated_value="${prefix}-$(openssl rand -hex 16)-A9!"
+  if grep -q "^${name}=" .env; then
+    sed -i "s|^${name}=.*|${name}=${generated_value}|" .env
+  else
+    printf '\n%s=%s\n' "$name" "$generated_value" >>.env
+  fi
+  echo "Generated ${name} in ignored .env"
+}
+
+generate_if_missing KEYCLOAK_ADMIN_PASSWORD Nsw-idp-admin
+generate_if_missing OIDC_CLIENT_SECRET Nsw-oidc-client
+generate_if_missing OIDC_TEST_USER_PASSWORD Nsw-oidc-user
+
 echo
 echo "Local files are Git-ignored. Review .env before running Docker Compose."

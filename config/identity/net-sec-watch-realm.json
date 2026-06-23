@@ -1,0 +1,85 @@
+{
+  "realm": "net-sec-watch",
+  "enabled": true,
+  "displayName": "Net Sec Watch",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "loginWithEmailAllowed": true,
+  "roles": {
+    "realm": [
+      {"name": "net-sec-watch-analyst"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "net-sec-watch-dashboards",
+      "name": "Net Sec Watch OpenSearch Dashboards",
+      "enabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${OIDC_CLIENT_SECRET}",
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "https://127.0.0.1:5601/*",
+        "https://127.0.0.1:15604/*",
+        "https://localhost:5601/*",
+        "https://localhost:15604/*"
+      ],
+      "webOrigins": [
+        "https://127.0.0.1:5601",
+        "https://127.0.0.1:15604",
+        "https://localhost:5601",
+        "https://localhost:15604"
+      ],
+      "protocolMappers": [
+        {
+          "name": "realm roles",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "access.token.claim": "true",
+            "id.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "dashboards audience",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-audience-mapper",
+          "consentRequired": false,
+          "config": {
+            "included.client.audience": "net-sec-watch-dashboards",
+            "access.token.claim": "true",
+            "id.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "oidc-test-analyst",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc-test-analyst@example.invalid",
+      "firstName": "OIDC Test",
+      "lastName": "Analyst",
+      "realmRoles": ["net-sec-watch-analyst"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OIDC_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    }
+  ]
+}

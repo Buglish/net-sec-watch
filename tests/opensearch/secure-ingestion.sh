@@ -65,6 +65,20 @@ until curl --fail --silent \
   sleep 1
 done
 
+tls_probe="$(
+  timeout 10 openssl s_client \
+    -connect 127.0.0.1:16515 \
+    -servername net-sec-watch-syslog \
+    -CAfile "$repo_root/config/tls/ca.crt" \
+    -verify_return_error \
+    </dev/null 2>&1 || true
+)"
+grep -Fq 'Verification: OK' <<<"$tls_probe" || {
+  echo "$tls_probe" >&2
+  echo "FAIL: TLS syslog endpoint did not present a trusted certificate." >&2
+  exit 1
+}
+
 printf '<134>%s stream-router data-stream-test: network stream marker\n' \
   "$(date '+%b %d %H:%M:%S')" |
   nc -u -w1 127.0.0.1 15141
@@ -456,6 +470,7 @@ assert set(result["conditions"]) == {
 ' <<<"$rollover_check"
 
 echo "PASS: authenticated TLS ingestion indexed $count events into class data streams"
+echo "PASS: TLS syslog entry point presented a CA-verified server certificate"
 echo "PASS: explicit mappings installed and dynamic fields stayed unindexed"
 echo "PASS: hot-warm-archive-delete lifecycle and data-stream rollover are valid"
 echo "PASS: adaptive replicas and disk allocation watermarks are active"

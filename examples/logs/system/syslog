@@ -2,3 +2,4 @@ Jun 20 08:00:00 demo-host systemd[1]: Started Net Sec Watch demo service.
 Jun 20 08:00:03 demo-host sshd[1024]: Accepted publickey for demo from 192.0.2.10 port 49152 ssh2
 
 Jun 20 09:50:50 demo-host sample-generator[1]: generated system event
+Jun 23 20:29:30 demo-host sample-generator[1]: generated system event

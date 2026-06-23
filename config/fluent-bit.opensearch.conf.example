@@ -5,6 +5,54 @@
 
 @INCLUDE /fluent-bit/etc/fluent-bit.base.conf
 
+# Encrypted RFC 5424 syslog entry point. TCP/6514 is the secure default for
+# devices that support TLS; legacy UDP/TCP inputs remain available separately.
+[INPUT]
+    Name               syslog
+    Mode               tcp
+    Listen             0.0.0.0
+    Port               6514
+    Parser             syslog-rfc5424
+    Tag                net.syslog.input.tls
+    Source_Address_Key net.src_ip
+    storage.type       filesystem
+    Mem_Buf_Limit      20M
+    tls                On
+    tls.verify         Off
+    tls.crt_file       /fluent-bit/etc/tls/server.crt
+    tls.key_file       /fluent-bit/etc/tls/server.key
+
+[FILTER]
+    Name    record_modifier
+    Match   net.syslog.input.tls
+    Record  net.transport  tcp+tls
+
+[FILTER]
+    Name         rewrite_tag
+    Match        net.syslog.input.tls
+    Rule         $host  \S+  net.syslog.tls           false
+    Rule         $log   .*   net.syslog.deadletter    false
+    Rule         $pri   .+   net.syslog.deadletter    false
+    Emitter_Name syslog_tls_router
+
+[FILTER]
+    Name    lua
+    Match   net.syslog.tls
+    script  /fluent-bit/etc/scripts/syslog_metadata.lua
+    call    enrich_syslog
+
+[FILTER]
+    Name    lua
+    Match   net.syslog.tls
+    script  /fluent-bit/etc/scripts/network_normalization.lua
+    call    normalize_network_event
+
+[FILTER]
+    Name    lua
+    Match   net.syslog.tls
+    script  /fluent-bit/etc/scripts/canonical_normalization.lua
+    call    normalize_canonical_event
+
 # Remove redundant scalar aliases that conflict with canonical dotted fields
 # when OpenSearch expands them as objects (for example log vs log.file.path).
 [FILTER]

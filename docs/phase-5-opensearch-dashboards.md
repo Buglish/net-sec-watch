@@ -13,7 +13,7 @@ make init
 make up-dashboards-secure
 ```
 
-Open <http://127.0.0.1:5601> and sign in with:
+Open <https://127.0.0.1:5601> and sign in with:
 
 - username: `admin`
 - password: the `OPENSEARCH_INITIAL_ADMIN_PASSWORD` value in the ignored
@@ -236,13 +236,14 @@ make down-opensearch-secure
 
 ## Local security boundary
 
-The browser port binds to `127.0.0.1` by default. Dashboards connects to
-OpenSearch using HTTPS and the built-in `kibanaserver` service identity. The
-demo OpenSearch certificate is not verified in this development deployment.
+The browser port binds to `127.0.0.1` by default and serves HTTPS using the
+ignored local Dashboards certificate. Dashboards connects to OpenSearch using
+HTTPS and the built-in `kibanaserver` service identity. The demo OpenSearch
+certificate is not verified in this development deployment.
 
-Do not expose port 5601 to a LAN or the internet. Browser TLS, centralized
-identity, role-based access, and production certificate verification are Phase
-6 objectives.
+Do not expose port 5601 to a LAN or the internet. Centralized identity,
+role-based access, and production certificate verification remain Phase 6
+objectives.
 
 ## Unsecured development mode
 

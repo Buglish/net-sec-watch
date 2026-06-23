@@ -267,7 +267,7 @@ To start the secured OpenSearch Dashboards interface:
 make up-dashboards-secure
 ```
 
-Open <http://127.0.0.1:5601> and sign in as `admin` using the generated
+Open <https://127.0.0.1:5601> and sign in as `admin` using the generated
 `OPENSEARCH_INITIAL_ADMIN_PASSWORD` from the ignored `.env` file. The interface
 is localhost-only. See
 [docs/phase-5-opensearch-dashboards.md](docs/phase-5-opensearch-dashboards.md).
@@ -282,6 +282,10 @@ profile described in
 [docs/phase-5-search-performance.md](docs/phase-5-search-performance.md).
 Managed Dashboards objects are packaged and round-trip tested as documented in
 [docs/phase-5-saved-object-reproducibility.md](docs/phase-5-saved-object-reproducibility.md).
+Secure traffic coverage and local certificate setup are documented in
+[docs/phase-6-tls-coverage.md](docs/phase-6-tls-coverage.md).
+Optional centralized login through self-hosted Keycloak OIDC is documented in
+[docs/phase-6-oidc-keycloak.md](docs/phase-6-oidc-keycloak.md).
 
 The service should report `Up`. Follow its output:
 

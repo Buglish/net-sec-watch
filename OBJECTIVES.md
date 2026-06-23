@@ -238,8 +238,8 @@ visualizing, saving, and exporting log evidence.
 **Outcome:** Collection and analysis protect sensitive logs through
 authentication, authorization, encryption, redaction, and audit controls.
 
-- [ ] Enable TLS for browser, API, ingestion, and cluster traffic.
-- [ ] Integrate OIDC, SAML, LDAP, or Active Directory.
+- [x] Enable TLS for browser, API, ingestion, and cluster traffic.
+- [x] Integrate OIDC, SAML, LDAP, or Active Directory.
 - [ ] Define administrator, analyst, read-only, source-owner, and service roles.
 - [ ] Restrict data by data stream, tenant, field, or document where required.
 - [ ] Enable security audit logging.
