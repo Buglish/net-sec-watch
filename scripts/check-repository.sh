@@ -47,6 +47,7 @@ python3 ./tests/dashboards/test-saved-object-bundle.py
 ./scripts/build-dashboards-bundle.py --check
 python3 ./scripts/compare-dashboards-export.py --help >/dev/null
 python3 ./scripts/benchmark-seven-day-searches.py --help >/dev/null
+python3 ./tests/security/test-phase-6-security.py
 ./tests/opensearch/tls-certificate-config.sh
 python3 -m json.tool \
   config/identity/net-sec-watch-realm.json >/dev/null

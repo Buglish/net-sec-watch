@@ -217,6 +217,16 @@ value. If local UDP tests work but router events do not appear, check the
 Windows firewall rule, router destination address, and whether the Wi-Fi
 network is marked **Private** in Windows.
 
+### RT-AC68U verification evidence
+
+The RT-AC68U UDP syslog completion gate is tracked in
+`docs/test-results/phase-2-rt-ac68u-udp-syslog.md`.
+
+The verified scope is system events and selected firewall/drop events exposed by
+stock Asuswrt. This does not turn router syslog into complete network-flow
+telemetry; use Zeek or Suricata on mirrored, tapped, or gateway traffic for
+fuller connection metadata.
+
 ## WSL2 port forwarding
 
 On WSL2, Docker runs inside a virtual machine with its own IP (172.x.x.x).

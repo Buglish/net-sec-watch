@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "classes": {
+    "public": {
+      "description": "Operational metadata that can be shared publicly after review.",
+      "default_retention_days": 30
+    },
+    "internal": {
+      "description": "Routine platform and application logs.",
+      "default_retention_days": 90
+    },
+    "confidential": {
+      "description": "Security events, network metadata, usernames, hostnames, internal IP addresses, and troubleshooting payloads.",
+      "default_retention_days": 180
+    },
+    "restricted": {
+      "description": "Secrets, credentials, tokens, private keys, session cookies, regulated identifiers, and highly sensitive payloads.",
+      "default_retention_days": 30,
+      "collector_action": "redact_or_hash_before_ingestion"
+    }
+  },
+  "source_onboarding_review": {
+    "required_before_production": true,
+    "required_fields": [
+      "source.name",
+      "source.owner",
+      "source.environment",
+      "expected.event.datasets",
+      "data.classification",
+      "sensitive.fields",
+      "retention.policy",
+      "access.roles",
+      "redaction.approval",
+      "legal.privacy.review"
+    ]
+  },
+  "default_classification": "confidential"
+}

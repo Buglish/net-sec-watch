@@ -12,7 +12,11 @@ services:
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN_USERNAME:-identity-admin}
       KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:?Run make init}
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?Run make init}
+      OIDC_ADMIN_USER_PASSWORD: ${OIDC_ADMIN_USER_PASSWORD:?Run make init}
       OIDC_TEST_USER_PASSWORD: ${OIDC_TEST_USER_PASSWORD:?Run make init}
+      OIDC_READ_ONLY_USER_PASSWORD: ${OIDC_READ_ONLY_USER_PASSWORD:?Run make init}
+      OIDC_SOURCE_OWNER_USER_PASSWORD: ${OIDC_SOURCE_OWNER_USER_PASSWORD:?Run make init}
+      OIDC_SERVICE_USER_PASSWORD: ${OIDC_SERVICE_USER_PASSWORD:?Run make init}
     ports:
       - "${KEYCLOAK_BIND:-127.0.0.1}:${KEYCLOAK_PORT:-18080}:8080"
     volumes:
@@ -36,12 +40,16 @@ services:
         condition: service_healthy
     volumes:
       - ./config/opensearch-security/config-oidc.yml:/usr/share/opensearch/config/opensearch-security/config.yml:ro
+      - ./config/opensearch-security/roles-v1.json:/usr/share/opensearch/config/opensearch-security/roles-v1.json:ro
+      - ./config/opensearch-security/roles-mapping-v1.json:/usr/share/opensearch/config/opensearch-security/roles-mapping-v1.json:ro
+      - ./config/opensearch-security/audit-v1.json:/usr/share/opensearch/config/opensearch-security/audit-v1.json:ro
 
   opensearch-dashboards:
     environment:
       OPENSEARCH_DASHBOARDS_SERVICE_USERNAME: kibanaserver
       OPENSEARCH_DASHBOARDS_SERVICE_PASSWORD: kibanaserver
       OIDC_CLIENT_SECRET: ${OIDC_CLIENT_SECRET:?Run make init}
+      OIDC_ADMIN_USER_PASSWORD: ${OIDC_ADMIN_USER_PASSWORD:?Run make init}
       OIDC_BASE_REDIRECT_URL: https://127.0.0.1:${OPENSEARCH_DASHBOARDS_PORT:-5601}
     depends_on:
       keycloak:

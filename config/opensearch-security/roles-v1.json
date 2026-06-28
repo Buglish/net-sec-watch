@@ -1,0 +1,194 @@
+{
+  "net_sec_watch_admin": {
+    "reserved": false,
+    "hidden": false,
+    "description": "Net Sec Watch platform administrator. Full cluster, index, tenant, and security administration.",
+    "cluster_permissions": [
+      "cluster_all"
+    ],
+    "index_permissions": [
+      {
+        "index_patterns": [
+          "net-sec-watch-*",
+          ".opensearch-dashboards*",
+          ".kibana*"
+        ],
+        "allowed_actions": [
+          "indices_all"
+        ]
+      }
+    ],
+    "tenant_permissions": [
+      {
+        "tenant_patterns": [
+          "global_tenant",
+          "net-sec-watch-*"
+        ],
+        "allowed_actions": [
+          "kibana_all_write"
+        ]
+      }
+    ]
+  },
+  "net_sec_watch_analyst": {
+    "reserved": false,
+    "hidden": false,
+    "description": "Security analyst. Search all approved Net Sec Watch streams, save investigations, and export approved results.",
+    "cluster_permissions": [
+      "cluster_composite_ops_ro",
+      "cluster_monitor"
+    ],
+    "index_permissions": [
+      {
+        "index_patterns": [
+          "net-sec-watch-application-*",
+          "net-sec-watch-system-*",
+          "net-sec-watch-network-*",
+          "net-sec-watch-dead-letter-*"
+        ],
+        "allowed_actions": [
+          "read",
+          "search",
+          "indices:data/read/field_caps",
+          "indices:admin/resolve/index"
+        ],
+        "masked_fields": [
+          "user.password",
+          "http.request.headers.authorization",
+          "http.request.headers.cookie",
+          "api.key",
+          "*.token",
+          "*.secret"
+        ]
+      }
+    ],
+    "tenant_permissions": [
+      {
+        "tenant_patterns": [
+          "global_tenant",
+          "net-sec-watch-analyst"
+        ],
+        "allowed_actions": [
+          "kibana_all_write"
+        ]
+      }
+    ]
+  },
+  "net_sec_watch_read_only": {
+    "reserved": false,
+    "hidden": false,
+    "description": "Read-only reviewer. Search approved streams but cannot save objects, export, or change configuration.",
+    "cluster_permissions": [
+      "cluster_composite_ops_ro"
+    ],
+    "index_permissions": [
+      {
+        "index_patterns": [
+          "net-sec-watch-application-*",
+          "net-sec-watch-system-*",
+          "net-sec-watch-network-*"
+        ],
+        "allowed_actions": [
+          "read",
+          "search",
+          "indices:data/read/field_caps"
+        ],
+        "fls": [
+          "~event.original",
+          "~message.raw",
+          "~http.request.headers.*",
+          "~user.password",
+          "~api.key",
+          "~*.token",
+          "~*.secret"
+        ],
+        "masked_fields": [
+          "user.email",
+          "source.user.email",
+          "destination.user.email"
+        ]
+      }
+    ],
+    "tenant_permissions": [
+      {
+        "tenant_patterns": [
+          "global_tenant"
+        ],
+        "allowed_actions": [
+          "kibana_all_read"
+        ]
+      }
+    ]
+  },
+  "net_sec_watch_source_owner": {
+    "reserved": false,
+    "hidden": false,
+    "description": "Source owner. Search data for sources explicitly assigned to the user's source_owner attribute.",
+    "cluster_permissions": [
+      "cluster_composite_ops_ro"
+    ],
+    "index_permissions": [
+      {
+        "index_patterns": [
+          "net-sec-watch-application-*",
+          "net-sec-watch-system-*",
+          "net-sec-watch-network-*"
+        ],
+        "dls": "{\"term\":{\"source.owner\":\"${attr.jwt.source_owner}\"}}",
+        "allowed_actions": [
+          "read",
+          "search",
+          "indices:data/read/field_caps"
+        ],
+        "fls": [
+          "~event.original",
+          "~http.request.headers.*",
+          "~user.password",
+          "~api.key",
+          "~*.token",
+          "~*.secret"
+        ],
+        "masked_fields": [
+          "user.email",
+          "source.user.email",
+          "destination.user.email"
+        ]
+      }
+    ],
+    "tenant_permissions": [
+      {
+        "tenant_patterns": [
+          "net-sec-watch-source-owner"
+        ],
+        "allowed_actions": [
+          "kibana_all_read"
+        ]
+      }
+    ]
+  },
+  "net_sec_watch_service": {
+    "reserved": false,
+    "hidden": false,
+    "description": "Collector and automation service identity. Ingests Net Sec Watch events and cannot search or administer security.",
+    "cluster_permissions": [
+      "cluster_monitor"
+    ],
+    "index_permissions": [
+      {
+        "index_patterns": [
+          "net-sec-watch-application-*",
+          "net-sec-watch-system-*",
+          "net-sec-watch-network-*",
+          "net-sec-watch-dead-letter-*",
+          "net-sec-watch-audit-*"
+        ],
+        "allowed_actions": [
+          "create_index",
+          "write",
+          "indices:admin/mapping/put"
+        ]
+      }
+    ],
+    "tenant_permissions": []
+  }
+}

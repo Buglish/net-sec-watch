@@ -62,7 +62,11 @@ generate_if_missing() {
 
 generate_if_missing KEYCLOAK_ADMIN_PASSWORD Nsw-idp-admin
 generate_if_missing OIDC_CLIENT_SECRET Nsw-oidc-client
+generate_if_missing OIDC_ADMIN_USER_PASSWORD Nsw-oidc-admin
 generate_if_missing OIDC_TEST_USER_PASSWORD Nsw-oidc-user
+generate_if_missing OIDC_READ_ONLY_USER_PASSWORD Nsw-oidc-read
+generate_if_missing OIDC_SOURCE_OWNER_USER_PASSWORD Nsw-oidc-owner
+generate_if_missing OIDC_SERVICE_USER_PASSWORD Nsw-oidc-service
 
 echo
 echo "Local files are Git-ignored. Review .env before running Docker Compose."

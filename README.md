@@ -428,6 +428,34 @@ for implementation detail and the recorded test evidence.
 Contribution and review requirements are documented in
 [CONTRIBUTING.md](CONTRIBUTING.md).
 
+## Security, access control, and audit evidence
+
+Phase 6 defines the secure operating profile for Net Sec Watch:
+
+- TLS for Dashboards, OpenSearch, and TLS-capable syslog ingestion;
+- OIDC-backed identities through the optional Keycloak development profile;
+- administrator, analyst, read-only, source-owner, and service roles;
+- data-stream, tenant, field, and document restrictions;
+- OpenSearch Security audit logging;
+- collector-side sensitive-field redaction and hashing;
+- source-onboarding classification reviews;
+- secret/certificate rotation procedures;
+- Syft/Grype SBOM and vulnerability audit evidence;
+- approved open-source license policy.
+
+Useful commands:
+
+```bash
+make up-identity
+make test-oidc
+make test-phase6-security
+make security-audit
+```
+
+See [Phase 6 security access control](docs/phase-6-security-access-control.md)
+for the role model and [Phase 6 secret rotation](docs/phase-6-secret-rotation.md)
+for rotation procedures.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in
