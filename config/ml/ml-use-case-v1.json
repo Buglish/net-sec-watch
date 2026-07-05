@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "selected_use_case": {
+    "id": "ML-AUTH-001",
+    "name": "Authentication failure anomaly prioritization",
+    "category": "authentication",
+    "decision_supported": "Help analysts prioritize repeated failed-login activity that deviates from a user's or source's recent baseline.",
+    "model_mode": "shadow",
+    "autonomous_enforcement": false
+  },
+  "success_metrics": {
+    "precision_minimum": 0.7,
+    "recall_minimum": 0.6,
+    "false_positive_rate_maximum": 0.1,
+    "p95_latency_ms_maximum": 500,
+    "alert_reduction_minimum": 0.15
+  },
+  "analyst_decisions": [
+    "escalate_to_incident_response",
+    "request_account_review",
+    "suppress_benign_pattern",
+    "request_rule_or_model_tuning"
+  ],
+  "prohibited_uses": [
+    "autonomous_account_disablement",
+    "autonomous_firewall_blocking",
+    "employment_or_hr_decisions",
+    "law_enforcement_referral_without_human_review",
+    "training_on_unreviewed_restricted_fields"
+  ]
+}

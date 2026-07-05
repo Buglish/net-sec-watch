@@ -56,6 +56,11 @@ python3 ./scripts/run-detections.py \
 python3 ./scripts/run-detections.py \
   --events tests/detections/fixtures/phase8-negative-events.jsonl \
   --expect tests/detections/fixtures/phase8-expected-negative-alerts.json >/dev/null
+python3 ./tests/ml/test-phase-9-ml.py
+python3 ./scripts/ml-shadow-score.py \
+  --events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
+  --model-metadata config/ml/mlflow-model-registry-entry-v1.json \
+  --output /tmp/net-sec-watch-ml-shadow-predictions.jsonl
 ./tests/opensearch/tls-certificate-config.sh
 python3 -m json.tool \
   config/identity/net-sec-watch-realm.json >/dev/null

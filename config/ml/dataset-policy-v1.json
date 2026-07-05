@@ -1,0 +1,36 @@
+{
+  "version": "1.0.0",
+  "privacy_review_status": "approved_for_sanitized_repository_fixtures",
+  "source_events": [
+    "system.auth",
+    "vpn.auth"
+  ],
+  "restricted_fields_excluded": [
+    "password",
+    "secret",
+    "token",
+    "cookie",
+    "api_key",
+    "event.original"
+  ],
+  "time_separation": {
+    "training_range": {
+      "start": "2026-06-01T00:00:00Z",
+      "end": "2026-06-21T23:59:59Z"
+    },
+    "evaluation_range": {
+      "start": "2026-06-22T00:00:00Z",
+      "end": "2026-06-28T23:59:59Z"
+    },
+    "leakage_prevention": "Evaluation events must occur after training events and may not be used to fit thresholds."
+  },
+  "label_policy": {
+    "positive_label": "analyst_confirmed_suspicious",
+    "negative_label": "analyst_confirmed_benign",
+    "unlabeled_policy": "shadow_score_only"
+  },
+  "usage_rights": {
+    "repository_fixtures": "synthetic_sanitized",
+    "production_data": "requires_source_owner_and_privacy_review"
+  }
+}

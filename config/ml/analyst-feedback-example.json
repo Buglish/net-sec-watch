@@ -1,0 +1,15 @@
+{
+  "@timestamp": "2026-06-22T03:00:00Z",
+  "record": {
+    "kind": "feedback"
+  },
+  "feedback": {
+    "id": "feedback-example-001",
+    "prediction_id": "prediction-example-001",
+    "analyst_id": "analyst@example.invalid",
+    "verdict": "reviewed",
+    "disposition": "true_positive",
+    "comment": "Synthetic fixture demonstrates append-only feedback without modifying original events.",
+    "created_at": "2026-06-22T03:00:00Z"
+  }
+}

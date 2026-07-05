@@ -1,0 +1,49 @@
+{
+  "model": {
+    "id": "auth-failure-anomaly-baseline",
+    "version": "0.1.0",
+    "name": "Authentication Failure Anomaly Baseline",
+    "type": "statistical_zscore",
+    "task": "anomaly_prioritization",
+    "framework": "stdlib-baseline",
+    "status": "shadow",
+    "shadow_mode": true,
+    "artifact_uri": "models:/auth-failure-anomaly-baseline/0.1.0",
+    "artifact_sha256": "fixture-only",
+    "owner": "SecOps",
+    "input_feature_schema": {
+      "failed_login_count_10m": "integer",
+      "unique_failed_users_10m": "integer",
+      "source_reputation_score": "float",
+      "asset_criticality_score": "integer"
+    },
+    "output_field_names": [
+      "prediction.score",
+      "prediction.confidence",
+      "prediction.classification",
+      "prediction.threat_level",
+      "prediction.explanation"
+    ],
+    "promotion_approval_record": null,
+    "rollback_pointer": {
+      "model_id": null,
+      "model_version": null
+    }
+  },
+  "training": {
+    "dataset": "auth-shadow-training-synthetic-v1",
+    "schema_version": "1.0.0",
+    "event_count": 1200,
+    "time_range": {
+      "start": "2026-06-01T00:00:00Z",
+      "end": "2026-06-21T23:59:59Z"
+    }
+  },
+  "metrics": {
+    "precision": 0.75,
+    "recall": 0.67,
+    "false_positive_rate": 0.08,
+    "p95_latency_ms": 35,
+    "alert_reduction": 0.2
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "mode": "shadow",
+  "hot_swap": {
+    "enabled": true,
+    "registry_poll_interval_seconds": 60,
+    "reload_without_process_restart": true,
+    "minimum_compatible_registry_fields": [
+      "model.type",
+      "model.input_feature_schema",
+      "model.output_field_names",
+      "model.shadow_mode",
+      "model.promotion_approval_record",
+      "model.rollback_pointer"
+    ]
+  },
+  "endpoints": [
+    {
+      "method": "GET",
+      "path": "/health",
+      "description": "Service readiness and active model metadata."
+    },
+    {
+      "method": "POST",
+      "path": "/score",
+      "description": "Score a batch of feature records without modifying source events."
+    },
+    {
+      "method": "POST",
+      "path": "/reload",
+      "description": "Reload approved model metadata from registry without full restart."
+    }
+  ],
+  "failure_policy": {
+    "ml_disabled": "ingestion_search_and_deterministic_rules_continue",
+    "registry_unavailable": "continue_with_current_model_or_disable_shadow_scoring",
+    "invalid_model": "reject_model_and_keep_previous"
+  }
+}

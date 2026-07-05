@@ -492,6 +492,22 @@ make test-phase8-detections
 See [Phase 8 detections and alerting](docs/phase-8-security-detections-alerting.md)
 for rule ownership, tuning, exception, disposition, and retirement guidance.
 
+## Security machine learning
+
+Phase 9 adds governed, explainable ML assistance in shadow mode. The initial
+use case is repeated authentication failure anomaly prioritization. ML scores
+are written as separate prediction records and never modify original events.
+
+Useful command:
+
+```bash
+make test-phase9-ml
+```
+
+See [Phase 9 security machine learning](docs/phase-9-security-machine-learning.md)
+for governance, datasets, baselines, model evaluation, shadow mode, feedback,
+drift monitoring, hot-swap serving, and MLflow registry metadata.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in

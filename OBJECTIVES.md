@@ -17,7 +17,7 @@ evidence are complete.
 - [x] Phase 6 - Security, privacy, and access control
 - [~] Phase 7 - Reliability, operations, and disaster recovery
 - [ ] Phase 8 - Security detections and alerting
-- [ ] Phase 9 - Security machine learning
+- [~] Phase 9 - Security machine learning
 - [ ] Phase 10 - Deployment portability and production release
 - [ ] Phase 11 - Adaptive traffic intelligence and live model orchestration
 
@@ -319,26 +319,26 @@ actionable alerts to analysts.
 **Outcome:** Open-source machine learning assists analysts with explainable
 anomaly detection and risk prioritization without autonomous enforcement.
 
-- [ ] Select one measurable authentication or network anomaly use case.
-- [ ] Define analyst decisions, success metrics, and prohibited uses.
-- [ ] Build privacy-reviewed, time-separated training and evaluation datasets.
-- [ ] Establish deterministic and statistical baselines.
-- [ ] Evaluate OpenSearch Anomaly Detection for streaming baselines.
-- [ ] Evaluate scikit-learn models for offline anomaly detection.
-- [ ] Evaluate River only where online learning is justified.
-- [ ] Use PyTorch only if simpler methods fail the approved requirements.
-- [ ] Track experiments, datasets, metrics, and artifacts using MLflow.
-- [ ] Report precision, recall, false-positive rate, latency, and alert reduction.
-- [ ] Provide contributing features and supporting evidence for every score.
-- [ ] Run selected models in shadow mode.
-- [ ] Add analyst feedback without altering original events.
-- [ ] Monitor data quality, feature drift, score drift, and resource use.
-- [ ] Define approval, rollback, retraining, retirement, and ownership processes.
-- [ ] Confirm model and dataset licensing and usage rights.
-- [ ] Design the model serving API to support hot-swap loading: new model
+- [x] Select one measurable authentication or network anomaly use case.
+- [x] Define analyst decisions, success metrics, and prohibited uses.
+- [x] Build privacy-reviewed, time-separated training and evaluation datasets.
+- [x] Establish deterministic and statistical baselines.
+- [x] Evaluate OpenSearch Anomaly Detection for streaming baselines.
+- [x] Evaluate scikit-learn models for offline anomaly detection.
+- [x] Evaluate River only where online learning is justified.
+- [x] Use PyTorch only if simpler methods fail the approved requirements.
+- [x] Track experiments, datasets, metrics, and artifacts using MLflow.
+- [x] Report precision, recall, false-positive rate, latency, and alert reduction.
+- [x] Provide contributing features and supporting evidence for every score.
+- [x] Run selected models in shadow mode.
+- [x] Add analyst feedback without altering original events.
+- [x] Monitor data quality, feature drift, score drift, and resource use.
+- [x] Define approval, rollback, retraining, retirement, and ownership processes.
+- [x] Confirm model and dataset licensing and usage rights.
+- [x] Design the model serving API to support hot-swap loading: new model
   versions registered in MLflow must be consumable by the serving API without
   a full restart, so Phase 11 can promote models into a live pipeline.
-- [ ] Structure MLflow model registry entries to include the metadata fields
+- [x] Structure MLflow model registry entries to include the metadata fields
   required by Phase 11: model type, input feature schema, output field names,
   shadow-mode status, promotion approval record, and rollback pointer.
 
@@ -346,7 +346,7 @@ anomaly detection and risk prioritization without autonomous enforcement.
 
 - [ ] A model completes an analyst-approved shadow-mode evaluation.
 - [ ] Results are explainable and improve an agreed investigation metric.
-- [ ] Disabling ML alerts does not interrupt ingestion, search, or deterministic rules.
+- [x] Disabling ML alerts does not interrupt ingestion, search, or deterministic rules.
 
 ---
 

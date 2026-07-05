@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "monitors": {
+    "data_quality": {
+      "fields": [
+        "event.dataset",
+        "event.action",
+        "event.outcome",
+        "source.ip",
+        "user.name",
+        "@timestamp"
+      ],
+      "critical": "required feature missing rate > 5% for 30 minutes"
+    },
+    "feature_drift": {
+      "method": "population_stability_index",
+      "warning": "PSI > 0.1",
+      "critical": "PSI > 0.25"
+    },
+    "score_drift": {
+      "method": "score_distribution_shift",
+      "warning": "median score shifts by > 25%",
+      "critical": "p95 score shifts by > 50%"
+    },
+    "resource_use": {
+      "warning": "CPU > 60% or memory > 512MB for 15 minutes",
+      "critical": "CPU > 85% or memory > 1GB for 15 minutes"
+    }
+  }
+}
