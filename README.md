@@ -456,6 +456,27 @@ See [Phase 6 security access control](docs/phase-6-security-access-control.md)
 for the role model and [Phase 6 secret rotation](docs/phase-6-secret-rotation.md)
 for rotation procedures.
 
+## Operations and disaster recovery
+
+Phase 7 defines the operator-facing reliability layer:
+
+- collector, source-volume, queue, OpenSearch, snapshot, and certificate alerts;
+- runbooks for collector backlog, parser failure, node failure, disk pressure,
+  mapping conflicts, backup/restore, upgrades, rollback, and disaster recovery;
+- service-level targets and escalation ownership;
+- repeatable syslog load-test and DR exercise commands.
+
+Useful commands:
+
+```bash
+make test-phase7-operations
+make load-test-syslog
+make dr-exercise
+```
+
+See [Phase 7 operations](docs/phase-7-reliability-operations.md) for the
+operations overview and runbook index.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in

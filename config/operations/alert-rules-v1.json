@@ -1,0 +1,99 @@
+{
+  "version": "1.0.0",
+  "routes": {
+    "default": {
+      "owner": "SecOps on-call",
+      "escalation": "Platform owner after 30 minutes critical"
+    },
+    "security": {
+      "owner": "Security analyst on-call",
+      "escalation": "Security lead after 15 minutes critical"
+    },
+    "platform": {
+      "owner": "DevOps platform on-call",
+      "escalation": "Infrastructure owner after 30 minutes critical"
+    }
+  },
+  "alerts": [
+    {
+      "id": "collector-dropped-events",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "collector_events_dropped",
+      "condition": "dropped > 100 OR dropped / accepted > 0.01 for 5m",
+      "runbook": "docs/runbooks/collector-backlog-and-parser-failure.md"
+    },
+    {
+      "id": "collector-output-retries",
+      "severity": "warning",
+      "route": "platform",
+      "signal": "collector_events_retried",
+      "condition": "retries > 0 for 10m",
+      "runbook": "docs/runbooks/collector-backlog-and-parser-failure.md"
+    },
+    {
+      "id": "collector-buffer-pressure",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "collector_events_buffered",
+      "condition": "buffered_bytes > 85_percent_capacity for 10m",
+      "runbook": "docs/runbooks/collector-backlog-and-parser-failure.md"
+    },
+    {
+      "id": "collector-source-silence",
+      "severity": "critical",
+      "route": "security",
+      "signal": "collector_silence",
+      "condition": "no_events_from_critical_source for 30m",
+      "runbook": "docs/runbooks/collector-backlog-and-parser-failure.md"
+    },
+    {
+      "id": "source-volume-anomaly",
+      "severity": "warning",
+      "route": "security",
+      "signal": "source_volume_change",
+      "condition": "volume_deviation > 2_standard_deviations for 30m",
+      "runbook": "docs/runbooks/collector-backlog-and-parser-failure.md"
+    },
+    {
+      "id": "opensearch-rejected-writes",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "rejected_writes",
+      "condition": "write_rejections > 50 for 5m",
+      "runbook": "docs/runbooks/opensearch-failure-disk-mapping.md"
+    },
+    {
+      "id": "opensearch-shard-health-red",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "shard_health",
+      "condition": "cluster_health == red for 1m",
+      "runbook": "docs/runbooks/opensearch-failure-disk-mapping.md"
+    },
+    {
+      "id": "opensearch-disk-watermark",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "disk_watermark",
+      "condition": "disk_usage >= high_watermark OR flood_stage_block == true",
+      "runbook": "docs/runbooks/opensearch-failure-disk-mapping.md"
+    },
+    {
+      "id": "snapshot-failure",
+      "severity": "critical",
+      "route": "platform",
+      "signal": "snapshot_failure",
+      "condition": "snapshot_failed twice OR repository_verification_failed",
+      "runbook": "docs/runbooks/backup-restore.md"
+    },
+    {
+      "id": "certificate-expiry",
+      "severity": "warning",
+      "route": "platform",
+      "signal": "certificate_expiry",
+      "condition": "certificate_days_remaining < 30",
+      "runbook": "docs/runbooks/certificate-and-secret-rotation.md"
+    }
+  ]
+}

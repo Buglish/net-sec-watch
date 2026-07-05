@@ -15,7 +15,7 @@ evidence are complete.
 - [x] Phase 4 - OpenSearch storage and lifecycle
 - [~] Phase 5 - Search, dashboards, and analyst experience
 - [x] Phase 6 - Security, privacy, and access control
-- [ ] Phase 7 - Reliability, operations, and disaster recovery
+- [~] Phase 7 - Reliability, operations, and disaster recovery
 - [ ] Phase 8 - Security detections and alerting
 - [ ] Phase 9 - Security machine learning
 - [ ] Phase 10 - Deployment portability and production release
@@ -264,19 +264,19 @@ authentication, authorization, encryption, redaction, and audit controls.
 **Outcome:** Operators can observe, scale, recover, upgrade, and support the
 platform predictably.
 
-- [ ] Monitor accepted, dropped, retried, buffered, and failed events.
-- [ ] Monitor collector silence and unexpected source-volume changes.
-- [ ] Monitor queue depth, rejected writes, shard health, and disk watermarks.
-- [ ] Alert on snapshot failure and certificate expiry.
-- [ ] Add runbooks for collector backlog and parser failure.
-- [ ] Add runbooks for node failure, disk pressure, and mapping conflicts.
-- [ ] Add backup and restore runbooks.
-- [ ] Add certificate rotation and secret rotation runbooks.
-- [ ] Perform load testing at 1.5 times expected peak ingestion.
-- [ ] Perform collector, network, and OpenSearch failure testing.
-- [ ] Test rolling upgrades and rollback.
-- [ ] Perform a disaster-recovery exercise.
-- [ ] Define operational service levels and escalation ownership.
+- [x] Monitor accepted, dropped, retried, buffered, and failed events.
+- [x] Monitor collector silence and unexpected source-volume changes.
+- [x] Monitor queue depth, rejected writes, shard health, and disk watermarks.
+- [x] Alert on snapshot failure and certificate expiry.
+- [x] Add runbooks for collector backlog and parser failure.
+- [x] Add runbooks for node failure, disk pressure, and mapping conflicts.
+- [x] Add backup and restore runbooks.
+- [x] Add certificate rotation and secret rotation runbooks.
+- [x] Perform load testing at 1.5 times expected peak ingestion.
+- [x] Perform collector, network, and OpenSearch failure testing.
+- [x] Test rolling upgrades and rollback.
+- [x] Perform a disaster-recovery exercise.
+- [x] Define operational service levels and escalation ownership.
 
 ### Completion gate
 
