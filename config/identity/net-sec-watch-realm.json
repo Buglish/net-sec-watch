@@ -8,7 +8,11 @@
   "loginWithEmailAllowed": true,
   "roles": {
     "realm": [
-      {"name": "net-sec-watch-analyst"}
+      {"name": "net-sec-watch-admin"},
+      {"name": "net-sec-watch-analyst"},
+      {"name": "net-sec-watch-read-only"},
+      {"name": "net-sec-watch-source-owner"},
+      {"name": "net-sec-watch-service"}
     ]
   },
   "clients": [
@@ -66,6 +70,22 @@
   ],
   "users": [
     {
+      "username": "oidc-test-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc-test-admin@example.invalid",
+      "firstName": "OIDC Test",
+      "lastName": "Admin",
+      "realmRoles": ["net-sec-watch-admin"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OIDC_ADMIN_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
       "username": "oidc-test-analyst",
       "enabled": true,
       "emailVerified": true,
@@ -77,6 +97,60 @@
         {
           "type": "password",
           "value": "${OIDC_TEST_USER_PASSWORD}",
+          "temporary": false
+        }
+      ]
+    },
+    {
+      "username": "oidc-test-read-only",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc-test-read-only@example.invalid",
+      "firstName": "OIDC Test",
+      "lastName": "Read Only",
+      "realmRoles": ["net-sec-watch-read-only"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OIDC_READ_ONLY_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "source_owner": ["read-only"]
+      }
+    },
+    {
+      "username": "oidc-test-source-owner",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc-test-source-owner@example.invalid",
+      "firstName": "OIDC Test",
+      "lastName": "Source Owner",
+      "realmRoles": ["net-sec-watch-source-owner"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OIDC_SOURCE_OWNER_USER_PASSWORD}",
+          "temporary": false
+        }
+      ],
+      "attributes": {
+        "source_owner": ["default"]
+      }
+    },
+    {
+      "username": "oidc-test-service",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "oidc-test-service@example.invalid",
+      "firstName": "OIDC Test",
+      "lastName": "Service",
+      "realmRoles": ["net-sec-watch-service"],
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${OIDC_SERVICE_USER_PASSWORD}",
           "temporary": false
         }
       ]

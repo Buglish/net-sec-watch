@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "policy": "Runtime and source dependencies must use approved open-source or free-to-use licenses before production use.",
+  "approved_license_ids": [
+    "Apache-2.0",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MIT",
+    "MPL-2.0",
+    "PostgreSQL",
+    "Python-2.0",
+    "Unicode-DFS-2016",
+    "Zlib"
+  ],
+  "review_required_license_ids": [
+    "AGPL-3.0-only",
+    "AGPL-3.0-or-later",
+    "GPL-2.0-only",
+    "GPL-2.0-or-later",
+    "GPL-3.0-only",
+    "GPL-3.0-or-later",
+    "LGPL-2.1-only",
+    "LGPL-2.1-or-later",
+    "LGPL-3.0-only",
+    "LGPL-3.0-or-later",
+    "NOASSERTION",
+    "LicenseRef-Unknown"
+  ],
+  "evidence_source": "security/audits/<year>/<timestamp>/*_sbom_*.spdx.json",
+  "review_output": "security/audits/<year>/<timestamp>/*_security-audit_summary_*.md"
+}

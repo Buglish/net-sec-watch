@@ -64,6 +64,13 @@
     Remove  environment
     Remove  level
 
+# Apply collector-side sensitive-field redaction before OpenSearch ingestion.
+[FILTER]
+    Name    lua
+    Match   *
+    script  /fluent-bit/etc/scripts/sensitive_redaction.lua
+    call    redact_sensitive_fields
+
 # Route stable tag families into low-cardinality data streams. Source detail
 # remains available in event.dataset inside each document.
 [OUTPUT]

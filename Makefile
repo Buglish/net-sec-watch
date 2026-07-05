@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -60,6 +60,45 @@ up-identity: gen-tls-certs
 		/usr/share/opensearch/plugins/opensearch-security/tools/securityadmin.sh \
 		-f /usr/share/opensearch/config/opensearch-security/config.yml \
 		-t config -icl -nhnv \
+		-cacert /usr/share/opensearch/config/root-ca.pem \
+		-cert /usr/share/opensearch/config/kirk.pem \
+		-key /usr/share/opensearch/config/kirk-key.pem
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--file compose.identity.yaml \
+		--profile opensearch \
+		--profile identity \
+		exec -T opensearch \
+		/usr/share/opensearch/plugins/opensearch-security/tools/securityadmin.sh \
+		-f /usr/share/opensearch/config/opensearch-security/roles-v1.json \
+		-t roles -icl -nhnv \
+		-cacert /usr/share/opensearch/config/root-ca.pem \
+		-cert /usr/share/opensearch/config/kirk.pem \
+		-key /usr/share/opensearch/config/kirk-key.pem
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--file compose.identity.yaml \
+		--profile opensearch \
+		--profile identity \
+		exec -T opensearch \
+		/usr/share/opensearch/plugins/opensearch-security/tools/securityadmin.sh \
+		-f /usr/share/opensearch/config/opensearch-security/roles-mapping-v1.json \
+		-t rolesmapping -icl -nhnv \
+		-cacert /usr/share/opensearch/config/root-ca.pem \
+		-cert /usr/share/opensearch/config/kirk.pem \
+		-key /usr/share/opensearch/config/kirk-key.pem
+	docker compose --env-file .env \
+		--file compose.yaml \
+		--file compose.opensearch-secure.yaml \
+		--file compose.identity.yaml \
+		--profile opensearch \
+		--profile identity \
+		exec -T opensearch \
+		/usr/share/opensearch/plugins/opensearch-security/tools/securityadmin.sh \
+		-f /usr/share/opensearch/config/opensearch-security/audit-v1.json \
+		-t audit -icl -nhnv \
 		-cacert /usr/share/opensearch/config/root-ca.pem \
 		-cert /usr/share/opensearch/config/kirk.pem \
 		-key /usr/share/opensearch/config/kirk-key.pem
@@ -140,6 +179,9 @@ test-tls-config:
 
 test-oidc:
 	./tests/opensearch/oidc-integration.sh
+
+test-phase6-security:
+	python3 ./tests/security/test-phase-6-security.py
 
 test-integration:
 	./tests/integration/run.sh

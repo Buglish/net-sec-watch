@@ -1,0 +1,51 @@
+{
+  "net_sec_watch_admin": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [
+      "net-sec-watch-admin"
+    ],
+    "users": [
+      "admin"
+    ],
+    "hosts": []
+  },
+  "net_sec_watch_analyst": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [
+      "net-sec-watch-analyst"
+    ],
+    "users": [],
+    "hosts": []
+  },
+  "net_sec_watch_read_only": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [
+      "net-sec-watch-read-only"
+    ],
+    "users": [],
+    "hosts": []
+  },
+  "net_sec_watch_source_owner": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [
+      "net-sec-watch-source-owner"
+    ],
+    "users": [],
+    "hosts": []
+  },
+  "net_sec_watch_service": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [
+      "net-sec-watch-service"
+    ],
+    "users": [
+      "kibanaserver"
+    ],
+    "hosts": []
+  }
+}

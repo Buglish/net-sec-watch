@@ -1,0 +1,40 @@
+{
+  "_meta": {
+    "type": "audit",
+    "config_version": 2
+  },
+  "config": {
+    "enabled": true,
+    "audit": {
+      "enable_rest": true,
+      "enable_transport": true,
+      "resolve_indices": true,
+      "log_request_body": true,
+      "disabled_rest_categories": [],
+      "disabled_transport_categories": [],
+      "ignore_users": [],
+      "ignore_requests": []
+    },
+    "compliance": {
+      "enabled": true,
+      "write_log_diffs": true,
+      "read_watched_fields": {
+        "net-sec-watch-*": [
+          "event.original",
+          "message",
+          "source.ip",
+          "destination.ip",
+          "user.name",
+          "user.email"
+        ]
+      },
+      "write_watched_indices": [
+        "net-sec-watch-*",
+        ".opensearch-dashboards*",
+        ".opendistro_security"
+      ],
+      "internal_config": true,
+      "external_config": true
+    }
+  }
+}

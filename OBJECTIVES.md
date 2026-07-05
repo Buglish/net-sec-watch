@@ -10,11 +10,11 @@ evidence are complete.
 
 - [x] Phase 0 - Project foundation
 - [x] Phase 1 - File and workload log collection
-- [ ] Phase 2 - Network-device and syslog collection
+- [~] Phase 2 - Network-device and syslog collection
 - [x] Phase 3 - Event normalization and data quality
 - [x] Phase 4 - OpenSearch storage and lifecycle
-- [ ] Phase 5 - Search, dashboards, and analyst experience
-- [ ] Phase 6 - Security, privacy, and access control
+- [~] Phase 5 - Search, dashboards, and analyst experience
+- [x] Phase 6 - Security, privacy, and access control
 - [ ] Phase 7 - Reliability, operations, and disaster recovery
 - [ ] Phase 8 - Security detections and alerting
 - [ ] Phase 9 - Security machine learning
@@ -134,7 +134,7 @@ network TAP, or supported gateway deployment.
 
 ### Completion gate
 
-- [ ] The RT-AC68U sends system and selected firewall events through UDP syslog,
+- [x] The RT-AC68U sends system and selected firewall events through UDP syslog,
   and the documented limitations are verified.
 - [ ] A selected enterprise router or firewall sends searchable events through
   TCP/TLS.
@@ -240,22 +240,22 @@ authentication, authorization, encryption, redaction, and audit controls.
 
 - [x] Enable TLS for browser, API, ingestion, and cluster traffic.
 - [x] Integrate OIDC, SAML, LDAP, or Active Directory.
-- [ ] Define administrator, analyst, read-only, source-owner, and service roles.
-- [ ] Restrict data by data stream, tenant, field, or document where required.
-- [ ] Enable security audit logging.
-- [ ] Audit privileged searches, exports, and configuration changes.
-- [ ] Add collector-side redaction and hashing for approved sensitive fields.
-- [ ] Define log-data classification and source-onboarding reviews.
-- [ ] Define secret rotation and certificate renewal procedures.
-- [ ] Add dependency and container vulnerability scanning.
-- [ ] Generate and retain a software bill of materials.
-- [ ] Verify every runtime dependency uses an approved open-source license.
+- [x] Define administrator, analyst, read-only, source-owner, and service roles.
+- [x] Restrict data by data stream, tenant, field, or document where required.
+- [x] Enable security audit logging.
+- [x] Audit privileged searches, exports, and configuration changes.
+- [x] Add collector-side redaction and hashing for approved sensitive fields.
+- [x] Define log-data classification and source-onboarding reviews.
+- [x] Define secret rotation and certificate renewal procedures.
+- [x] Add dependency and container vulnerability scanning.
+- [x] Generate and retain a software bill of materials.
+- [x] Verify every runtime dependency uses an approved open-source license.
 
 ### Completion gate
 
-- [ ] Unauthorized test users cannot access restricted logs or exports.
-- [ ] No production credential or private key is stored in Git.
-- [ ] Security review findings are resolved or formally accepted.
+- [x] Unauthorized test users cannot access restricted logs or exports.
+- [x] No production credential or private key is stored in Git.
+- [x] Security review findings are resolved or formally accepted.
 
 ---
 
