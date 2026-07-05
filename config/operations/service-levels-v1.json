@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "service": "Net Sec Watch",
+  "owners": {
+    "primary": "SecOps",
+    "platform": "DevOps platform",
+    "security": "Security operations",
+    "data": "Source owner"
+  },
+  "targets": {
+    "ingestion_availability_monthly": "99.5%",
+    "critical_source_silence_detection": "30 minutes",
+    "critical_alert_acknowledgement": "15 minutes",
+    "critical_alert_escalation": "30 minutes",
+    "search_p95_last_24h": "5 seconds",
+    "dashboard_p95_load": "10 seconds",
+    "snapshot_frequency": "daily",
+    "rpo": "24 hours",
+    "rto": "4 hours",
+    "certificate_expiry_warning": "30 days",
+    "certificate_expiry_critical": "7 days",
+    "load_test_multiplier": 1.5
+  },
+  "load_profile": {
+    "expected_peak_events_per_second": 250,
+    "phase_7_test_events_per_second": 375,
+    "test_duration_minutes": 15
+  }
+}

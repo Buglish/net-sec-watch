@@ -1,0 +1,83 @@
+{
+  "version": "1.0.0",
+  "metrics": {
+    "collector_events_accepted": {
+      "source": "fluent-bit_metrics",
+      "description": "Accepted records by input, tag, collector, and site.",
+      "warning": "drop below source baseline by 50% for 15 minutes",
+      "critical": "drop below source baseline by 80% for 15 minutes"
+    },
+    "collector_events_dropped": {
+      "source": "fluent-bit_metrics",
+      "description": "Dropped records by input and tag.",
+      "warning": "> 0 for 5 minutes",
+      "critical": "> 100 records or > 1% of accepted records for 5 minutes"
+    },
+    "collector_events_retried": {
+      "source": "fluent-bit_metrics",
+      "description": "Output retry attempts.",
+      "warning": "> 0 for 10 minutes",
+      "critical": "> 10 retries per minute for 10 minutes"
+    },
+    "collector_events_buffered": {
+      "source": "fluent-bit_storage_metrics",
+      "description": "Filesystem and memory buffered records.",
+      "warning": "> 60% of configured buffer for 10 minutes",
+      "critical": "> 85% of configured buffer for 10 minutes"
+    },
+    "collector_events_failed": {
+      "source": "fluent-bit_metrics",
+      "description": "Records that failed after retries.",
+      "warning": "> 0 for 5 minutes",
+      "critical": "> 10 for 5 minutes"
+    },
+    "collector_silence": {
+      "source": "derived_source_baseline",
+      "description": "Expected source sends no events.",
+      "warning": "no records for 15 minutes for chatty sources",
+      "critical": "no records for 30 minutes for critical sources"
+    },
+    "source_volume_change": {
+      "source": "derived_source_baseline",
+      "description": "Unexpected source volume change.",
+      "warning": "> 2 standard deviations from 7-day baseline",
+      "critical": "> 4 standard deviations from 7-day baseline"
+    },
+    "queue_depth": {
+      "source": "collector_and_opensearch",
+      "description": "Backlog depth across collector buffers and OpenSearch write queues.",
+      "warning": "> 60% capacity for 10 minutes",
+      "critical": "> 85% capacity for 10 minutes"
+    },
+    "rejected_writes": {
+      "source": "opensearch_thread_pool",
+      "description": "OpenSearch write or bulk rejections.",
+      "warning": "> 0 for 5 minutes",
+      "critical": "> 50 for 5 minutes"
+    },
+    "shard_health": {
+      "source": "opensearch_cluster_health",
+      "description": "Cluster and shard allocation health.",
+      "warning": "yellow for 10 minutes",
+      "critical": "red for 1 minute"
+    },
+    "disk_watermark": {
+      "source": "opensearch_cluster_settings",
+      "description": "Disk usage compared with low/high/flood-stage watermarks.",
+      "warning": "above low watermark",
+      "critical": "above high or flood-stage watermark"
+    },
+    "snapshot_failure": {
+      "source": "opensearch_snapshot_status",
+      "description": "Scheduled snapshot or repository verification fails.",
+      "warning": "one failed snapshot",
+      "critical": "two consecutive failed snapshots or repository unavailable"
+    },
+    "certificate_expiry": {
+      "source": "tls_certificate_probe",
+      "description": "Certificate expiry horizon.",
+      "warning": "< 30 days remaining",
+      "critical": "< 7 days remaining"
+    }
+  }
+}

@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -182,6 +182,15 @@ test-oidc:
 
 test-phase6-security:
 	python3 ./tests/security/test-phase-6-security.py
+
+test-phase7-operations:
+	python3 ./tests/operations/test-phase-7-operations.py
+
+load-test-syslog:
+	./scripts/load-test-syslog.sh
+
+dr-exercise:
+	./scripts/disaster-recovery-exercise.sh --dry-run
 
 test-integration:
 	./tests/integration/run.sh
