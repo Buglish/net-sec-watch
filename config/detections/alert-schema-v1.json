@@ -1,0 +1,57 @@
+{
+  "version": "1.0.0",
+  "required_fields": [
+    "alert.schema_version",
+    "alert.id",
+    "alert.generated_at",
+    "alert.source.type",
+    "alert.rule.id",
+    "alert.rule.version",
+    "alert.rule.name",
+    "alert.rule.owner",
+    "alert.rule.kind",
+    "alert.title",
+    "alert.severity",
+    "alert.priority",
+    "alert.status",
+    "alert.deduplication.key",
+    "alert.suppression.key",
+    "alert.routing.destination",
+    "alert.notification.channels",
+    "event.references"
+  ],
+  "source_types": [
+    "deterministic_query",
+    "deterministic_threshold",
+    "deterministic_correlation",
+    "ml_model"
+  ],
+  "severity_values": [
+    "low",
+    "medium",
+    "high",
+    "critical"
+  ],
+  "priority_values": [
+    "p4",
+    "p3",
+    "p2",
+    "p1"
+  ],
+  "status_values": [
+    "new",
+    "triaged",
+    "suppressed",
+    "false_positive",
+    "closed"
+  ],
+  "ml_compatibility": {
+    "reserved_fields": [
+      "alert.model.id",
+      "alert.model.version",
+      "alert.model.score",
+      "alert.model.confidence"
+    ],
+    "note": "Phase 11 model outputs must emit this alert schema and use the same routing destinations."
+  }
+}

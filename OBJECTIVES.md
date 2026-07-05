@@ -291,26 +291,26 @@ platform predictably.
 **Outcome:** Deterministic security rules identify important activity and route
 actionable alerts to analysts.
 
-- [ ] Define initial authentication, firewall, VPN, and network detection use cases.
-- [ ] Add query-based and threshold-based detection rules.
-- [ ] Correlate related events across an approved time window.
-- [ ] Add asset criticality and source confidence to alert priority.
-- [ ] Configure webhook and email-compatible notification destinations.
-- [ ] Add alert deduplication and suppression.
-- [ ] Add detection testing with positive and negative fixtures.
-- [ ] Track false positives and analyst disposition.
-- [ ] Version detection rules in Git.
-- [ ] Document rule ownership, tuning, exceptions, and retirement.
-- [ ] Design the alert schema and notification routing to be source-agnostic:
+- [x] Define initial authentication, firewall, VPN, and network detection use cases.
+- [x] Add query-based and threshold-based detection rules.
+- [x] Correlate related events across an approved time window.
+- [x] Add asset criticality and source confidence to alert priority.
+- [x] Configure webhook and email-compatible notification destinations.
+- [x] Add alert deduplication and suppression.
+- [x] Add detection testing with positive and negative fixtures.
+- [x] Track false positives and analyst disposition.
+- [x] Version detection rules in Git.
+- [x] Document rule ownership, tuning, exceptions, and retirement.
+- [x] Design the alert schema and notification routing to be source-agnostic:
   alerts from deterministic query rules, threshold rules, and Phase 11 ML
   model outputs must share the same schema and reach the same notification
   destinations without schema changes in Phase 11.
 
 ### Completion gate
 
-- [ ] Agreed test scenarios reliably generate the expected alerts.
+- [x] Agreed test scenarios reliably generate the expected alerts.
 - [ ] Alert volume and false-positive rate meet analyst-approved thresholds.
-- [ ] Every production rule has an owner, test, version, and response procedure.
+- [x] Every production rule has an owner, test, version, and response procedure.
 
 ---
 

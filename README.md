@@ -477,6 +477,21 @@ make dr-exercise
 See [Phase 7 operations](docs/phase-7-reliability-operations.md) for the
 operations overview and runbook index.
 
+## Security detections and alerting
+
+Phase 8 adds deterministic security detection rules and source-agnostic alert
+routing. Query, threshold, correlation, and future Phase 11 ML alerts use the
+same alert schema and notification destinations.
+
+Useful command:
+
+```bash
+make test-phase8-detections
+```
+
+See [Phase 8 detections and alerting](docs/phase-8-security-detections-alerting.md)
+for rule ownership, tuning, exception, disposition, and retirement guidance.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in
