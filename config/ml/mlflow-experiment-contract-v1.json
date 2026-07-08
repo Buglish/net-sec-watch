@@ -1,0 +1,33 @@
+{
+  "version": "1.0.0",
+  "tracking": {
+    "experiment_name": "net-sec-watch-auth-anomaly",
+    "required_tags": [
+      "use_case_id",
+      "dataset_id",
+      "dataset_sha256",
+      "privacy_review_id",
+      "git_commit",
+      "model_type",
+      "framework",
+      "owner",
+      "shadow_mode"
+    ],
+    "required_metrics": [
+      "precision",
+      "recall",
+      "false_positive_rate",
+      "p95_latency_ms",
+      "alert_reduction",
+      "resource_cpu_percent",
+      "resource_memory_mb"
+    ],
+    "required_artifacts": [
+      "feature_schema.json",
+      "evaluation_report.json",
+      "model_card.md",
+      "explainability_sample.json",
+      "license_review.json"
+    ]
+  }
+}

@@ -17,8 +17,8 @@ evidence are complete.
 - [x] Phase 6 - Security, privacy, and access control
 - [~] Phase 7 - Reliability, operations, and disaster recovery
 - [ ] Phase 8 - Security detections and alerting
-- [ ] Phase 9 - Security machine learning
-- [ ] Phase 10 - Deployment portability and production release
+- [~] Phase 9 - Security machine learning
+- [~] Phase 10 - Deployment portability and production release
 - [ ] Phase 11 - Adaptive traffic intelligence and live model orchestration
 
 ---
@@ -291,26 +291,26 @@ platform predictably.
 **Outcome:** Deterministic security rules identify important activity and route
 actionable alerts to analysts.
 
-- [ ] Define initial authentication, firewall, VPN, and network detection use cases.
-- [ ] Add query-based and threshold-based detection rules.
-- [ ] Correlate related events across an approved time window.
-- [ ] Add asset criticality and source confidence to alert priority.
-- [ ] Configure webhook and email-compatible notification destinations.
-- [ ] Add alert deduplication and suppression.
-- [ ] Add detection testing with positive and negative fixtures.
-- [ ] Track false positives and analyst disposition.
-- [ ] Version detection rules in Git.
-- [ ] Document rule ownership, tuning, exceptions, and retirement.
-- [ ] Design the alert schema and notification routing to be source-agnostic:
+- [x] Define initial authentication, firewall, VPN, and network detection use cases.
+- [x] Add query-based and threshold-based detection rules.
+- [x] Correlate related events across an approved time window.
+- [x] Add asset criticality and source confidence to alert priority.
+- [x] Configure webhook and email-compatible notification destinations.
+- [x] Add alert deduplication and suppression.
+- [x] Add detection testing with positive and negative fixtures.
+- [x] Track false positives and analyst disposition.
+- [x] Version detection rules in Git.
+- [x] Document rule ownership, tuning, exceptions, and retirement.
+- [x] Design the alert schema and notification routing to be source-agnostic:
   alerts from deterministic query rules, threshold rules, and Phase 11 ML
   model outputs must share the same schema and reach the same notification
   destinations without schema changes in Phase 11.
 
 ### Completion gate
 
-- [ ] Agreed test scenarios reliably generate the expected alerts.
+- [x] Agreed test scenarios reliably generate the expected alerts.
 - [ ] Alert volume and false-positive rate meet analyst-approved thresholds.
-- [ ] Every production rule has an owner, test, version, and response procedure.
+- [x] Every production rule has an owner, test, version, and response procedure.
 
 ---
 
@@ -319,26 +319,26 @@ actionable alerts to analysts.
 **Outcome:** Open-source machine learning assists analysts with explainable
 anomaly detection and risk prioritization without autonomous enforcement.
 
-- [ ] Select one measurable authentication or network anomaly use case.
-- [ ] Define analyst decisions, success metrics, and prohibited uses.
-- [ ] Build privacy-reviewed, time-separated training and evaluation datasets.
-- [ ] Establish deterministic and statistical baselines.
-- [ ] Evaluate OpenSearch Anomaly Detection for streaming baselines.
-- [ ] Evaluate scikit-learn models for offline anomaly detection.
-- [ ] Evaluate River only where online learning is justified.
-- [ ] Use PyTorch only if simpler methods fail the approved requirements.
-- [ ] Track experiments, datasets, metrics, and artifacts using MLflow.
-- [ ] Report precision, recall, false-positive rate, latency, and alert reduction.
-- [ ] Provide contributing features and supporting evidence for every score.
-- [ ] Run selected models in shadow mode.
-- [ ] Add analyst feedback without altering original events.
-- [ ] Monitor data quality, feature drift, score drift, and resource use.
-- [ ] Define approval, rollback, retraining, retirement, and ownership processes.
-- [ ] Confirm model and dataset licensing and usage rights.
-- [ ] Design the model serving API to support hot-swap loading: new model
+- [x] Select one measurable authentication or network anomaly use case.
+- [x] Define analyst decisions, success metrics, and prohibited uses.
+- [x] Build privacy-reviewed, time-separated training and evaluation datasets.
+- [x] Establish deterministic and statistical baselines.
+- [x] Evaluate OpenSearch Anomaly Detection for streaming baselines.
+- [x] Evaluate scikit-learn models for offline anomaly detection.
+- [x] Evaluate River only where online learning is justified.
+- [x] Use PyTorch only if simpler methods fail the approved requirements.
+- [x] Track experiments, datasets, metrics, and artifacts using MLflow.
+- [x] Report precision, recall, false-positive rate, latency, and alert reduction.
+- [x] Provide contributing features and supporting evidence for every score.
+- [x] Run selected models in shadow mode.
+- [x] Add analyst feedback without altering original events.
+- [x] Monitor data quality, feature drift, score drift, and resource use.
+- [x] Define approval, rollback, retraining, retirement, and ownership processes.
+- [x] Confirm model and dataset licensing and usage rights.
+- [x] Design the model serving API to support hot-swap loading: new model
   versions registered in MLflow must be consumable by the serving API without
   a full restart, so Phase 11 can promote models into a live pipeline.
-- [ ] Structure MLflow model registry entries to include the metadata fields
+- [x] Structure MLflow model registry entries to include the metadata fields
   required by Phase 11: model type, input feature schema, output field names,
   shadow-mode status, promotion approval record, and rollback pointer.
 
@@ -346,7 +346,7 @@ anomaly detection and risk prioritization without autonomous enforcement.
 
 - [ ] A model completes an analyst-approved shadow-mode evaluation.
 - [ ] Results are explainable and improve an agreed investigation metric.
-- [ ] Disabling ML alerts does not interrupt ingestion, search, or deterministic rules.
+- [x] Disabling ML alerts does not interrupt ingestion, search, or deterministic rules.
 
 ---
 
@@ -356,24 +356,24 @@ anomaly detection and risk prioritization without autonomous enforcement.
 supported Linux, Docker, and Kubernetes environments without proprietary
 runtime dependencies.
 
-- [ ] Complete the Docker Compose development deployment.
-- [ ] Add automated Linux VM deployment.
-- [ ] Add Kubernetes manifests or a Helm chart.
-- [ ] Separate development, test, staging, and production configuration.
-- [ ] Add resource requests, limits, and storage classes.
-- [ ] Add network policies and least-privilege service identities.
-- [ ] Add environment validation and preflight checks.
-- [ ] Add upgrade, rollback, backup, and restore automation.
-- [ ] Publish supported-version and compatibility policies.
-- [ ] Complete installation, administration, and troubleshooting documentation.
-- [ ] Complete production readiness and security reviews.
+- [x] Complete the Docker Compose development deployment.
+- [x] Add automated Linux VM deployment.
+- [x] Add Kubernetes manifests or a Helm chart.
+- [x] Separate development, test, staging, and production configuration.
+- [x] Add resource requests, limits, and storage classes.
+- [x] Add network policies and least-privilege service identities.
+- [x] Add environment validation and preflight checks.
+- [x] Add upgrade, rollback, backup, and restore automation.
+- [x] Publish supported-version and compatibility policies.
+- [x] Complete installation, administration, and troubleshooting documentation.
+- [x] Complete production readiness and security reviews.
 - [ ] Tag and publish the first supported release.
 
 ### Completion gate
 
 - [ ] A clean environment can be deployed using only documented automation.
 - [ ] The deployment passes security, resilience, performance, and recovery tests.
-- [ ] All required runtime components remain free, self-hostable, and open source.
+- [x] All required runtime components remain free, self-hostable, and open source.
 
 ---
 

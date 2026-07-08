@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "required_rule_fields": [
+    "id",
+    "version",
+    "status",
+    "owner",
+    "response_procedure",
+    "test_fixture_positive",
+    "test_fixture_negative",
+    "tuning",
+    "exceptions",
+    "retirement"
+  ],
+  "status_values": [
+    "draft",
+    "test",
+    "production",
+    "retired"
+  ],
+  "change_control": {
+    "versioning": "Detection rules are versioned in Git and rule version increments on logic or severity changes.",
+    "tuning": "Tuning changes require fixture updates and analyst review.",
+    "exceptions": "Exceptions require owner, reason, expiry, and compensating control.",
+    "retirement": "Retirement requires replacement decision or documented risk acceptance."
+  }
+}

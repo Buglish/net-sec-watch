@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "datasets": {
+    "auth-shadow-training-synthetic-v1": {
+      "license": "project-owned synthetic fixture",
+      "usage_rights": "repository testing and documentation"
+    },
+    "auth-shadow-evaluation-synthetic-v1": {
+      "license": "project-owned synthetic fixture",
+      "usage_rights": "repository testing and documentation"
+    }
+  },
+  "models": {
+    "auth-failure-anomaly-baseline": {
+      "license": "project-owned baseline logic",
+      "usage_rights": "repository testing and shadow-mode development"
+    }
+  },
+  "libraries": {
+    "opensearch_anomaly_detection": "open-source plugin candidate",
+    "scikit_learn": "BSD-3-Clause candidate",
+    "river": "BSD-3-Clause candidate; deferred",
+    "pytorch": "BSD-style candidate; deferred"
+  }
+}

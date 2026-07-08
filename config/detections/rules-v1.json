@@ -1,0 +1,147 @@
+{
+  "version": "1.0.0",
+  "rules": [
+    {
+      "id": "NSW-DET-AUTH-001",
+      "version": "1.0.0",
+      "status": "production",
+      "name": "Repeated authentication failures",
+      "description": "Detects repeated failed authentication attempts from the same source and user.",
+      "kind": "threshold",
+      "source_type": "deterministic_threshold",
+      "owner": "SecOps",
+      "severity": "medium",
+      "route": "secops-primary",
+      "response_procedure": "docs/runbooks/detections/authentication-failures.md",
+      "query": {
+        "all": [
+          {"field": "event.dataset", "equals": "system.auth"},
+          {"field": "event.action", "equals": "login"},
+          {"field": "event.outcome", "equals": "failure"}
+        ]
+      },
+      "threshold": {
+        "count": 5,
+        "window_minutes": 10,
+        "group_by": ["source.ip", "user.name"]
+      },
+      "tuning": {
+        "baseline_required": true,
+        "notes": "Suppress vulnerability scanners and known test accounts with expiring exceptions."
+      },
+      "exceptions": [],
+      "retirement": {
+        "criteria": "Retire only when replaced by identity-provider native risk detection."
+      },
+      "test_fixture_positive": "tests/detections/fixtures/phase8-positive-events.jsonl",
+      "test_fixture_negative": "tests/detections/fixtures/phase8-negative-events.jsonl"
+    },
+    {
+      "id": "NSW-DET-FW-001",
+      "version": "1.0.0",
+      "status": "production",
+      "name": "Firewall deny to sensitive service",
+      "description": "Detects denied traffic to sensitive administration or file-sharing ports.",
+      "kind": "query",
+      "source_type": "deterministic_query",
+      "owner": "SecOps",
+      "severity": "medium",
+      "route": "secops-primary",
+      "response_procedure": "docs/runbooks/detections/firewall-deny-sensitive-service.md",
+      "query": {
+        "all": [
+          {"field": "event.dataset", "in": ["asuswrt.firewall", "suricata.flow", "zeek.conn"]},
+          {"field": "event.action", "in": ["drop", "deny", "denied"]},
+          {"field": "destination.port", "in": [22, 445, 3389]}
+        ]
+      },
+      "tuning": {
+        "baseline_required": false,
+        "notes": "Tune noisy internal scanners with expiring exceptions."
+      },
+      "exceptions": [],
+      "retirement": {
+        "criteria": "Retire if superseded by a richer perimeter firewall integration."
+      },
+      "test_fixture_positive": "tests/detections/fixtures/phase8-positive-events.jsonl",
+      "test_fixture_negative": "tests/detections/fixtures/phase8-negative-events.jsonl"
+    },
+    {
+      "id": "NSW-DET-VPN-001",
+      "version": "1.0.0",
+      "status": "production",
+      "name": "VPN login from untrusted network",
+      "description": "Detects successful VPN authentication from an untrusted or low-confidence source network.",
+      "kind": "query",
+      "source_type": "deterministic_query",
+      "owner": "SecOps",
+      "severity": "high",
+      "route": "secops-primary",
+      "response_procedure": "docs/runbooks/detections/vpn-untrusted-login.md",
+      "query": {
+        "all": [
+          {"field": "event.dataset", "equals": "vpn.auth"},
+          {"field": "event.action", "equals": "vpn_login"},
+          {"field": "event.outcome", "equals": "success"},
+          {"field": "source.trust", "equals": "untrusted"}
+        ]
+      },
+      "tuning": {
+        "baseline_required": true,
+        "notes": "Add approved travel networks as time-bounded exceptions only."
+      },
+      "exceptions": [],
+      "retirement": {
+        "criteria": "Retire if VPN provider supplies equivalent risk-based alerting."
+      },
+      "test_fixture_positive": "tests/detections/fixtures/phase8-positive-events.jsonl",
+      "test_fixture_negative": "tests/detections/fixtures/phase8-negative-events.jsonl"
+    },
+    {
+      "id": "NSW-DET-NET-001",
+      "version": "1.0.0",
+      "status": "production",
+      "name": "Connection correlated with IDS alert",
+      "description": "Correlates Zeek connection metadata with a Suricata alert for the same source/destination pair.",
+      "kind": "correlation",
+      "source_type": "deterministic_correlation",
+      "owner": "SecOps",
+      "severity": "high",
+      "route": "secops-primary",
+      "response_procedure": "docs/runbooks/detections/network-ids-correlation.md",
+      "correlation": {
+        "window_minutes": 5,
+        "join_fields": ["source.ip", "destination.ip"],
+        "stages": [
+          {
+            "name": "connection",
+            "query": {
+              "all": [
+                {"field": "event.dataset", "equals": "zeek.conn"}
+              ]
+            }
+          },
+          {
+            "name": "ids_alert",
+            "query": {
+              "all": [
+                {"field": "event.dataset", "equals": "suricata.alert"},
+                {"field": "event.kind", "equals": "alert"}
+              ]
+            }
+          }
+        ]
+      },
+      "tuning": {
+        "baseline_required": false,
+        "notes": "Tune Suricata signatures in the IDS rule source before suppressing this correlation."
+      },
+      "exceptions": [],
+      "retirement": {
+        "criteria": "Retire only when replaced by a more precise multi-stage detection."
+      },
+      "test_fixture_positive": "tests/detections/fixtures/phase8-positive-events.jsonl",
+      "test_fixture_negative": "tests/detections/fixtures/phase8-negative-events.jsonl"
+    }
+  ]
+}

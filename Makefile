@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations test-phase8-detections test-phase9-ml test-phase10-deployment preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -185,6 +185,26 @@ test-phase6-security:
 
 test-phase7-operations:
 	python3 ./tests/operations/test-phase-7-operations.py
+
+test-phase8-detections:
+	python3 ./tests/detections/test-phase-8-detections.py
+	python3 ./scripts/run-detections.py \
+		--events tests/detections/fixtures/phase8-positive-events.jsonl \
+		--expect tests/detections/fixtures/phase8-expected-alerts.json
+
+test-phase9-ml:
+	python3 ./tests/ml/test-phase-9-ml.py
+	python3 ./scripts/ml-shadow-score.py \
+		--events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
+		--model-metadata config/ml/mlflow-model-registry-entry-v1.json \
+		--output /tmp/net-sec-watch-ml-shadow-predictions.jsonl
+
+test-phase10-deployment:
+	python3 ./tests/deployment/test-phase-10-deployment.py
+	./scripts/preflight-deployment.sh --check-files-only
+
+preflight-deployment:
+	./scripts/preflight-deployment.sh
 
 load-test-syslog:
 	./scripts/load-test-syslog.sh

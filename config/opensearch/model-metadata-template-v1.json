@@ -36,11 +36,17 @@
             "task": {
               "type": "keyword"
             },
+            "type": {
+              "type": "keyword"
+            },
             "framework": {
               "type": "keyword"
             },
             "status": {
               "type": "keyword"
+            },
+            "shadow_mode": {
+              "type": "boolean"
             },
             "artifact_uri": {
               "type": "keyword",
@@ -51,6 +57,25 @@
             },
             "features": {
               "type": "keyword"
+            },
+            "input_feature_schema": {
+              "type": "flattened"
+            },
+            "output_field_names": {
+              "type": "keyword"
+            },
+            "promotion_approval_record": {
+              "type": "keyword"
+            },
+            "rollback_pointer": {
+              "properties": {
+                "model_id": {
+                  "type": "keyword"
+                },
+                "model_version": {
+                  "type": "keyword"
+                }
+              }
             },
             "owner": {
               "type": "keyword"

@@ -1,0 +1,7 @@
+{"@timestamp":"2026-07-05T02:00:00Z","event.id":"auth-neg-1","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.20","user.name":"admin"}
+{"@timestamp":"2026-07-05T02:01:00Z","event.id":"auth-neg-2","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.20","user.name":"admin"}
+{"@timestamp":"2026-07-05T02:02:00Z","event.id":"auth-neg-3","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.20","user.name":"admin"}
+{"@timestamp":"2026-07-05T02:05:00Z","event.id":"fw-neg-1","event.dataset":"asuswrt.firewall","event.action":"drop","event.outcome":"failure","source.ip":"192.0.2.45","destination.ip":"198.51.100.7","destination.port":123,"network.transport":"udp"}
+{"@timestamp":"2026-07-05T02:06:00Z","event.id":"vpn-neg-1","event.dataset":"vpn.auth","event.action":"vpn_login","event.outcome":"success","source.ip":"198.51.100.201","source.trust":"trusted","destination.ip":"10.0.0.20","user.name":"salomon"}
+{"@timestamp":"2026-07-05T02:07:00Z","event.id":"conn-neg-1","event.dataset":"zeek.conn","event.kind":"event","source.ip":"203.0.113.90","destination.ip":"10.0.0.10","destination.port":443,"network.transport":"tcp"}
+{"@timestamp":"2026-07-05T02:30:00Z","event.id":"ids-neg-1","event.dataset":"suricata.alert","event.kind":"alert","source.ip":"203.0.113.90","destination.ip":"10.0.0.10","destination.port":443,"rule.name":"ET TEST Delayed Alert"}

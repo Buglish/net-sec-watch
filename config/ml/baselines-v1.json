@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "deterministic_baselines": [
+    {
+      "id": "DET-AUTH-FAIL-COUNT",
+      "description": "Phase 8 repeated authentication failure threshold.",
+      "rule_id": "NSW-DET-AUTH-001"
+    }
+  ],
+  "statistical_baselines": [
+    {
+      "id": "STAT-AUTH-USER-SOURCE-ZSCORE",
+      "description": "Z-score of failed login count by user and source against a time-separated baseline.",
+      "features": [
+        "failed_login_count_10m",
+        "unique_failed_users_10m",
+        "source_reputation_score",
+        "asset_criticality_score"
+      ],
+      "threshold": {
+        "z_score": 3.0,
+        "minimum_count": 5
+      }
+    }
+  ]
+}

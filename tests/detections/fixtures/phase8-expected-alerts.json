@@ -1,0 +1,14 @@
+{
+  "expected_rule_ids": [
+    "NSW-DET-AUTH-001",
+    "NSW-DET-FW-001",
+    "NSW-DET-NET-001",
+    "NSW-DET-VPN-001"
+  ],
+  "minimum_priorities": {
+    "NSW-DET-AUTH-001": "p3",
+    "NSW-DET-FW-001": "p2",
+    "NSW-DET-NET-001": "p1",
+    "NSW-DET-VPN-001": "p1"
+  }
+}

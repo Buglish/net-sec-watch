@@ -477,6 +477,53 @@ make dr-exercise
 See [Phase 7 operations](docs/phase-7-reliability-operations.md) for the
 operations overview and runbook index.
 
+## Security detections and alerting
+
+Phase 8 adds deterministic security detection rules and source-agnostic alert
+routing. Query, threshold, correlation, and future Phase 11 ML alerts use the
+same alert schema and notification destinations.
+
+Useful command:
+
+```bash
+make test-phase8-detections
+```
+
+See [Phase 8 detections and alerting](docs/phase-8-security-detections-alerting.md)
+for rule ownership, tuning, exception, disposition, and retirement guidance.
+
+## Security machine learning
+
+Phase 9 adds governed, explainable ML assistance in shadow mode. The initial
+use case is repeated authentication failure anomaly prioritization. ML scores
+are written as separate prediction records and never modify original events.
+
+Useful command:
+
+```bash
+make test-phase9-ml
+```
+
+See [Phase 9 security machine learning](docs/phase-9-security-machine-learning.md)
+for governance, datasets, baselines, model evaluation, shadow mode, feedback,
+drift monitoring, hot-swap serving, and MLflow registry metadata.
+
+## Deployment portability
+
+Phase 10 adds deployment automation and release-readiness artifacts for Docker
+Compose, Linux VM, and Kubernetes environments.
+
+Useful commands:
+
+```bash
+make preflight-deployment
+make test-phase10-deployment
+```
+
+See [Phase 10 deployment portability](docs/phase-10-deployment-portability.md)
+for installation, administration, troubleshooting, compatibility, upgrade,
+rollback, backup/restore, and production-readiness guidance.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in

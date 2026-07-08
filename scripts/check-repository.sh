@@ -49,6 +49,20 @@ python3 ./scripts/compare-dashboards-export.py --help >/dev/null
 python3 ./scripts/benchmark-seven-day-searches.py --help >/dev/null
 python3 ./tests/security/test-phase-6-security.py
 python3 ./tests/operations/test-phase-7-operations.py
+python3 ./tests/detections/test-phase-8-detections.py
+python3 ./scripts/run-detections.py \
+  --events tests/detections/fixtures/phase8-positive-events.jsonl \
+  --expect tests/detections/fixtures/phase8-expected-alerts.json >/dev/null
+python3 ./scripts/run-detections.py \
+  --events tests/detections/fixtures/phase8-negative-events.jsonl \
+  --expect tests/detections/fixtures/phase8-expected-negative-alerts.json >/dev/null
+python3 ./tests/ml/test-phase-9-ml.py
+python3 ./scripts/ml-shadow-score.py \
+  --events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
+  --model-metadata config/ml/mlflow-model-registry-entry-v1.json \
+  --output /tmp/net-sec-watch-ml-shadow-predictions.jsonl
+python3 ./tests/deployment/test-phase-10-deployment.py
+./scripts/preflight-deployment.sh --check-files-only
 ./tests/opensearch/tls-certificate-config.sh
 python3 -m json.tool \
   config/identity/net-sec-watch-realm.json >/dev/null

@@ -1,0 +1,40 @@
+{
+  "version": "1.0.0",
+  "default_deduplication_window_minutes": 60,
+  "default_suppression_window_minutes": 30,
+  "rules": {
+    "NSW-DET-AUTH-001": {
+      "deduplication_key_fields": [
+        "alert.rule.id",
+        "source.ip",
+        "user.name"
+      ],
+      "suppression_window_minutes": 30
+    },
+    "NSW-DET-FW-001": {
+      "deduplication_key_fields": [
+        "alert.rule.id",
+        "source.ip",
+        "destination.ip",
+        "destination.port"
+      ],
+      "suppression_window_minutes": 15
+    },
+    "NSW-DET-VPN-001": {
+      "deduplication_key_fields": [
+        "alert.rule.id",
+        "source.ip",
+        "user.name"
+      ],
+      "suppression_window_minutes": 60
+    },
+    "NSW-DET-NET-001": {
+      "deduplication_key_fields": [
+        "alert.rule.id",
+        "source.ip",
+        "destination.ip"
+      ],
+      "suppression_window_minutes": 30
+    }
+  }
+}

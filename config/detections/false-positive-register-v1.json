@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "dispositions": [
+    "true_positive",
+    "benign_true_positive",
+    "false_positive",
+    "duplicate",
+    "needs_tuning",
+    "suppressed_by_exception"
+  ],
+  "fields_required_for_review": [
+    "alert.id",
+    "alert.rule.id",
+    "analyst",
+    "disposition",
+    "reason",
+    "tuning_action",
+    "reviewed_at"
+  ],
+  "accepted_false_positive_rate": {
+    "default": "analyst-approved production threshold required before completion gate",
+    "repository_test_threshold": 0
+  },
+  "records": []
+}

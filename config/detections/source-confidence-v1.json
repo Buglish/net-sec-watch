@@ -1,0 +1,31 @@
+{
+  "version": "1.0.0",
+  "default": "medium",
+  "scores": {
+    "low": -1,
+    "medium": 0,
+    "high": 1
+  },
+  "sources": {
+    "system.auth": {
+      "confidence": "high",
+      "description": "Local authentication logs from host or identity source."
+    },
+    "asuswrt.firewall": {
+      "confidence": "medium",
+      "description": "Consumer router firewall drop logs with limited context."
+    },
+    "vpn.auth": {
+      "confidence": "high",
+      "description": "VPN authentication and session records."
+    },
+    "zeek.conn": {
+      "confidence": "high",
+      "description": "Network connection metadata from passive sensor."
+    },
+    "suricata.alert": {
+      "confidence": "high",
+      "description": "IDS alert metadata from Suricata EVE."
+    }
+  }
+}

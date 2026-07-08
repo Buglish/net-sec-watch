@@ -53,6 +53,15 @@
             "confidence": {
               "type": "float"
             },
+            "features": {
+              "type": "flattened"
+            },
+            "contributing_features": {
+              "type": "keyword"
+            },
+            "supporting_evidence": {
+              "type": "keyword"
+            },
             "model_id": {
               "type": "keyword"
             },

@@ -1,0 +1,30 @@
+{
+  "version": "1.0.0",
+  "owner": "SecOps",
+  "approval": {
+    "required_approvers": [
+      "SecOps owner",
+      "Privacy reviewer",
+      "Platform owner"
+    ],
+    "minimum_shadow_days": 14,
+    "requires_analyst_metric_improvement": true
+  },
+  "rollback": {
+    "trigger": "precision, latency, drift, or analyst feedback breaches approved threshold",
+    "action": "disable ML alerts or restore rollback_pointer model version"
+  },
+  "retraining": {
+    "cadence": "monthly_or_drift_triggered",
+    "requires_time_separated_evaluation": true,
+    "requires_new_mlflow_run": true
+  },
+  "retirement": {
+    "criteria": [
+      "model no longer improves analyst workflow",
+      "source data changes invalidate features",
+      "simpler deterministic rule replaces the model",
+      "licensing or privacy approval is withdrawn"
+    ]
+  }
+}

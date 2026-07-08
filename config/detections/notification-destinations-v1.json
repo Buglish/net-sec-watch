@@ -1,0 +1,38 @@
+{
+  "version": "1.0.0",
+  "destinations": {
+    "secops-primary": {
+      "description": "Default analyst queue for actionable security alerts.",
+      "channels": [
+        {
+          "type": "webhook",
+          "name": "secops-webhook",
+          "url_env": "NET_SEC_WATCH_ALERT_WEBHOOK_URL"
+        },
+        {
+          "type": "email",
+          "name": "secops-email",
+          "to_env": "NET_SEC_WATCH_ALERT_EMAIL_TO",
+          "from_env": "NET_SEC_WATCH_ALERT_EMAIL_FROM"
+        }
+      ]
+    },
+    "platform-operations": {
+      "description": "Infrastructure and collector reliability queue.",
+      "channels": [
+        {
+          "type": "webhook",
+          "name": "platform-webhook",
+          "url_env": "NET_SEC_WATCH_PLATFORM_WEBHOOK_URL"
+        },
+        {
+          "type": "email",
+          "name": "platform-email",
+          "to_env": "NET_SEC_WATCH_PLATFORM_EMAIL_TO",
+          "from_env": "NET_SEC_WATCH_ALERT_EMAIL_FROM"
+        }
+      ]
+    }
+  },
+  "default_destination": "secops-primary"
+}

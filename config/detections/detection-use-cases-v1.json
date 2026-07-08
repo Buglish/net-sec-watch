@@ -1,0 +1,29 @@
+{
+  "version": "1.0.0",
+  "use_cases": [
+    {
+      "id": "AUTH-001",
+      "category": "authentication",
+      "name": "Repeated authentication failures",
+      "rule_ids": ["NSW-DET-AUTH-001"]
+    },
+    {
+      "id": "FIREWALL-001",
+      "category": "firewall",
+      "name": "Firewall deny to sensitive service",
+      "rule_ids": ["NSW-DET-FW-001"]
+    },
+    {
+      "id": "VPN-001",
+      "category": "vpn",
+      "name": "VPN login from untrusted network",
+      "rule_ids": ["NSW-DET-VPN-001"]
+    },
+    {
+      "id": "NETWORK-001",
+      "category": "network",
+      "name": "Network connection correlated with IDS alert",
+      "rule_ids": ["NSW-DET-NET-001"]
+    }
+  ]
+}

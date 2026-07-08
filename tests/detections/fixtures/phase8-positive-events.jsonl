@@ -1,0 +1,9 @@
+{"@timestamp":"2026-07-05T01:00:00Z","event.id":"auth-1","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.10","user.name":"admin"}
+{"@timestamp":"2026-07-05T01:01:00Z","event.id":"auth-2","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.10","user.name":"admin"}
+{"@timestamp":"2026-07-05T01:02:00Z","event.id":"auth-3","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.10","user.name":"admin"}
+{"@timestamp":"2026-07-05T01:03:00Z","event.id":"auth-4","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.10","user.name":"admin"}
+{"@timestamp":"2026-07-05T01:04:00Z","event.id":"auth-5","event.dataset":"system.auth","event.action":"login","event.outcome":"failure","source.ip":"203.0.113.10","user.name":"admin"}
+{"@timestamp":"2026-07-05T01:05:00Z","event.id":"fw-1","event.dataset":"asuswrt.firewall","event.action":"drop","event.outcome":"failure","source.ip":"192.0.2.45","destination.ip":"198.51.100.7","destination.port":3389,"network.transport":"tcp"}
+{"@timestamp":"2026-07-05T01:06:00Z","event.id":"vpn-1","event.dataset":"vpn.auth","event.action":"vpn_login","event.outcome":"success","source.ip":"198.51.100.200","source.trust":"untrusted","destination.ip":"10.0.0.20","user.name":"salomon"}
+{"@timestamp":"2026-07-05T01:07:00Z","event.id":"conn-1","event.dataset":"zeek.conn","event.kind":"event","source.ip":"203.0.113.88","destination.ip":"10.0.0.10","destination.port":445,"network.transport":"tcp"}
+{"@timestamp":"2026-07-05T01:08:00Z","event.id":"ids-1","event.dataset":"suricata.alert","event.kind":"alert","source.ip":"203.0.113.88","destination.ip":"10.0.0.10","destination.port":445,"rule.name":"ET TEST Suspicious SMB"}
