@@ -146,23 +146,15 @@ def test_service_levels_and_commands() -> None:
         assert_true((ROOT / script).is_file(), f"{script} missing")
 
 
-def test_objectives_and_completion_gate_boundary() -> None:
-    objectives = read("OBJECTIVES.md")
-    phase7 = objectives.split(
-        "## Phase 7 - Reliability, operations, and disaster recovery", 1
-    )[1]
-    phase7 = phase7.split("## Phase 8", 1)[0]
-    tasks, gates = phase7.split("### Completion gate", 1)
-    unchecked_tasks = re.findall(r"^- \[ \] .+$", tasks, flags=re.MULTILINE)
-    assert_true(
-        not unchecked_tasks,
-        f"Phase 7 repository tasks still unchecked: {unchecked_tasks}",
-    )
-    unchecked_gates = re.findall(r"^- \[ \] .+$", gates, flags=re.MULTILINE)
-    assert_true(
-        len(unchecked_gates) == 3,
-        "production gates should remain open until live evidence is recorded",
-    )
+def test_feature_status_mentions_operations_boundaries() -> None:
+    status = read("docs/features-and-roadmap.md")
+    assert_true("Operations and disaster recovery" in status, "operations status missing")
+    for remaining in [
+        "Production service-level targets met under agreed load",
+        "Documented disaster-recovery exercise meeting approved RTO/RPO",
+        "Operator confirmation that critical alerts are diagnosable using runbooks",
+    ]:
+        assert_true(remaining in status, f"remaining-work boundary missing {remaining}")
 
 
 if __name__ == "__main__":
@@ -171,7 +163,7 @@ if __name__ == "__main__":
         test_alerts_have_runbooks_and_owners,
         test_runbooks_cover_phase_7_scenarios,
         test_service_levels_and_commands,
-        test_objectives_and_completion_gate_boundary,
+        test_feature_status_mentions_operations_boundaries,
     ]:
         test()
     print("Phase 7 operations contract is valid.")

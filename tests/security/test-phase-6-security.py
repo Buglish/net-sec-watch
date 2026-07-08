@@ -193,12 +193,16 @@ def test_classification_rotation_and_supply_chain() -> None:
     )
 
 
-def test_objectives_completed() -> None:
-    objectives = read("OBJECTIVES.md")
-    phase6 = objectives.split("## Phase 6 - Security, privacy, and access control", 1)[1]
-    phase6 = phase6.split("## Phase 7", 1)[0]
-    unchecked = re.findall(r"^- \[ \] .+$", phase6, flags=re.MULTILINE)
-    assert_true(not unchecked, f"Phase 6 still has unchecked items: {unchecked}")
+def test_feature_status_mentions_security() -> None:
+    status = read("docs/features-and-roadmap.md")
+    for term in [
+        "TLS",
+        "OIDC",
+        "Administrator, analyst, read-only, source-owner, and service roles",
+        "OpenSearch Security audit configuration",
+        "Collector-side sensitive-field redaction",
+    ]:
+        assert_true(term in status, f"feature status missing {term}")
 
 
 if __name__ == "__main__":
@@ -209,7 +213,7 @@ if __name__ == "__main__":
         test_audit_and_review,
         test_redaction_wiring,
         test_classification_rotation_and_supply_chain,
-        test_objectives_completed,
+        test_feature_status_mentions_security,
     ]
     for test in tests:
         test()

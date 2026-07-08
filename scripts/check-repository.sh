@@ -9,6 +9,8 @@ required_files=(
   CONTRIBUTING.md
   README.md
   OBJECTIVES.md
+  docs/index.md
+  docs/features-and-roadmap.md
   .editorconfig
   .gitleaks.toml
   .github/workflows/ci.yaml
