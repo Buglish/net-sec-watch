@@ -18,7 +18,7 @@ evidence are complete.
 - [~] Phase 7 - Reliability, operations, and disaster recovery
 - [ ] Phase 8 - Security detections and alerting
 - [~] Phase 9 - Security machine learning
-- [ ] Phase 10 - Deployment portability and production release
+- [~] Phase 10 - Deployment portability and production release
 - [ ] Phase 11 - Adaptive traffic intelligence and live model orchestration
 
 ---
@@ -356,24 +356,24 @@ anomaly detection and risk prioritization without autonomous enforcement.
 supported Linux, Docker, and Kubernetes environments without proprietary
 runtime dependencies.
 
-- [ ] Complete the Docker Compose development deployment.
-- [ ] Add automated Linux VM deployment.
-- [ ] Add Kubernetes manifests or a Helm chart.
-- [ ] Separate development, test, staging, and production configuration.
-- [ ] Add resource requests, limits, and storage classes.
-- [ ] Add network policies and least-privilege service identities.
-- [ ] Add environment validation and preflight checks.
-- [ ] Add upgrade, rollback, backup, and restore automation.
-- [ ] Publish supported-version and compatibility policies.
-- [ ] Complete installation, administration, and troubleshooting documentation.
-- [ ] Complete production readiness and security reviews.
+- [x] Complete the Docker Compose development deployment.
+- [x] Add automated Linux VM deployment.
+- [x] Add Kubernetes manifests or a Helm chart.
+- [x] Separate development, test, staging, and production configuration.
+- [x] Add resource requests, limits, and storage classes.
+- [x] Add network policies and least-privilege service identities.
+- [x] Add environment validation and preflight checks.
+- [x] Add upgrade, rollback, backup, and restore automation.
+- [x] Publish supported-version and compatibility policies.
+- [x] Complete installation, administration, and troubleshooting documentation.
+- [x] Complete production readiness and security reviews.
 - [ ] Tag and publish the first supported release.
 
 ### Completion gate
 
 - [ ] A clean environment can be deployed using only documented automation.
 - [ ] The deployment passes security, resilience, performance, and recovery tests.
-- [ ] All required runtime components remain free, self-hostable, and open source.
+- [x] All required runtime components remain free, self-hostable, and open source.
 
 ---
 

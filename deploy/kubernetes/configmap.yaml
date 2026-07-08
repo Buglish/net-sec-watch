@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: net-sec-watch-config
+  namespace: net-sec-watch
+data:
+  DEPLOYMENT_ENVIRONMENT: "production"
+  FLUENT_BIT_HTTP_PORT: "2020"
+  SYSLOG_UDP_PORT: "514"
+  SYSLOG_TCP_PORT: "514"
+  SYSLOG_TLS_PORT: "6514"
+  OPENSEARCH_HTTP_PORT: "9200"
+  OPENSEARCH_DASHBOARDS_PORT: "5601"

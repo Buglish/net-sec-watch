@@ -508,6 +508,22 @@ See [Phase 9 security machine learning](docs/phase-9-security-machine-learning.m
 for governance, datasets, baselines, model evaluation, shadow mode, feedback,
 drift monitoring, hot-swap serving, and MLflow registry metadata.
 
+## Deployment portability
+
+Phase 10 adds deployment automation and release-readiness artifacts for Docker
+Compose, Linux VM, and Kubernetes environments.
+
+Useful commands:
+
+```bash
+make preflight-deployment
+make test-phase10-deployment
+```
+
+See [Phase 10 deployment portability](docs/phase-10-deployment-portability.md)
+for installation, administration, troubleshooting, compatibility, upgrade,
+rollback, backup/restore, and production-readiness guidance.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in

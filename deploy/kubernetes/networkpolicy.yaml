@@ -1,0 +1,50 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: net-sec-watch-default-deny
+  namespace: net-sec-watch
+spec:
+  podSelector: {}
+  policyTypes:
+    - Ingress
+    - Egress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-collector-to-opensearch
+  namespace: net-sec-watch
+spec:
+  podSelector:
+    matchLabels:
+      app: opensearch
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: fluent-bit
+      ports:
+        - protocol: TCP
+          port: 9200
+  policyTypes:
+    - Ingress
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-dashboards-to-opensearch
+  namespace: net-sec-watch
+spec:
+  podSelector:
+    matchLabels:
+      app: opensearch
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels:
+              app: opensearch-dashboards
+      ports:
+        - protocol: TCP
+          port: 9200
+  policyTypes:
+    - Ingress
