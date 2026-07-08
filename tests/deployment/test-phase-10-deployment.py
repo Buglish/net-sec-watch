@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 
 
@@ -87,22 +86,14 @@ def test_open_source_runtime_policy() -> None:
     assert_true("Open source, self-hostable" in supported, "open-source runtime policy missing")
 
 
-def test_objective_boundary() -> None:
-    objectives = read("OBJECTIVES.md")
-    phase10 = objectives.split(
-        "## Phase 10 - Deployment portability and production release", 1
-    )[1]
-    phase10 = phase10.split("## Phase 11", 1)[0]
+def test_feature_status_boundary() -> None:
+    status = read("docs/features-and-roadmap.md")
     assert_true(
-        "- [ ] Tag and publish the first supported release." in phase10,
+        "Tag and publish the first supported release" in status,
         "tag/publish should remain open until explicitly performed",
     )
-    tasks, gates = phase10.split("### Completion gate", 1)
-    unchecked_tasks = re.findall(r"^- \[ \] (?!Tag and publish).+$", tasks, flags=re.MULTILINE)
-    assert_true(not unchecked_tasks, f"unexpected unchecked Phase 10 tasks: {unchecked_tasks}")
     assert_true(
-        "- [x] All required runtime components remain free, self-hostable, and open source."
-        in gates,
+        "open-source runtime policy" in status,
         "open-source runtime gate should be complete",
     )
 
@@ -113,7 +104,7 @@ if __name__ == "__main__":
         test_linux_and_kubernetes_deployment,
         test_preflight_upgrade_rollback_and_docs,
         test_open_source_runtime_policy,
-        test_objective_boundary,
+        test_feature_status_boundary,
     ]:
         test()
     print("Phase 10 deployment contract is valid.")

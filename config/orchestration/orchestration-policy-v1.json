@@ -1,0 +1,32 @@
+{
+  "version": "1.0.0",
+  "dataset_slice": {
+    "lookback_hours": 24,
+    "minimum_cluster_size": 3,
+    "requires_feedback_labels": true
+  },
+  "clustering": {
+    "algorithm": "dbscan",
+    "fallback_algorithm": "kmeans",
+    "features": ["destination.port", "network.transport", "event.dataset", "source.asn"]
+  },
+  "candidate_training": {
+    "frameworks": ["scikit-learn", "river"],
+    "default_framework": "scikit-learn",
+    "stage": "shadow"
+  },
+  "evaluation_thresholds": {
+    "precision_minimum": 0.7,
+    "recall_minimum": 0.6,
+    "false_positive_rate_maximum": 0.1,
+    "latency_ms_p95_maximum": 500
+  },
+  "rejection": {
+    "log_failed_candidates": true,
+    "metric": "net_sec_watch_candidate_models_rejected_total"
+  },
+  "feedback": {
+    "include_shadow_feedback_next_cycle": true,
+    "feedback_index": "net-sec-watch-predictions-${DEPLOYMENT_ENVIRONMENT}"
+  }
+}

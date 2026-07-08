@@ -1,0 +1,3 @@
+{"@timestamp":"2026-07-08T01:00:00Z","event.id":"live-1","event.dataset":"zeek.conn","destination.port":443,"network.transport":"tcp","model_hint.confidence":0.82,"model_hint.classification":"expected"}
+{"@timestamp":"2026-07-08T01:00:01Z","event.id":"live-2","event.dataset":"asuswrt.firewall","destination.port":6514,"network.transport":"tcp","model_hint.confidence":0.35,"model_hint.classification":"unknown"}
+{"@timestamp":"2026-07-08T01:00:02Z","event.id":"live-3","event.dataset":"suricata.alert","destination.port":445,"network.transport":"tcp","model_hint.confidence":0.25,"model_hint.classification":"unknown"}

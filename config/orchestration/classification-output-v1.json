@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "required_prediction_fields": [
+    "prediction.classification",
+    "prediction.threat_level",
+    "prediction.score",
+    "prediction.confidence",
+    "prediction.model_id",
+    "prediction.model_version",
+    "prediction.contributing_features",
+    "prediction.supporting_evidence"
+  ],
+  "threat_levels": ["critical", "high", "medium", "low", "info"],
+  "alert_routing": {
+    "pipeline": "phase-8-alert-schema",
+    "minimum_alert_level": "high",
+    "destination": "secops-primary"
+  },
+  "dashboard_fields": [
+    "event.classification",
+    "event.threat_level",
+    "event.threat_score",
+    "event.ml_model_id",
+    "event.ml_confidence"
+  ]
+}

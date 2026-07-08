@@ -1,0 +1,47 @@
+{
+  "version": "1.0.0",
+  "serving_api_metrics": [
+    "inference_latency",
+    "queue_depth",
+    "error_rate",
+    "resource_use"
+  ],
+  "autonomous_loop_metrics": [
+    "candidate_models_trained",
+    "candidate_models_evaluated",
+    "candidate_models_rejected",
+    "candidate_models_promoted",
+    "candidate_models_rolled_back"
+  ],
+  "quality_metrics": [
+    "classification_drift",
+    "score_drift",
+    "analyst_override_rate"
+  ],
+  "llm_metrics": [
+    "query_rate",
+    "latency",
+    "error_rate",
+    "resource_use"
+  ],
+  "license_policy": {
+    "open_source_only": true,
+    "paid_api_dependency_allowed": false,
+    "self_hostable_required": true
+  },
+  "ownership": {
+    "owner": "SecOps",
+    "review_frequency": "monthly",
+    "minimum_performance_floor": {
+      "precision": 0.7,
+      "recall": 0.6,
+      "false_positive_rate": 0.1
+    },
+    "retirement_criteria": [
+      "performance below floor",
+      "source data retired",
+      "analyst value no longer demonstrated",
+      "license approval withdrawn"
+    ]
+  }
+}

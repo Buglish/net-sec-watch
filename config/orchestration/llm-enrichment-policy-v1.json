@@ -1,0 +1,27 @@
+{
+  "version": "1.0.0",
+  "enabled_by_default": false,
+  "provider": "ollama",
+  "approved_models": [
+    {"name": "llama3", "license_review": "approved-open-source-candidate"},
+    {"name": "mistral", "license_review": "approved-open-source-candidate"},
+    {"name": "phi", "license_review": "approved-open-source-candidate"}
+  ],
+  "prompt_contract": {
+    "inputs": ["normalized_event_sample", "cluster_statistics", "recent_similar_events"],
+    "outputs": ["pattern_description", "recommended_features", "confidence_notes"],
+    "schema_validation_required": true
+  },
+  "audit": {
+    "log_prompt_version": true,
+    "log_query": true,
+    "log_latency": true,
+    "log_resource_use": true
+  },
+  "safety": {
+    "advisor_only": true,
+    "may_promote_model": false,
+    "may_generate_alert": false,
+    "disable_policy": "orchestration_11_1_to_11_5_remains_operational"
+  }
+}

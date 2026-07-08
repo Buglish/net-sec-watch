@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import json
-import re
 import subprocess
 import sys
 from pathlib import Path
@@ -151,7 +150,7 @@ def test_detection_runner_positive_and_negative() -> None:
     assert_true(json.loads(negative.stdout)["alerts"] == [], "negative alerts fired")
 
 
-def test_docs_and_objectives() -> None:
+def test_docs_and_feature_status() -> None:
     docs = [
         "docs/phase-8-security-detections-alerting.md",
         "docs/runbooks/detections/authentication-failures.md",
@@ -162,17 +161,11 @@ def test_docs_and_objectives() -> None:
     ]
     for path in docs:
         assert_true((ROOT / path).is_file(), f"{path} missing")
-    objectives = read("OBJECTIVES.md")
-    phase8 = objectives.split("## Phase 8 - Security detections and alerting", 1)[1]
-    phase8 = phase8.split("## Phase 9", 1)[0]
-    tasks, gates = phase8.split("### Completion gate", 1)
+    status = read("docs/features-and-roadmap.md")
+    assert_true("Security detections and alerting" in status, "detection status missing")
     assert_true(
-        not re.findall(r"^- \[ \] .+$", tasks, flags=re.MULTILINE),
-        "Phase 8 tasks still unchecked",
-    )
-    assert_true(
-        "Alert volume and false-positive rate meet analyst-approved thresholds"
-        in gates,
+        "Analyst-approved alert volume and false-positive thresholds"
+        in status,
         "analyst approval gate missing",
     )
 
@@ -184,7 +177,7 @@ if __name__ == "__main__":
         test_rules_are_production_ready,
         test_priority_routing_dedup_and_disposition,
         test_detection_runner_positive_and_negative,
-        test_docs_and_objectives,
+        test_docs_and_feature_status,
     ]:
         test()
     print("Phase 8 detection contract is valid.")

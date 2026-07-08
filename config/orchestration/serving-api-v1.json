@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "runtime": {
+    "implementation": "FastAPI-compatible self-hosted service",
+    "image": "python:3.12-slim",
+    "open_source": true,
+    "paid_api_required": false,
+    "disable_policy": "ingestion_indexing_search_and_deterministic_rules_continue"
+  },
+  "subscription": {
+    "source": "opensearch",
+    "fallback_source": "fluent-bit-forward",
+    "event_types": ["network", "syslog"],
+    "near_real_time_target_seconds": 5
+  },
+  "outputs": {
+    "prediction_stream": "net-sec-watch-predictions-${DEPLOYMENT_ENVIRONMENT}",
+    "reserved_event_fields": [
+      "event.classification",
+      "event.threat_level",
+      "event.threat_score",
+      "event.ml_model_id",
+      "event.ml_confidence"
+    ],
+    "mutates_original_event": false
+  },
+  "metrics": [
+    "net_sec_watch_inference_latency_seconds",
+    "net_sec_watch_inference_throughput_total",
+    "net_sec_watch_inference_queue_depth",
+    "net_sec_watch_inference_errors_total"
+  ],
+  "endpoints": [
+    {"method": "GET", "path": "/health"},
+    {"method": "GET", "path": "/metrics"},
+    {"method": "POST", "path": "/score"},
+    {"method": "POST", "path": "/reload"}
+  ]
+}
