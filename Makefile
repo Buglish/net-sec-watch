@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations test-phase8-detections test-phase9-ml test-phase10-deployment preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations test-phase8-detections test-phase9-ml test-phase10-deployment test-phase11-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -202,6 +202,18 @@ test-phase9-ml:
 test-phase10-deployment:
 	python3 ./tests/deployment/test-phase-10-deployment.py
 	./scripts/preflight-deployment.sh --check-files-only
+
+test-phase11-orchestration:
+	python3 ./tests/orchestration/test-phase-11-orchestration.py
+	python3 ./scripts/traffic-classifier-service.py \
+		--events tests/orchestration/fixtures/live-events.jsonl \
+		--registry config/orchestration/model-registry-events-v1.json \
+		--output /tmp/net-sec-watch-phase11-predictions.jsonl \
+		--metrics-output /tmp/net-sec-watch-phase11-metrics.prom
+	python3 ./scripts/model-orchestrator.py \
+		--events tests/orchestration/fixtures/unknown-traffic-events.jsonl \
+		--config config/orchestration/orchestration-policy-v1.json \
+		--output /tmp/net-sec-watch-phase11-candidates.json
 
 preflight-deployment:
 	./scripts/preflight-deployment.sh

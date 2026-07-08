@@ -63,6 +63,16 @@ python3 ./scripts/ml-shadow-score.py \
   --output /tmp/net-sec-watch-ml-shadow-predictions.jsonl
 python3 ./tests/deployment/test-phase-10-deployment.py
 ./scripts/preflight-deployment.sh --check-files-only
+python3 ./tests/orchestration/test-phase-11-orchestration.py
+python3 ./scripts/traffic-classifier-service.py \
+  --events tests/orchestration/fixtures/live-events.jsonl \
+  --registry config/orchestration/model-registry-events-v1.json \
+  --output /tmp/net-sec-watch-phase11-predictions.jsonl \
+  --metrics-output /tmp/net-sec-watch-phase11-metrics.prom >/dev/null
+python3 ./scripts/model-orchestrator.py \
+  --events tests/orchestration/fixtures/unknown-traffic-events.jsonl \
+  --config config/orchestration/orchestration-policy-v1.json \
+  --output /tmp/net-sec-watch-phase11-candidates.json >/dev/null
 ./tests/opensearch/tls-certificate-config.sh
 python3 -m json.tool \
   config/identity/net-sec-watch-realm.json >/dev/null

@@ -524,6 +524,22 @@ See [Phase 10 deployment portability](docs/phase-10-deployment-portability.md)
 for installation, administration, troubleshooting, compatibility, upgrade,
 rollback, backup/restore, and production-readiness guidance.
 
+## Adaptive traffic intelligence
+
+Phase 11 adds the contracts and local simulation for live classification,
+unknown-traffic orchestration, dynamic model promotion/rollback, analyst
+approval, and optional self-hosted LLM enrichment.
+
+Useful command:
+
+```bash
+make test-phase11-orchestration
+```
+
+See [Phase 11 adaptive traffic intelligence](docs/phase-11-adaptive-traffic-intelligence.md)
+for the serving API, orchestration loop, governance, safety constraints, and
+rollback procedure.
+
 ## Planned delivery phases
 
 The full phase-by-phase delivery plan with tickable items is maintained in

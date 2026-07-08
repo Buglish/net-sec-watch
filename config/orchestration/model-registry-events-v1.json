@@ -1,0 +1,60 @@
+{
+  "version": "1.0.0",
+  "active_slots": {
+    "network": {
+      "active_model_id": "traffic-baseline",
+      "active_model_version": "1.0.0",
+      "rollback_model_id": "traffic-baseline",
+      "rollback_model_version": "0.9.0"
+    },
+    "syslog": {
+      "active_model_id": "syslog-baseline",
+      "active_model_version": "1.0.0",
+      "rollback_model_id": "syslog-baseline",
+      "rollback_model_version": "0.9.0"
+    }
+  },
+  "events": [
+    {
+      "type": "training_run",
+      "model_id": "traffic-baseline",
+      "model_version": "1.0.0",
+      "traffic_class": "network",
+      "auditable": true
+    },
+    {
+      "type": "evaluation_result",
+      "model_id": "traffic-baseline",
+      "model_version": "1.0.0",
+      "precision": 0.8,
+      "recall": 0.7,
+      "false_positive_rate": 0.05,
+      "latency_ms_p95": 40,
+      "auditable": true
+    },
+    {
+      "type": "promotion",
+      "model_id": "traffic-baseline",
+      "model_version": "1.0.0",
+      "traffic_class": "network",
+      "approval_id": "approval-fixture-001",
+      "hot_swap": true,
+      "auditable": true
+    },
+    {
+      "type": "rollback",
+      "model_id": "traffic-baseline",
+      "model_version": "0.9.0",
+      "traffic_class": "network",
+      "serving_cycles": 1,
+      "auditable": true
+    },
+    {
+      "type": "retirement",
+      "model_id": "traffic-baseline",
+      "model_version": "0.8.0",
+      "traffic_class": "network",
+      "auditable": true
+    }
+  ]
+}

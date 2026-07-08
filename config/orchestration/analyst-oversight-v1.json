@@ -1,0 +1,26 @@
+{
+  "version": "1.0.0",
+  "promotion": {
+    "requires_analyst_approval": true,
+    "manual_review_supported": true,
+    "automatic_threshold_supported": true,
+    "automatic_threshold_requires_documented_criteria": true
+  },
+  "workflow": {
+    "interfaces": ["phase-5-dashboard", "operator-api"],
+    "actions": ["approve", "reject", "rollback", "retire", "request_tuning"]
+  },
+  "feedback": {
+    "append_only": true,
+    "may_reclassify_event": true,
+    "may_override_threat_level": true,
+    "may_flag_false_positive": true,
+    "modifies_original_event": false,
+    "incorporate_next_cycle": true
+  },
+  "quality_metrics": [
+    "analyst_disposition_rate",
+    "override_frequency",
+    "model_agreement_rate"
+  ]
+}

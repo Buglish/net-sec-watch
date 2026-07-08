@@ -19,7 +19,7 @@ evidence are complete.
 - [ ] Phase 8 - Security detections and alerting
 - [~] Phase 9 - Security machine learning
 - [~] Phase 10 - Deployment portability and production release
-- [ ] Phase 11 - Adaptive traffic intelligence and live model orchestration
+- [~] Phase 11 - Adaptive traffic intelligence and live model orchestration
 
 ---
 
@@ -393,40 +393,40 @@ must satisfy the open-source license policy.
 
 ### 11.1 Streaming classification engine
 
-- [ ] Deploy a self-hosted model serving API (FastAPI or equivalent) alongside
+- [x] Deploy a self-hosted model serving API (FastAPI or equivalent) alongside
   the OpenSearch stack.
-- [ ] Subscribe the classification engine to enriched events from the Fluent
+- [x] Subscribe the classification engine to enriched events from the Fluent
   Bit forward stream or OpenSearch.
-- [ ] Run inference on network and syslog events in near-real-time.
-- [ ] Write per-event classification output back to the predictions data stream
+- [x] Run inference on network and syslog events in near-real-time.
+- [x] Write per-event classification output back to the predictions data stream
   defined in Phase 4 using the reserved field namespace from Phase 3.
-- [ ] Expose classification latency, throughput, queue depth, and error rate as
+- [x] Expose classification latency, throughput, queue depth, and error rate as
   Prometheus metrics.
-- [ ] Confirm that disabling the serving API does not interrupt ingestion,
+- [x] Confirm that disabling the serving API does not interrupt ingestion,
   OpenSearch indexing, search, or deterministic detection rules.
 
 ### 11.2 Traffic classification and threat scoring
 
-- [ ] Output a classification label, threat level (critical / high / medium /
+- [x] Output a classification label, threat level (critical / high / medium /
   low / info), confidence score, and model identifier per event.
-- [ ] Output the contributing features for every non-trivial score (explainability
+- [x] Output the contributing features for every non-trivial score (explainability
   requirement carried forward from Phase 9).
-- [ ] Populate `event.classification`, `event.threat_level`,
+- [x] Populate `event.classification`, `event.threat_level`,
   `event.threat_score`, `event.ml_model_id`, and `event.ml_confidence`
   (schema reserved in Phase 3) without modifying the original event fields.
-- [ ] Surface classification output in the Phase 5 analyst dashboards and
+- [x] Surface classification output in the Phase 5 analyst dashboards and
   route threat-level alerts through the Phase 8 alert pipeline.
 
 ### 11.3 Unknown-traffic detection and orchestration trigger
 
-- [ ] Define and document the "unknown traffic" threshold: events with
+- [x] Define and document the "unknown traffic" threshold: events with
   confidence below an analyst-approved value and no matching classification
   label.
-- [ ] Route low-confidence events to a monitored orchestration queue, separate
+- [x] Route low-confidence events to a monitored orchestration queue, separate
   from the Phase 2 dead-letter stream.
-- [ ] Apply rate limiting and event deduplication to prevent orchestration
+- [x] Apply rate limiting and event deduplication to prevent orchestration
   storms during burst or scanning traffic.
-- [ ] Emit an observable signal and optional alert when the rate of unknown
+- [x] Emit an observable signal and optional alert when the rate of unknown
   events exceeds a configurable threshold.
 
 ### 11.4 Autonomous model update loop
@@ -434,31 +434,31 @@ must satisfy the open-source license policy.
 The core automation pipeline uses open-source ML only. No external API or LLM
 is required for the update loop to function.
 
-- [ ] Extract a labeled dataset slice from recent events matching each
+- [x] Extract a labeled dataset slice from recent events matching each
   unknown-traffic cluster.
-- [ ] Apply unsupervised clustering (DBSCAN or k-means) to group novel events
+- [x] Apply unsupervised clustering (DBSCAN or k-means) to group novel events
   into candidate new-pattern sets.
-- [ ] Train a candidate classifier or anomaly model (scikit-learn or River)
+- [x] Train a candidate classifier or anomaly model (scikit-learn or River)
   for each sufficiently large candidate cluster.
-- [ ] Evaluate the candidate model against approved precision, recall,
+- [x] Evaluate the candidate model against approved precision, recall,
   false-positive rate, and latency thresholds.
-- [ ] Reject and log any model that fails evaluation rather than silently
+- [x] Reject and log any model that fails evaluation rather than silently
   discarding it; emit a metric for rejected candidates.
-- [ ] Stage passing models in shadow mode using the Phase 9 shadow infrastructure.
-- [ ] Accumulate analyst feedback from shadow-mode observations and use it in
+- [x] Stage passing models in shadow mode using the Phase 9 shadow infrastructure.
+- [x] Accumulate analyst feedback from shadow-mode observations and use it in
   the next retraining cycle to improve the candidate.
 
 ### 11.5 Dynamic model registry and hot-swap
 
-- [ ] Extend the Phase 9 MLflow model registry with promotion events that the
+- [x] Extend the Phase 9 MLflow model registry with promotion events that the
   serving API consumes to load new models without restart (hot-swap designed
   in Phase 9).
-- [ ] Maintain an active model slot and a rollback pointer for every traffic
+- [x] Maintain an active model slot and a rollback pointer for every traffic
   class; promotion atomically replaces the active slot.
-- [ ] Record every training run, evaluation result, promotion, rollback, and
+- [x] Record every training run, evaluation result, promotion, rollback, and
   retirement as an auditable event in the model-metadata index defined in
   Phase 4.
-- [ ] Demonstrate rollback to the previous model version within one serving
+- [x] Demonstrate rollback to the previous model version within one serving
   cycle after a quality-degradation alert.
 
 ### 11.6 Optional self-hosted LLM enrichment layer
@@ -466,53 +466,53 @@ is required for the update loop to function.
 This sub-phase is optional. The autonomous update loop (11.3–11.5) operates
 fully without it.
 
-- [ ] Select and deploy a self-hosted LLM (Ollama with Llama 3, Mistral, or
+- [x] Select and deploy a self-hosted LLM (Ollama with Llama 3, Mistral, or
   Phi) confirmed under an approved open-source license.
-- [ ] Design structured prompts that supply the LLM with the normalized event
+- [x] Design structured prompts that supply the LLM with the normalized event
   sample, cluster statistics, and recent similar events, and request a
   human-readable interpretation and recommended feature list.
-- [ ] Parse and validate all LLM output before it enters the model generation
+- [x] Parse and validate all LLM output before it enters the model generation
   pipeline; reject malformed or out-of-schema responses.
-- [ ] Surface LLM-generated pattern descriptions as analyst-readable
+- [x] Surface LLM-generated pattern descriptions as analyst-readable
   annotations on new-model promotion records and in dashboards.
-- [ ] Log all LLM queries, prompt versions, response latency, and resource
+- [x] Log all LLM queries, prompt versions, response latency, and resource
   use to the audit trail.
-- [ ] The LLM acts as advisor only: no LLM output triggers model promotion or
+- [x] The LLM acts as advisor only: no LLM output triggers model promotion or
   alert generation directly without passing through the evaluation and
   approval gate.
-- [ ] Confirm that disabling the LLM component leaves 11.1–11.5 fully
+- [x] Confirm that disabling the LLM component leaves 11.1–11.5 fully
   operational.
 
 ### 11.7 Analyst oversight and feedback
 
-- [ ] New models may not promote from shadow to live without explicit analyst
+- [x] New models may not promote from shadow to live without explicit analyst
   approval (manual review or a configurable automatic-approval threshold
   backed by documented evaluation criteria).
-- [ ] Provide an approval and rejection workflow in the Phase 5 dashboards or
+- [x] Provide an approval and rejection workflow in the Phase 5 dashboards or
   a dedicated operator interface.
-- [ ] Allow analysts to reclassify individual events, override threat levels,
+- [x] Allow analysts to reclassify individual events, override threat levels,
   and flag false positives without modifying original indexed events.
-- [ ] Persist analyst feedback as labeled records in the analyst-feedback index
+- [x] Persist analyst feedback as labeled records in the analyst-feedback index
   and incorporate them into the next retraining cycle.
-- [ ] Track analyst disposition rates, override frequency, and model agreement
+- [x] Track analyst disposition rates, override frequency, and model agreement
   rate as quality metrics.
 
 ### 11.8 Governance, monitoring, and safety
 
-- [ ] Monitor the serving API: inference latency, queue depth, error rate, and
+- [x] Monitor the serving API: inference latency, queue depth, error rate, and
   resource use.
-- [ ] Monitor the autonomous loop: candidate models trained, evaluated,
+- [x] Monitor the autonomous loop: candidate models trained, evaluated,
   rejected, promoted, and rolled back per time window.
-- [ ] Monitor model quality after live promotion: classification drift, score
+- [x] Monitor model quality after live promotion: classification drift, score
   drift, and analyst override rate; alert when any metric crosses an approved
   threshold.
-- [ ] Monitor the LLM component if enabled: query rate, latency, error rate,
+- [x] Monitor the LLM component if enabled: query rate, latency, error rate,
   and resource use.
-- [ ] Confirm all Phase 11 runtime components satisfy the open-source license
+- [x] Confirm all Phase 11 runtime components satisfy the open-source license
   policy and have no dependency on paid APIs or proprietary cloud services.
-- [ ] Define ownership, review frequency, minimum performance floor, and
+- [x] Define ownership, review frequency, minimum performance floor, and
   retirement criteria for every live model.
-- [ ] Document the full orchestration loop, approval gates, rollback procedure,
+- [x] Document the full orchestration loop, approval gates, rollback procedure,
   and safety constraints.
 
 ### Completion gate
@@ -520,12 +520,12 @@ fully without it.
 - [ ] A novel unknown-traffic pattern is detected, clustered, modeled, staged,
   approved, and promoted to the live pipeline without manual configuration
   changes.
-- [ ] Model promotion and rollback are observable, auditable, and reversible
+- [x] Model promotion and rollback are observable, auditable, and reversible
   within one serving cycle.
-- [ ] Disabling Phase 11 entirely leaves the platform fully operational at
+- [x] Disabling Phase 11 entirely leaves the platform fully operational at
   Phase 9 capability with no data loss and no interruption to ingestion,
   search, or deterministic detection rules.
-- [ ] All runtime components in Phase 11 remain free, self-hostable, and
+- [x] All runtime components in Phase 11 remain free, self-hostable, and
   open source.
 
 ---

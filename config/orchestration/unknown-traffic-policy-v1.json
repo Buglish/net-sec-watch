@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "unknown_threshold": {
+    "confidence_below": 0.45,
+    "classification_labels_considered_unknown": ["unknown", "unclassified", null]
+  },
+  "queue": {
+    "name": "net-sec-watch-orchestration-queue",
+    "separate_from_dead_letter": true,
+    "max_events_per_minute": 500,
+    "deduplication_window_minutes": 30,
+    "deduplication_fields": ["source.ip", "destination.ip", "destination.port", "network.transport"]
+  },
+  "alert": {
+    "enabled": true,
+    "threshold_per_minute": 100,
+    "route": "secops-primary",
+    "signal": "unknown_traffic_rate"
+  }
+}

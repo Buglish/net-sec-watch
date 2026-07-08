@@ -1,0 +1,48 @@
+services:
+  traffic-classifier:
+    image: ${PHASE11_CLASSIFIER_IMAGE:-python:3.12-slim}
+    profiles: ["orchestration"]
+    working_dir: /app
+    command:
+      - python
+      - /app/scripts/traffic-classifier-service.py
+      - --events
+      - /app/tests/orchestration/fixtures/live-events.jsonl
+      - --registry
+      - /app/config/orchestration/model-registry-events-v1.json
+      - --output
+      - /tmp/predictions.jsonl
+      - --metrics-output
+      - /tmp/metrics.prom
+    volumes:
+      - ./:/app:ro
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+        reservations:
+          cpus: "0.25"
+          memory: 128m
+
+  model-orchestrator:
+    image: ${PHASE11_ORCHESTRATOR_IMAGE:-python:3.12-slim}
+    profiles: ["orchestration"]
+    working_dir: /app
+    command:
+      - python
+      - /app/scripts/model-orchestrator.py
+      - --events
+      - /app/tests/orchestration/fixtures/unknown-traffic-events.jsonl
+      - --config
+      - /app/config/orchestration/orchestration-policy-v1.json
+      - --output
+      - /tmp/candidates.json
+    volumes:
+      - ./:/app:ro
+    depends_on:
+      traffic-classifier:
+        condition: service_completed_successfully
