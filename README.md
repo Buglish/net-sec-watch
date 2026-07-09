@@ -1,83 +1,444 @@
 # Net Sec Watch
 
 Net Sec Watch is an open-source, self-hostable SIEM-style platform for
-collecting, normalizing, searching, and analyzing security-relevant logs from
-files, workloads, routers, firewalls, and optional network sensors.
+collecting, normalizing, searching, dashboarding, and analyzing security logs
+from files, Linux hosts, containers, routers, firewalls, and optional network
+sensors.
 
 Author: SJ du Preez
 
 ![Net Sec Watch architecture](docs/images/openlog-architecture.png)
 
-## What it provides
+## What you can do with it
 
-- Fluent Bit log collection for files, applications, containers, Linux system
-  logs, UDP/TCP/TLS syslog, Zeek, and Suricata.
-- Canonical event normalization with original-event retention and dead-letter
-  routing.
-- OpenSearch storage, lifecycle, snapshots, mappings, and dashboards.
-- OpenSearch Dashboards saved searches, data views, dashboards, and analyst
-  workflow examples.
-- TLS, OIDC identity, role-based access control, audit logging, redaction, and
-  data-classification policy.
-- Operations runbooks, service-level targets, load testing, backup/restore, and
-  disaster-recovery procedures.
-- Deterministic detection rules and source-agnostic alert schema.
-- Governed shadow-mode ML contracts and adaptive traffic-orchestration
-  simulation.
-- Docker Compose, Linux VM, and Kubernetes deployment artifacts.
+- Pull logs from routers, firewalls, syslog devices, local files, containers,
+  Linux system logs, Zeek, and Suricata.
+- Normalize events into a consistent security schema while keeping the original
+  raw event for investigation.
+- Search events in OpenSearch and view them in OpenSearch Dashboards.
+- Add saved searches, filters, dashboards, and analyst views.
+- Run deterministic security detections and produce normalized alerts.
+- Test machine-learning and self-learning traffic-analysis workflows in
+  governed shadow mode before trusting automation.
+- Run locally with Docker Compose, or use the deployment artifacts for Linux VM
+  and Kubernetes-style environments.
 
-Current feature status and remaining work are tracked in
-[docs/features-and-roadmap.md](docs/features-and-roadmap.md).
+This README gives the short path from install to usable platform. Deeper
+references are linked throughout and collected in [docs/index.md](docs/index.md).
 
-## Documentation
+## How the platform fits together
 
-Start with the documentation index:
+```mermaid
+flowchart LR
+  sources["Routers, firewalls, syslog, files, containers, Zeek, Suricata"]
+  collector["Fluent Bit collector"]
+  normalize["Normalization, redaction, parsing, dead-letter routing"]
+  search["OpenSearch indexes"]
+  dashboards["OpenSearch Dashboards"]
+  detections["Detection rules and alerts"]
+  ml["ML and self-learning shadow analysis"]
 
-- [Documentation index](docs/index.md)
-- [Getting started](docs/guides/getting-started.md)
-- [Configuration](docs/guides/configuration.md)
-- [Ingestion](docs/guides/ingestion.md)
-- [Search and dashboards](docs/guides/search-and-dashboards.md)
-- [Security](docs/guides/security.md)
-- [Operations](docs/guides/operations.md)
-- [Deployment](docs/guides/deployment.md)
-- [Add-ons and special features](docs/guides/addons-and-special-features.md)
-- [Developer testing](docs/guides/developer-testing.md)
+  sources --> collector --> normalize --> search --> dashboards
+  search --> detections
+  search --> ml
+```
 
-Detailed historical implementation notes remain under `docs/phase-*` and
-`docs/test-results/` for traceability, but day-to-day users should use the
-guides above.
+Default local ports:
 
-## Quick start
+| Service | URL or port | Purpose |
+| --- | --- | --- |
+| Syslog UDP/TCP | `514` | Router, firewall, and device log ingestion |
+| Syslog TLS | `6514` | Encrypted syslog ingestion |
+| Fluent Bit health | `http://127.0.0.1:2020/api/v1/health` | Collector health check |
+| OpenSearch | `http://127.0.0.1:9200` | Search API |
+| OpenSearch Dashboards | `http://127.0.0.1:5601` | Browser UI |
+
+## 1. Install prerequisites
+
+Install these first:
+
+- Git
+- Docker Desktop or Docker Engine with Docker Compose
+- Make
+- WSL/Linux shell if running on Windows
+
+Clone the repository:
 
 ```bash
 git clone git@github.com:Buglish/net-sec-watch.git
 cd net-sec-watch
+```
+
+If you use HTTPS instead of SSH:
+
+```bash
+git clone https://github.com/Buglish/net-sec-watch.git
+cd net-sec-watch
+```
+
+## 2. Create local configuration
+
+Generate local config files:
+
+```bash
 make init
+```
+
+This creates local runtime configuration from example files. The project keeps
+safe examples in Git, such as `.env.example` and `*.conf.example`, while the
+real local files are ignored by Git.
+
+Useful files:
+
+| File | Purpose |
+| --- | --- |
+| `.env` | Local ports, image names, passwords, paths, and runtime options |
+| `config/fluent-bit.local.conf` | Local collector overrides |
+| `config/traffic-telemetry-policy.yaml` | Traffic analysis and telemetry policy |
+
+Before starting, quickly validate the repository:
+
+```bash
 make check
+```
+
+## 3. Start the platform
+
+For the basic local stack:
+
+```bash
 make up
 ```
 
-Check collector health:
+For OpenSearch plus Dashboards:
+
+```bash
+make up-opensearch
+```
+
+For the secured OpenSearch profile with generated TLS material:
+
+```bash
+make gen-tls-certs
+make up-opensearch-secure
+```
+
+Check the collector:
 
 ```bash
 curl http://127.0.0.1:2020/api/v1/health
 ```
 
-Generate sample events:
+Watch logs:
+
+```bash
+make logs
+make logs-opensearch
+make logs-dashboards
+```
+
+Stop everything:
+
+```bash
+make down
+```
+
+## 4. Start log ingestion
+
+### Send a quick test syslog message
+
+Use this to confirm the collector is receiving logs:
+
+```bash
+printf '<134>%s myhost app: NetSecWatchTest001\n' "$(date '+%b %d %H:%M:%S')" | nc -w1 -u 127.0.0.1 514
+```
+
+Then check collector logs:
+
+```bash
+make logs
+```
+
+### Generate sample logs
 
 ```bash
 make generate
 make logs
 ```
 
-Stop:
+### Ingest router or firewall syslog
 
-```bash
-make down
+Point the device remote syslog setting to the machine running Net Sec Watch:
+
+```text
+<host-ip>:514/UDP
 ```
 
-## Secure profile
+Example:
+
+```text
+192.168.1.209:514/UDP
+```
+
+For an ASUS RT-AC68U, use the router web UI:
+
+```text
+System Log -> General Log -> Remote Log Server
+```
+
+Set it to the IP address and UDP port of your Net Sec Watch host. Once enabled,
+router events should appear in the Fluent Bit logs and then in OpenSearch.
+
+If the router only sends general system events, enable firewall logging on the
+router to produce live drop/accept traffic events. Device support varies; some
+firewalls such as Meraki, pfSense, OPNsense, Fortinet, and Ubiquiti can send
+syslog directly, while richer network traffic often comes from Zeek or Suricata.
+
+More ingestion examples:
+[docs/guides/ingestion.md](docs/guides/ingestion.md).
+
+## 5. Open OpenSearch Dashboards
+
+Start OpenSearch and Dashboards:
+
+```bash
+make up-opensearch
+```
+
+Open:
+
+```text
+http://127.0.0.1:5601
+```
+
+If using the secure profile, open:
+
+```text
+https://127.0.0.1:5601
+```
+
+The local insecure profile disables authentication for easier lab use. The
+secure profile uses the credentials generated in `.env`.
+
+In Dashboards:
+
+1. Open **Discover**.
+2. Select the Net Sec Watch data view.
+3. Search for your test marker, for example `NetSecWatchTest001`.
+4. Filter by fields such as `host`, `event.dataset`, `net.src_ip`,
+   `net.dst_ip`, `log.syslog.severity.name`, or `event.kind`.
+
+If saved objects are not visible, run the dashboard bootstrap target for the
+profile you are using, or see
+[docs/guides/search-and-dashboards.md](docs/guides/search-and-dashboards.md).
+
+## 6. Add a search, filter, or dashboard
+
+The simple workflow is:
+
+1. Open **Discover** in OpenSearch Dashboards.
+2. Build a search using filters, for example:
+
+   ```text
+   event.kind:alert OR log.syslog.severity.name:(warning OR error)
+   ```
+
+3. Save it as a saved search.
+4. Open **Dashboard**.
+5. Add the saved search or add visualizations.
+6. Export the saved object if you want it managed in Git.
+7. Store managed dashboard objects under `config/dashboards/`.
+
+Existing dashboard assets live here:
+
+| Path | Purpose |
+| --- | --- |
+| `config/dashboards/data-views-v1.ndjson` | Data views |
+| `config/dashboards/saved-searches-v1.ndjson` | Saved searches |
+| `config/dashboards/dashboards-v1.ndjson` | Dashboard layouts |
+| `config/dashboards/search-examples-v1.json` | Example analyst searches |
+| `config/dashboards/managed-saved-objects-v1.ndjson` | Managed saved objects |
+
+Run dashboard checks:
+
+```bash
+make test-opensearch-dashboards
+make test-dashboards-reproducibility
+```
+
+## 7. Add filters and parsing logic
+
+Use filters when you need to enrich, redact, normalize, or route events.
+
+Main places to edit:
+
+| Path | Purpose |
+| --- | --- |
+| `config/fluent-bit.conf` | Main collector pipeline |
+| `config/fluent-bit.local.conf` | Local overrides |
+| `config/parsers-custom.conf` | Custom parsers |
+| `config/scripts/canonical_normalization.lua` | Common normalized fields |
+| `config/scripts/network_normalization.lua` | Network field normalization |
+| `config/scripts/sensitive_redaction.lua` | Redaction of sensitive values |
+| `config/scripts/syslog_metadata.lua` | Syslog enrichment |
+| `config/schema/canonical-event-schema-v1.json` | Expected event shape |
+
+Good rule of thumb:
+
+- Parse as little as needed at the input edge.
+- Keep `event.original` so investigations can always see the raw source log.
+- Route bad events to dead-letter instead of silently dropping them.
+- Add tests when changing parsing behavior.
+
+Useful validation:
+
+```bash
+make test-golden
+make test-integration
+make test-opensearch-searchability
+```
+
+## 8. Use detections and alerts
+
+Detection content is under `config/detections/`.
+
+Important files:
+
+| Path | Purpose |
+| --- | --- |
+| `config/detections/rules-v1.json` | Detection rules |
+| `config/detections/alert-schema-v1.json` | Normalized alert shape |
+| `config/detections/detection-use-cases-v1.json` | Use-case mapping |
+| `config/detections/asset-criticality-v1.json` | Asset importance |
+| `config/detections/source-confidence-v1.json` | Source confidence scoring |
+| `config/detections/dedup-suppression-v1.json` | Alert suppression policy |
+| `config/detections/false-positive-register-v1.json` | Analyst-approved false positives |
+| `config/detections/notification-destinations-v1.json` | Alert destination contracts |
+
+Run detection validation:
+
+```bash
+make test-phase8-detections
+```
+
+Use detections with dashboards by filtering for alert fields, detection rule
+names, severity, asset criticality, or source confidence. Keep detections
+source-agnostic where possible so the same rule can work across router,
+firewall, Zeek, Suricata, and host events.
+
+## 9. Use machine learning features
+
+The ML layer is intentionally governed. It is designed for shadow analysis and
+analyst review first, not automatic blocking.
+
+ML assets are under `config/ml/`.
+
+Important files:
+
+| Path | Purpose |
+| --- | --- |
+| `config/ml/ml-use-case-v1.json` | Security ML use cases |
+| `config/ml/dataset-policy-v1.json` | Dataset governance |
+| `config/ml/baselines-v1.json` | Baseline behavior definitions |
+| `config/ml/drift-monitoring-v1.json` | Drift checks |
+| `config/ml/model-serving-api-v1.json` | Model serving contract |
+| `config/ml/ml-lifecycle-v1.json` | Review and promotion lifecycle |
+| `config/ml/analyst-feedback-example.json` | Example analyst feedback |
+
+Run ML validation:
+
+```bash
+make test-phase9-ml
+```
+
+How to use ML with dashboards:
+
+1. Ingest enough normalized events for the source you care about.
+2. Keep ML in shadow mode.
+3. Write prediction or score outputs to the prediction index/template.
+4. In Dashboards, create filters for fields such as model name, prediction
+   class, anomaly score, confidence, source type, and analyst disposition.
+5. Compare ML output with deterministic detections before promoting anything.
+
+The safest operating model is:
+
+```text
+ML suggests -> analyst reviews -> detection is tuned -> automation is approved later
+```
+
+## 10. Use the self-learning traffic features
+
+The self-learning features are the adaptive traffic-intelligence and
+orchestration experiments. They classify unknown traffic, produce candidate
+model updates, and require analyst/governance approval before promotion.
+
+Start the orchestration profile:
+
+```bash
+docker compose --file compose.yaml --file compose.orchestration.yaml up -d
+```
+
+Run the orchestration contract test:
+
+```bash
+make test-phase11-orchestration
+```
+
+Key files:
+
+| Path | Purpose |
+| --- | --- |
+| `scripts/traffic-classifier-service.py` | Classifies traffic events |
+| `scripts/model-orchestrator.py` | Creates governed model candidates |
+| `config/orchestration/orchestration-policy-v1.json` | Promotion and safety policy |
+| `config/orchestration/unknown-traffic-policy-v1.json` | Unknown traffic handling |
+| `config/orchestration/analyst-oversight-v1.json` | Human approval requirements |
+| `config/orchestration/governance-monitoring-v1.json` | Governance monitoring |
+| `config/orchestration/model-registry-events-v1.json` | Model registry event contract |
+
+Use this feature carefully:
+
+- Treat results as recommendations until proven.
+- Keep analyst approval in the loop.
+- Do not auto-block traffic from unvalidated model output.
+- Track drift, false positives, and promotion decisions.
+
+More detail:
+[docs/guides/addons-and-special-features.md](docs/guides/addons-and-special-features.md).
+
+## 11. Optional sensors: Zeek and Suricata
+
+Enable Zeek:
+
+```bash
+make up-zeek
+```
+
+Enable Suricata:
+
+```bash
+make up-suricata
+```
+
+Update Suricata rules:
+
+```bash
+make update-suricata-rules
+```
+
+Set the monitored interface in `.env`, for example:
+
+```text
+ZEEK_INTERFACE=eth0
+SURICATA_INTERFACE=eth0
+```
+
+These sensors may need host networking and elevated packet-capture
+capabilities, so test them in a lab before using them on a real network.
+
+## 12. Security profile
+
+For a more realistic secured stack:
 
 ```bash
 make gen-tls-certs
@@ -85,44 +446,43 @@ make up-identity
 make test-oidc
 ```
 
-## Optional features
+Security-related assets:
 
-```bash
-make up-zeek
-make up-suricata
-make test-phase8-detections
-make test-phase9-ml
-make test-phase11-orchestration
+| Path | Purpose |
+| --- | --- |
+| `config/opensearch-security/` | Roles, mappings, OIDC, and audit config |
+| `config/security/` | License, data classification, and review evidence |
+| `config/tls/` | Local generated TLS material |
+| `docs/guides/security.md` | Security guide |
+
+Never commit real secrets. Use `.env.example` and other `*.example` files for
+safe documentation, and keep real local config ignored by Git.
+
+## 13. Audit open-source libraries and images
+
+The project includes SBOM and audit-oriented Compose profiles using open-source
+tools such as Syft and Grype.
+
+Typical audit files should be stored under:
+
+```text
+security/audits/
 ```
 
-See [Add-ons and special features](docs/guides/addons-and-special-features.md)
-before enabling optional sensors, ML, or adaptive orchestration in a real
-environment.
+Use clear filenames that include the target and date, for example:
 
-## Deployment
-
-Development:
-
-```bash
-make init
-make up
+```text
+security/audits/sbom-source-2026-07-09.spdx.json
+security/audits/sbom-fluent-bit-2026-07-09.spdx.json
+security/audits/grype-fluent-bit-2026-07-09.json
 ```
 
-Production-style Compose:
+See [docs/guides/security.md](docs/guides/security.md) for the detailed audit
+workflow.
 
-```bash
-docker compose --env-file .env \
-  --file compose.yaml \
-  --file compose.opensearch-secure.yaml \
-  --file deploy/compose/compose.production.yaml \
-  --profile opensearch up -d
-```
+## 14. Validate the application
 
-Kubernetes manifests live in `deploy/kubernetes/`.
-
-## Validation
-
-Run all repository checks:
+Run everything:
 
 ```bash
 make check
@@ -139,16 +499,43 @@ make test-phase10-deployment
 make test-phase11-orchestration
 ```
 
+OpenSearch and dashboard checks:
+
+```bash
+make test-opensearch
+make test-opensearch-secure
+make test-opensearch-searchability
+make test-opensearch-dashboards
+```
+
+## Documentation map
+
+- [Documentation index](docs/index.md)
+- [Feature status and remaining work](docs/features-and-roadmap.md)
+- [Getting started](docs/guides/getting-started.md)
+- [Configuration](docs/guides/configuration.md)
+- [Ingestion](docs/guides/ingestion.md)
+- [Search and dashboards](docs/guides/search-and-dashboards.md)
+- [Security](docs/guides/security.md)
+- [Operations](docs/guides/operations.md)
+- [Deployment](docs/guides/deployment.md)
+- [Add-ons and special features](docs/guides/addons-and-special-features.md)
+- [Developer testing](docs/guides/developer-testing.md)
+
+Detailed historical implementation notes remain under `docs/phase-*` and
+`docs/test-results/` for traceability.
+
 ## Production readiness
 
-The application is usable today for local development, lab validation, syslog
+Net Sec Watch is usable for local development, lab validation, syslog
 collection, OpenSearch search/dashboards, deterministic detection testing, and
 simulated ML/adaptive workflows.
 
-Before production release, complete the remaining real-world evidence listed in
-[docs/features-and-roadmap.md](docs/features-and-roadmap.md), including live
-source validation, target-user usability testing, performance/resilience
-evidence, clean-environment deployment evidence, and release tagging.
+Before using it as a production security system, complete the real-world
+evidence listed in [docs/features-and-roadmap.md](docs/features-and-roadmap.md):
+live source validation, target-user usability testing, performance and
+resilience evidence, clean-environment deployment evidence, and release
+tagging.
 
 ## License
 
