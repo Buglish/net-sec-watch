@@ -6,7 +6,7 @@ Author: SJ du Preez
 
 Validate ingestion at 1.5 times the agreed expected peak rate.
 
-The default Phase 7 profile uses:
+The default operations profile uses:
 
 - expected peak: 250 events/second;
 - test multiplier: 1.5;

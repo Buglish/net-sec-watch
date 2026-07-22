@@ -30,7 +30,7 @@ while [[ "$SECONDS" -lt "$end_time" ]]; do
   batch_start="$SECONDS"
   for _ in $(seq 1 "$test_eps"); do
     sequence=$((sequence + 1))
-    printf '<134>%s net-sec-watch-loadtest app: phase7_load_test sequence=%s\n' \
+    printf '<134>%s net-sec-watch-loadtest app: operations_load_test sequence=%s\n' \
       "$(date '+%b %e %H:%M:%S')" "$sequence" |
       nc -u -w1 "$target_host" "$target_port"
   done

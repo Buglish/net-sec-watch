@@ -433,5 +433,5 @@ print("OpenSearch explicit mapping contract is valid.")
 print("OpenSearch hot-warm-archive-delete lifecycle policy is valid.")
 print("OpenSearch replica and disk watermark configuration is valid.")
 print("OpenSearch filesystem snapshot repository configuration is valid.")
-print("OpenSearch Phase 11 prediction and model registry templates are valid.")
+print("OpenSearch prediction and model registry templates are valid.")
 PY

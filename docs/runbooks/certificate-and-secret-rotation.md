@@ -4,7 +4,7 @@ Author: SJ du Preez
 
 ## Certificate rotation
 
-Use the Phase 6 rotation procedure:
+Use the security rotation procedure:
 
 ```bash
 make gen-tls-certs
@@ -17,14 +17,14 @@ critical.
 
 ## Secret rotation
 
-Use the Phase 6 procedure in `docs/phase-6-secret-rotation.md`.
+Use the security procedure in `docs/secret-rotation.md`.
 
 After rotating secrets:
 
 ```bash
 make up-identity
 make test-oidc
-make test-phase6-security
+make test-security
 ```
 
 ## Emergency handling

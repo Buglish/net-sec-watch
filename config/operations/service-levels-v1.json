@@ -23,7 +23,7 @@
   },
   "load_profile": {
     "expected_peak_events_per_second": 250,
-    "phase_7_test_events_per_second": 375,
+    "operations_test_events_per_second": 375,
     "test_duration_minutes": 15
   }
 }

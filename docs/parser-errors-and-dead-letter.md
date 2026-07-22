@@ -12,11 +12,11 @@ marks them with:
 - `_dead_letter=true`
 
 The original record remains in `event.original`. Structured parser failures
-are retagged as `pipeline.deadletter`, allowing the Phase 4 storage layer to
+are retagged as `pipeline.deadletter`, allowing the OpenSearch storage storage layer to
 write them to a separate data stream without duplicating the failed record in
 the normal source stream.
 
-Phase 4 stores these records in:
+OpenSearch storage stores these records in:
 
 `net-sec-watch-dead-letter-<environment>`
 

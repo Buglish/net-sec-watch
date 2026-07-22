@@ -4,17 +4,43 @@ set -euo pipefail
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$repo_root"
 
+require_command() {
+  local command_name="$1"
+  local hint="$2"
+  command -v "$command_name" >/dev/null 2>&1 || {
+    echo "Missing required tool: $command_name" >&2
+    echo "  $hint" >&2
+    exit 1
+  }
+}
+
+require_command docker "Install Docker Engine or Docker Desktop: https://docs.docker.com/get-docker/"
+require_command openssl "Install OpenSSL (needed to generate local secrets)."
+require_command python3 "Install Python 3 (used by repository checks and tooling)."
+
+docker compose version >/dev/null 2>&1 || {
+  echo "Missing required tool: the Docker Compose v2 plugin" >&2
+  echo "  'docker compose version' failed. Install/upgrade Docker so 'docker compose' works," >&2
+  echo "  as opposed to the older standalone 'docker-compose' v1 binary." >&2
+  exit 1
+}
+
+created_files=()
+kept_files=()
+
 copy_if_missing() {
   local example="$1"
   local target="$2"
 
   if [[ -e "$target" ]]; then
     echo "Keeping existing $target"
+    kept_files+=("$target")
     return
   fi
 
   cp "$example" "$target"
   echo "Created $target from $example"
+  created_files+=("$target")
 }
 
 copy_if_missing .env.example .env
@@ -29,10 +55,6 @@ copy_if_missing \
 mkdir -p runtime/zeek
 
 if ! grep -Eq '^OPENSEARCH_INITIAL_ADMIN_PASSWORD=.+$' .env; then
-  command -v openssl >/dev/null 2>&1 || {
-    echo "OpenSSL is required to generate the local OpenSearch password." >&2
-    exit 1
-  }
   generated_value="Nsw-$(openssl rand -hex 16)-A9!"
   if grep -q '^OPENSEARCH_INITIAL_ADMIN_PASSWORD=' .env; then
     sed -i \
@@ -69,4 +91,12 @@ generate_if_missing OIDC_SOURCE_OWNER_USER_PASSWORD Nsw-oidc-owner
 generate_if_missing OIDC_SERVICE_USER_PASSWORD Nsw-oidc-service
 
 echo
+if [[ ${#created_files[@]} -gt 0 ]]; then
+  echo "Created: ${created_files[*]}"
+fi
+if [[ ${#kept_files[@]} -gt 0 ]]; then
+  echo "Kept existing: ${kept_files[*]}"
+fi
 echo "Local files are Git-ignored. Review .env before running Docker Compose."
+echo
+echo "Next: make check, then make up (see docs/guides/admin-guide.md)."

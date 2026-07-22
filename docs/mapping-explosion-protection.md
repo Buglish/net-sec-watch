@@ -15,7 +15,7 @@ reason in `error.message`. Limits are defined in
 `config/schema/mapping-policy-v1.json` and contract-tested against the
 collector implementation.
 
-Phase 4 OpenSearch templates must use explicit canonical mappings with
+OpenSearch storage OpenSearch templates must use explicit canonical mappings with
 `dynamic: false`. Source-native fields remain in `_source` for evidence but
 are not dynamically indexed. The template must also set conservative total
 field, nesting, and field-name limits from the mapping policy.

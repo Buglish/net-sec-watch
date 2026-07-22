@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create, validate, and summarize Phase 5 usability-study sessions."""
+"""Create, validate, and summarize analyst workflow usability-study sessions."""
 
 import argparse
 import json
@@ -230,7 +230,7 @@ def summarize(sessions, catalog):
 
 def markdown_report(summary):
     lines = [
-        "# Phase 5 usability test results",
+        "# analyst workflow usability test results",
         "",
         f"**Gate result:** {'PASS' if summary['ready'] else 'INCOMPLETE'}",
         "",

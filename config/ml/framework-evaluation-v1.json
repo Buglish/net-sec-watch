@@ -4,22 +4,22 @@
     "opensearch_anomaly_detection": {
       "decision": "evaluate_for_streaming_baselines",
       "fit": "Good for built-in streaming anomaly baselines close to indexed data.",
-      "phase_9_status": "documented_candidate"
+      "ml_status": "documented_candidate"
     },
     "scikit_learn": {
       "decision": "selected_for_offline_baseline_evaluation",
       "fit": "Good for offline IsolationForest, OneClassSVM, and calibration experiments on exported datasets.",
-      "phase_9_status": "approved_candidate"
+      "ml_status": "approved_candidate"
     },
     "river": {
       "decision": "defer_until_online_learning_is_required",
       "fit": "Useful only if streaming online learning is approved and drift cannot be handled by scheduled retraining.",
-      "phase_9_status": "deferred"
+      "ml_status": "deferred"
     },
     "pytorch": {
       "decision": "defer_until_simpler_methods_fail",
       "fit": "Use only if simpler statistical and scikit-learn methods fail approved requirements.",
-      "phase_9_status": "deferred"
+      "ml_status": "deferred"
     }
   }
 }

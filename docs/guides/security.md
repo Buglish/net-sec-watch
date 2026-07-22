@@ -43,7 +43,7 @@ OpenSearch audit configuration lives at
 
 ## Secrets and certificates
 
-Use `docs/phase-6-secret-rotation.md` and
+Use `docs/secret-rotation.md` and
 `docs/runbooks/certificate-and-secret-rotation.md`.
 
 ## Supply-chain audit

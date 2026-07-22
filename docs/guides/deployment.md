@@ -7,7 +7,7 @@ artifacts.
 
 ```bash
 make preflight-deployment
-make test-phase10-deployment
+make test-deployment
 ```
 
 ## Docker Compose
@@ -50,5 +50,5 @@ kubectl apply -f deploy/kubernetes/
 
 ## Release
 
-The release checklist is in `docs/phase-10-release-checklist.md`.
+The release checklist is in `docs/release-checklist.md`.
 The first supported release still requires an explicit tag and publish action.

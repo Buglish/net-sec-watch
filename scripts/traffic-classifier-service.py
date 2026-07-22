@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local Phase 11 traffic classifier simulation."""
+"""Local Adaptive traffic intelligence traffic classifier simulation."""
 
 from __future__ import annotations
 
@@ -66,7 +66,7 @@ def classify(event, registry):
                 f"confidence={confidence}",
                 f"traffic_class={traffic_class}"
             ],
-            "explanation": "Phase 11 local classifier simulation generated a shadow/live-compatible prediction."
+            "explanation": "Adaptive traffic intelligence local classifier simulation generated a shadow/live-compatible prediction."
         }
     }
 

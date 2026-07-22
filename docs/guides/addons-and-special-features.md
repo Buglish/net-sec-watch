@@ -12,7 +12,7 @@ placement.
 make up-zeek
 ```
 
-Detailed guide: `docs/phase-2-zeek-sensor.md`.
+Detailed guide: `docs/zeek-network-sensor.md`.
 
 ## Suricata IDS and flow telemetry
 
@@ -23,14 +23,14 @@ make up-suricata
 make update-suricata-rules
 ```
 
-Detailed guide: `docs/phase-2-suricata-sensor.md`.
+Detailed guide: `docs/suricata-ids-sensor.md`.
 
 ## Security detections
 
 Detection rules live under `config/detections/`.
 
 ```bash
-make test-phase8-detections
+make test-detections
 ```
 
 Detection runbooks live under `docs/runbooks/detections/`.
@@ -40,7 +40,7 @@ Detection runbooks live under `docs/runbooks/detections/`.
 ML is governed and explainable. It does not autonomously enforce actions.
 
 ```bash
-make test-phase9-ml
+make test-ml
 ```
 
 Configuration lives under `config/ml/`.
@@ -51,7 +51,7 @@ Adaptive traffic intelligence simulates live classification, unknown-traffic
 orchestration, candidate model staging, and model rollback.
 
 ```bash
-make test-phase11-orchestration
+make test-orchestration
 ```
 
 Configuration lives under `config/orchestration/`.

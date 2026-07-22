@@ -2,15 +2,16 @@
 
 Start here:
 
-1. [Getting started](guides/getting-started.md)
-2. [Configuration](guides/configuration.md)
-3. [Ingestion](guides/ingestion.md)
-4. [Search and dashboards](guides/search-and-dashboards.md)
-5. [Security](guides/security.md)
-6. [Operations](guides/operations.md)
-7. [Deployment](guides/deployment.md)
-8. [Add-ons and special features](guides/addons-and-special-features.md)
-9. [Developer testing](guides/developer-testing.md)
+1. [Administrator guide](guides/admin-guide.md) — the full install/setup walkthrough
+2. [Getting started](guides/getting-started.md) — the fast path, no explanation
+3. [Configuration](guides/configuration.md)
+4. [Ingestion](guides/ingestion.md)
+5. [Search and dashboards](guides/search-and-dashboards.md)
+6. [Security](guides/security.md)
+7. [Operations](guides/operations.md)
+8. [Deployment](guides/deployment.md)
+9. [Add-ons and special features](guides/addons-and-special-features.md)
+10. [Developer testing](guides/developer-testing.md)
 
 Status and roadmap:
 

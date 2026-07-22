@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Shadow-mode authentication anomaly scoring for Phase 9 fixtures."""
+"""Shadow-mode authentication anomaly scoring for machine-learning fixtures."""
 
 from __future__ import annotations
 
@@ -121,7 +121,7 @@ def main() -> None:
 
     model = load_json(args.model_metadata)
     if not model["model"]["shadow_mode"]:
-        raise SystemExit("Phase 9 fixture model must run in shadow mode")
+        raise SystemExit("ML fixture model must run in shadow mode")
     events = load_jsonl(args.events)
     baseline_counts = [
         int(event["features"]["failed_login_count_10m"])

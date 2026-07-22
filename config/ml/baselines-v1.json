@@ -3,7 +3,7 @@
   "deterministic_baselines": [
     {
       "id": "DET-AUTH-FAIL-COUNT",
-      "description": "Phase 8 repeated authentication failure threshold.",
+      "description": "detection and alerting repeated authentication failure threshold.",
       "rule_id": "NSW-DET-AUTH-001"
     }
   ],

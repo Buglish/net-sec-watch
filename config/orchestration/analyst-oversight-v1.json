@@ -7,7 +7,7 @@
     "automatic_threshold_requires_documented_criteria": true
   },
   "workflow": {
-    "interfaces": ["phase-5-dashboard", "operator-api"],
+    "interfaces": ["analyst-dashboard", "operator-api"],
     "actions": ["approve", "reject", "rollback", "retire", "request_tuning"]
   },
   "feedback": {

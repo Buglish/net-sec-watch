@@ -5,7 +5,7 @@
   "priority": 400,
   "version": 1,
   "_meta": {
-    "description": "Phase 11 machine-learning model registry metadata",
+    "description": "Adaptive traffic intelligence machine-learning model registry metadata",
     "schema_version": "1.0.0"
   },
   "template": {
@@ -59,7 +59,7 @@
               "type": "keyword"
             },
             "input_feature_schema": {
-              "type": "flattened"
+              "type": "flat_object"
             },
             "output_field_names": {
               "type": "keyword"

@@ -12,7 +12,7 @@
   ],
   "threat_levels": ["critical", "high", "medium", "low", "info"],
   "alert_routing": {
-    "pipeline": "phase-8-alert-schema",
+    "pipeline": "detection-alert-schema",
     "minimum_alert_level": "high",
     "destination": "secops-primary"
   },

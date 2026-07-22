@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-phase6-security test-phase7-operations test-phase8-detections test-phase9-ml test-phase10-deployment test-phase11-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle import-dashboards dashboard-demo up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-security test-operations test-detections test-ml test-deployment test-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -17,6 +17,20 @@ ingestion-status:
 
 dashboards-bundle:
 	./scripts/build-dashboards-bundle.py
+
+import-dashboards:
+	./scripts/import-dashboards.sh
+
+dashboard-demo: init
+	docker compose --env-file .env --profile opensearch \
+		up -d fluent-bit opensearch opensearch-dashboards
+	./scripts/import-dashboards.sh
+	./scripts/generate-sample-logs.sh
+	./scripts/send-demo-syslog.sh
+	@echo
+	@echo "Dashboard demo is ready."
+	@echo "Open http://127.0.0.1:5601, choose Discover, select the Net Sec Watch data view,"
+	@echo "then search for NetSecWatchDemo001."
 
 up:
 	docker compose --env-file .env up -d
@@ -168,8 +182,8 @@ rotate:
 	./scripts/rotate-sample-log.sh
 
 verify:
-	./scripts/verify-objective-1.sh
-	./scripts/verify-objective-2.sh
+	./scripts/verify-file-collection.sh
+	./scripts/verify-network-syslog.sh
 
 gen-tls-certs:
 	./scripts/gen-tls-certs.sh
@@ -180,40 +194,40 @@ test-tls-config:
 test-oidc:
 	./tests/opensearch/oidc-integration.sh
 
-test-phase6-security:
-	python3 ./tests/security/test-phase-6-security.py
+test-security:
+	python3 ./tests/security/test-security.py
 
-test-phase7-operations:
-	python3 ./tests/operations/test-phase-7-operations.py
+test-operations:
+	python3 ./tests/operations/test-operations.py
 
-test-phase8-detections:
-	python3 ./tests/detections/test-phase-8-detections.py
+test-detections:
+	python3 ./tests/detections/test-detections.py
 	python3 ./scripts/run-detections.py \
-		--events tests/detections/fixtures/phase8-positive-events.jsonl \
-		--expect tests/detections/fixtures/phase8-expected-alerts.json
+		--events tests/detections/fixtures/detection-positive-events.jsonl \
+		--expect tests/detections/fixtures/detection-expected-alerts.json
 
-test-phase9-ml:
-	python3 ./tests/ml/test-phase-9-ml.py
+test-ml:
+	python3 ./tests/ml/test-ml.py
 	python3 ./scripts/ml-shadow-score.py \
 		--events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
 		--model-metadata config/ml/mlflow-model-registry-entry-v1.json \
 		--output /tmp/net-sec-watch-ml-shadow-predictions.jsonl
 
-test-phase10-deployment:
-	python3 ./tests/deployment/test-phase-10-deployment.py
+test-deployment:
+	python3 ./tests/deployment/test-deployment.py
 	./scripts/preflight-deployment.sh --check-files-only
 
-test-phase11-orchestration:
-	python3 ./tests/orchestration/test-phase-11-orchestration.py
+test-orchestration:
+	python3 ./tests/orchestration/test-orchestration.py
 	python3 ./scripts/traffic-classifier-service.py \
 		--events tests/orchestration/fixtures/live-events.jsonl \
 		--registry config/orchestration/model-registry-events-v1.json \
-		--output /tmp/net-sec-watch-phase11-predictions.jsonl \
-		--metrics-output /tmp/net-sec-watch-phase11-metrics.prom
+		--output /tmp/net-sec-watch-orchestration-predictions.jsonl \
+		--metrics-output /tmp/net-sec-watch-orchestration-metrics.prom
 	python3 ./scripts/model-orchestrator.py \
 		--events tests/orchestration/fixtures/unknown-traffic-events.jsonl \
 		--config config/orchestration/orchestration-policy-v1.json \
-		--output /tmp/net-sec-watch-phase11-candidates.json
+		--output /tmp/net-sec-watch-orchestration-candidates.json
 
 preflight-deployment:
 	./scripts/preflight-deployment.sh

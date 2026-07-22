@@ -15,12 +15,12 @@ make check
 make verify
 make test-integration
 make test-opensearch-secure
-make test-phase6-security
-make test-phase7-operations
-make test-phase8-detections
-make test-phase9-ml
-make test-phase10-deployment
-make test-phase11-orchestration
+make test-security
+make test-operations
+make test-detections
+make test-ml
+make test-deployment
+make test-orchestration
 ```
 
 ## Parser changes
@@ -43,5 +43,5 @@ make test-dashboards-reproducibility
 
 ```bash
 make preflight-deployment
-make test-phase10-deployment
+make test-deployment
 ```

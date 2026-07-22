@@ -6,7 +6,7 @@
   "version": 1,
   "data_stream": {},
   "_meta": {
-    "description": "Phase 11 classification predictions and analyst feedback",
+    "description": "Adaptive traffic intelligence classification predictions and analyst feedback",
     "schema_version": "1.0.0"
   },
   "template": {
@@ -54,7 +54,7 @@
               "type": "float"
             },
             "features": {
-              "type": "flattened"
+              "type": "flat_object"
             },
             "contributing_features": {
               "type": "keyword"
