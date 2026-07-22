@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate Phase 7 operations configuration."""
+"""Validate operations operations configuration."""
 
 from __future__ import annotations
 
@@ -69,7 +69,7 @@ def main() -> None:
     args = parser.parse_args()
     if args.check_config:
         check_config()
-        print("Phase 7 operations configuration is valid.")
+        print("operations operations configuration is valid.")
     else:
         parser.print_help()
 

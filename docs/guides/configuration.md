@@ -2,6 +2,12 @@
 
 Net Sec Watch separates committed examples from private runtime files.
 
+For the full install walkthrough and an environment-variable reference
+grouped by what each group controls, see the
+[administrator guide](admin-guide.md). This page is the file-level reference
+for what `make init` generates and where to make committed vs. local
+changes.
+
 ## Local initialization
 
 ```bash

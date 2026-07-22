@@ -1,6 +1,6 @@
 # Net Sec Watch objectives have moved
 
-The phase-based delivery checklist has been retired.
+The milestone checklist has been retired.
 
 Use the product-oriented status document instead:
 

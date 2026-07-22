@@ -74,7 +74,7 @@ class UsabilityStudyTest(unittest.TestCase):
 
     def test_documentation_covers_catalog_and_commands(self):
         plan = (
-            ROOT / "docs/phase-5-usability-test-plan.md"
+            ROOT / "docs/usability-test-plan.md"
         ).read_text(encoding="utf-8")
         for scenario in self.catalog["scenarios"]:
             self.assertIn(f"`{scenario['id']}`", plan)

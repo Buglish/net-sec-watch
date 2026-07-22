@@ -88,6 +88,6 @@ then runs for a documented period. Dashboards and detections must declare the
 schema major versions they support. Rollback retains the previous parser and
 index template until migration acceptance evidence is recorded.
 
-The schema currently permits additional source-native properties. Phase 3
+The schema currently permits additional source-native properties. schema-normalization
 mapping controls will replace that transition allowance with explicit dynamic
 templates and field-count limits before OpenSearch production ingestion.

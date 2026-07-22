@@ -53,125 +53,89 @@ Default local ports:
 | OpenSearch | `http://127.0.0.1:9200` | Search API |
 | OpenSearch Dashboards | `http://127.0.0.1:5601` | Browser UI |
 
-## 1. Install prerequisites
+## Quick start: get a dashboard with data
 
-Install these first:
-
-- Git
-- Docker Desktop or Docker Engine with Docker Compose
-- Make
-- WSL/Linux shell if running on Windows
-
-Clone the repository:
+Prerequisites: Git, Docker Engine/Desktop with the Docker Compose v2 plugin,
+`make`, `openssl`, `python3`, and WSL2 if running on Windows.
 
 ```bash
 git clone git@github.com:Buglish/net-sec-watch.git
 cd net-sec-watch
+make dashboard-demo
 ```
 
-If you use HTTPS instead of SSH:
+That command does the consumer-friendly setup path:
 
-```bash
-git clone https://github.com/Buglish/net-sec-watch.git
-cd net-sec-watch
+1. Creates ignored local config files from the examples.
+2. Starts Fluent Bit, OpenSearch, and OpenSearch Dashboards.
+3. Imports the Net Sec Watch data view, saved searches, and dashboards.
+4. Generates sample log files.
+5. Sends a demo syslog event with marker `NetSecWatchDemo001`.
+
+Open:
+
+```text
+http://127.0.0.1:5601
 ```
 
-## 2. Create local configuration
+Then:
 
-Generate local config files:
+1. Go to **Discover**.
+2. Select the **Net Sec Watch** data view.
+3. Search for:
 
-```bash
-make init
-```
+   ```text
+   NetSecWatchDemo001
+   ```
 
-This creates local runtime configuration from example files. The project keeps
-safe examples in Git, such as `.env.example` and `*.conf.example`, while the
-real local files are ignored by Git.
+If you see the marker event, the collector, OpenSearch storage, dashboard
+saved objects, and sample ingestion path are working.
 
-Useful files:
-
-| File | Purpose |
-| --- | --- |
-| `.env` | Local ports, image names, passwords, paths, and runtime options |
-| `config/fluent-bit.local.conf` | Local collector overrides |
-| `config/traffic-telemetry-policy.yaml` | Traffic analysis and telemetry policy |
-
-Before starting, quickly validate the repository:
-
-```bash
-make check
-```
-
-## 3. Start the platform
-
-For the basic local stack:
-
-```bash
-make up
-```
-
-For OpenSearch plus Dashboards:
-
-```bash
-make up-opensearch
-```
-
-For the secured OpenSearch profile with generated TLS material:
-
-```bash
-make gen-tls-certs
-make up-opensearch-secure
-```
-
-Check the collector:
+Useful checks:
 
 ```bash
 curl http://127.0.0.1:2020/api/v1/health
-```
-
-Watch logs:
-
-```bash
 make logs
-make logs-opensearch
-make logs-dashboards
 ```
 
-Stop everything:
+Stop everything with:
 
 ```bash
 make down
 ```
 
-## 4. Start log ingestion
-
-### Send a quick test syslog message
-
-Use this to confirm the collector is receiving logs:
+If Dashboards opens but the Net Sec Watch data view is missing, re-import the
+saved objects:
 
 ```bash
-printf '<134>%s myhost app: NetSecWatchTest001\n' "$(date '+%b %d %H:%M:%S')" | nc -w1 -u 127.0.0.1 514
+make import-dashboards
 ```
 
-Then check collector logs:
+For the longer operator walkthrough, including real router/firewall ingestion,
+secure profiles, Zeek, Suricata, and troubleshooting, see the
+[administrator guide](docs/guides/admin-guide.md).
+
+## Manual setup path
+
+Use this if you want to run each step yourself:
 
 ```bash
-make logs
-```
-
-### Generate sample logs
-
-```bash
+make init
+make check
+make up
+make up-dashboards
+make import-dashboards
 make generate
-make logs
+./scripts/send-demo-syslog.sh
 ```
 
-### Ingest router or firewall syslog
+Then open `http://127.0.0.1:5601`, go to **Discover**, select the Net Sec
+Watch data view, and search for `NetSecWatchDemo001`.
 
-Point the device remote syslog setting to the machine running Net Sec Watch:
+For a real router or firewall, point its remote syslog setting to:
 
 ```text
-<host-ip>:514/UDP
+<net-sec-watch-host-ip>:514/UDP
 ```
 
 Example:
@@ -180,59 +144,13 @@ Example:
 192.168.1.209:514/UDP
 ```
 
-For an ASUS RT-AC68U, use the router web UI:
+More ingestion detail is in [docs/guides/ingestion.md](docs/guides/ingestion.md).
 
-```text
-System Log -> General Log -> Remote Log Server
-```
+## 1. Add a search, filter, or dashboard
 
-Set it to the IP address and UDP port of your Net Sec Watch host. Once enabled,
-router events should appear in the Fluent Bit logs and then in OpenSearch.
-
-If the router only sends general system events, enable firewall logging on the
-router to produce live drop/accept traffic events. Device support varies; some
-firewalls such as Meraki, pfSense, OPNsense, Fortinet, and Ubiquiti can send
-syslog directly, while richer network traffic often comes from Zeek or Suricata.
-
-More ingestion examples:
-[docs/guides/ingestion.md](docs/guides/ingestion.md).
-
-## 5. Open OpenSearch Dashboards
-
-Start OpenSearch and Dashboards:
-
-```bash
-make up-opensearch
-```
-
-Open:
-
-```text
-http://127.0.0.1:5601
-```
-
-If using the secure profile, open:
-
-```text
-https://127.0.0.1:5601
-```
-
-The local insecure profile disables authentication for easier lab use. The
-secure profile uses the credentials generated in `.env`.
-
-In Dashboards:
-
-1. Open **Discover**.
-2. Select the Net Sec Watch data view.
-3. Search for your test marker, for example `NetSecWatchTest001`.
-4. Filter by fields such as `host`, `event.dataset`, `net.src_ip`,
-   `net.dst_ip`, `log.syslog.severity.name`, or `event.kind`.
-
-If saved objects are not visible, run the dashboard bootstrap target for the
-profile you are using, or see
-[docs/guides/search-and-dashboards.md](docs/guides/search-and-dashboards.md).
-
-## 6. Add a search, filter, or dashboard
+**Requires:** a running Dashboards UI with saved objects imported. The easiest
+path is `make dashboard-demo`; the manual path is `make up-dashboards` followed
+by `make import-dashboards`.
 
 The simple workflow is:
 
@@ -266,7 +184,11 @@ make test-opensearch-dashboards
 make test-dashboards-reproducibility
 ```
 
-## 7. Add filters and parsing logic
+## 2. Add filters and parsing logic
+
+**Requires:** nothing running â€” this is config editing. `make test-golden`
+needs only `python3`; `make test-integration` needs Docker to replay real
+events through the changed config.
 
 Use filters when you need to enrich, redact, normalize, or route events.
 
@@ -298,7 +220,11 @@ make test-integration
 make test-opensearch-searchability
 ```
 
-## 8. Use detections and alerts
+## 3. Use detections and alerts
+
+**Requires:** nothing running â€” `scripts/run-detections.py` evaluates a
+JSONL file of events directly (`--events`), no OpenSearch connection needed.
+Wire alerts into Dashboards once you have real ingested data to search over.
 
 Detection content is under `config/detections/`.
 
@@ -318,7 +244,7 @@ Important files:
 Run detection validation:
 
 ```bash
-make test-phase8-detections
+make test-detections
 ```
 
 Use detections with dashboards by filtering for alert fields, detection rule
@@ -326,7 +252,12 @@ names, severity, asset criticality, or source confidence. Keep detections
 source-agnostic where possible so the same rule can work across router,
 firewall, Zeek, Suricata, and host events.
 
-## 9. Use machine learning features
+## 4. Use machine learning features
+
+**Requires:** nothing running â€” `scripts/ml-shadow-score.py` scores a JSONL
+file of events against a registered model file (`--events`,
+`--model-metadata`), no live OpenSearch or dashboard needed for scoring
+itself. Step 5 below covers viewing the output in Dashboards.
 
 The ML layer is intentionally governed. It is designed for shadow analysis and
 analyst review first, not automatic blocking.
@@ -348,7 +279,7 @@ Important files:
 Run ML validation:
 
 ```bash
-make test-phase9-ml
+make test-ml
 ```
 
 How to use ML with dashboards:
@@ -366,7 +297,13 @@ The safest operating model is:
 ML suggests -> analyst reviews -> detection is tuned -> automation is approved later
 ```
 
-## 10. Use the self-learning traffic features
+## 5. Use the self-learning traffic features
+
+**Requires:** the underlying scripts (`traffic-classifier-service.py`,
+`model-orchestrator.py`) run offline against `--events` files like the ML
+scripts above and need nothing running. The `orchestration` Compose profile
+below is only for running them continuously as services, and it needs the
+`opensearch` profile enabled too (`traffic-classifier` writes results there).
 
 The self-learning features are the adaptive traffic-intelligence and
 orchestration experiments. They classify unknown traffic, produce candidate
@@ -375,13 +312,14 @@ model updates, and require analyst/governance approval before promotion.
 Start the orchestration profile:
 
 ```bash
-docker compose --file compose.yaml --file compose.orchestration.yaml up -d
+docker compose --env-file .env --file compose.yaml --file compose.orchestration.yaml \
+  --profile orchestration --profile opensearch up -d
 ```
 
 Run the orchestration contract test:
 
 ```bash
-make test-phase11-orchestration
+make test-orchestration
 ```
 
 Key files:
@@ -406,7 +344,12 @@ Use this feature carefully:
 More detail:
 [docs/guides/addons-and-special-features.md](docs/guides/addons-and-special-features.md).
 
-## 11. Optional sensors: Zeek and Suricata
+## 6. Optional sensors: Zeek and Suricata
+
+**Requires:** `ZEEK_INTERFACE`/`SURICATA_INTERFACE` set in `.env` to a real
+mirrored, tapped, or gateway interface before starting â€” the containers need
+host networking and packet-capture capabilities, so this doesn't work against
+a plain loopback/no interface.
 
 Enable Zeek:
 
@@ -436,7 +379,13 @@ SURICATA_INTERFACE=eth0
 These sensors may need host networking and elevated packet-capture
 capabilities, so test them in a lab before using them on a real network.
 
-## 12. Security profile
+## 7. Security profile
+
+**Requires:** `make gen-tls-certs` first (generates local self-signed TLS
+material into `config/tls/`). `up-identity` reuses the `opensearch`/
+`opensearch-dashboards` container names, so Compose recreates them in place
+with TLS enabled if a plain `up-dashboards` stack is already running â€” no
+need to stop it manually first.
 
 For a more realistic secured stack:
 
@@ -458,7 +407,11 @@ Security-related assets:
 Never commit real secrets. Use `.env.example` and other `*.example` files for
 safe documentation, and keep real local config ignored by Git.
 
-## 13. Audit open-source libraries and images
+## 8. Audit open-source libraries and images
+
+**Requires:** nothing running â€” these are one-shot `audit`-profile
+containers (`syft`/`grype`) invoked via `scripts/security-audit.sh`, not a
+persistent stack.
 
 The project includes SBOM and audit-oriented Compose profiles using open-source
 tools such as Syft and Grype.
@@ -480,7 +433,7 @@ security/audits/grype-fluent-bit-2026-07-09.json
 See [docs/guides/security.md](docs/guides/security.md) for the detailed audit
 workflow.
 
-## 14. Validate the application
+## 9. Validate the application
 
 Run everything:
 
@@ -491,12 +444,12 @@ make check
 Focused checks:
 
 ```bash
-make test-phase6-security
-make test-phase7-operations
-make test-phase8-detections
-make test-phase9-ml
-make test-phase10-deployment
-make test-phase11-orchestration
+make test-security
+make test-operations
+make test-detections
+make test-ml
+make test-deployment
+make test-orchestration
 ```
 
 OpenSearch and dashboard checks:
@@ -512,6 +465,7 @@ make test-opensearch-dashboards
 
 - [Documentation index](docs/index.md)
 - [Feature status and remaining work](docs/features-and-roadmap.md)
+- [Administrator guide](docs/guides/admin-guide.md)
 - [Getting started](docs/guides/getting-started.md)
 - [Configuration](docs/guides/configuration.md)
 - [Ingestion](docs/guides/ingestion.md)
@@ -522,8 +476,8 @@ make test-opensearch-dashboards
 - [Add-ons and special features](docs/guides/addons-and-special-features.md)
 - [Developer testing](docs/guides/developer-testing.md)
 
-Detailed historical implementation notes remain under `docs/phase-*` and
-`docs/test-results/` for traceability.
+Detailed implementation notes remain under docs, and validation evidence remains
+under docs/test-results for traceability.
 
 ## Production readiness
 

@@ -37,7 +37,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   phase-1:
-    name: Phase 1 collector tests
+    name: file collection collector tests
     runs-on: ubuntu-latest
     needs: foundation
     steps:

@@ -88,7 +88,7 @@ main() {
 
   local timestamp udp_marker udp_message
   timestamp="$(date '+%b %e %H:%M:%S')"
-  udp_marker="phase2-dual-udp-$RANDOM-$RANDOM"
+  udp_marker="network-dual-udp-$RANDOM-$RANDOM"
   udp_message="<134>${timestamp} test-router app: ${udp_marker}"
   send_udp_dual_target "$udp_message"
   wait_for_log syslog-primary "$udp_marker"
@@ -96,7 +96,7 @@ main() {
   echo "PASS: dual-target UDP reached both independent receivers"
 
   local primary_marker primary_message selected
-  primary_marker="phase2-primary-tcp-$RANDOM-$RANDOM"
+  primary_marker="network-primary-tcp-$RANDOM-$RANDOM"
   primary_message="<134>${timestamp} test-firewall app: ${primary_marker}"
   selected="$(send_tcp_with_failover "$primary_message")"
   [[ "$selected" == "15515" ]] ||
@@ -107,7 +107,7 @@ main() {
   compose stop syslog-primary >/dev/null
 
   local failover_marker failover_message
-  failover_marker="phase2-failover-tcp-$RANDOM-$RANDOM"
+  failover_marker="network-failover-tcp-$RANDOM-$RANDOM"
   failover_message="<134>${timestamp} test-firewall app: ${failover_marker}"
   selected="$(send_tcp_with_failover "$failover_message")"
   [[ "$selected" == "15516" ]] ||

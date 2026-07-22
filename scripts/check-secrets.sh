@@ -21,7 +21,10 @@ patterns=(
 )
 
 mapfile -t scan_files < <(
-  printf '%s\n' "$candidate_files" |
+  while IFS= read -r file; do
+    [[ -f "$file" ]] || continue
+    printf '%s\n' "$file"
+  done <<<"$candidate_files" |
     grep -Ev '^(scripts/check-secrets\.sh|\.gitleaks\.toml|docs/test-results/)'
 )
 

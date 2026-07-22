@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Local Phase 11 unknown-traffic orchestration simulation."""
+"""Local Adaptive traffic intelligence unknown-traffic orchestration simulation."""
 
 from __future__ import annotations
 

@@ -14,7 +14,7 @@ Configuration lives in `config/operations/`:
 Validate:
 
 ```bash
-make test-phase7-operations
+make test-operations
 ```
 
 ## Runbooks

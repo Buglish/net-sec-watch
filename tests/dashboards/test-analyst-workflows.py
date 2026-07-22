@@ -3,7 +3,7 @@ import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-GUIDE = ROOT / "docs/phase-5-analyst-workflows.md"
+GUIDE = ROOT / "docs/analyst-workflows.md"
 text = GUIDE.read_text(encoding="utf-8")
 
 required_sections = (

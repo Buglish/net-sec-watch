@@ -28,5 +28,5 @@ ports, or delivery outside the five-minute window can prevent otherwise
 related records from sharing a key. Collector ingest time is used because RFC
 3164 syslog does not carry a timezone and embedded device clocks may differ.
 Original source timestamps remain available for analysis. Later storage and
-detection phases may add Community ID or source-specific correlation where
+detection capabilities may add Community ID or source-specific correlation where
 available.

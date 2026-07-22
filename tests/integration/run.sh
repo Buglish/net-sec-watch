@@ -78,17 +78,17 @@ prepare_runtime() {
 }
 
 test_initial_collection() {
-  local text_marker="phase1-text-$RANDOM-$RANDOM"
-  local app_marker="phase1-app-$RANDOM-$RANDOM"
-  local system_marker="phase1-system-$RANDOM-$RANDOM"
-  local container_marker="phase1-container-$RANDOM-$RANDOM"
+  local text_marker="file-text-$RANDOM-$RANDOM"
+  local app_marker="file-app-$RANDOM-$RANDOM"
+  local system_marker="file-system-$RANDOM-$RANDOM"
+  local container_marker="file-container-$RANDOM-$RANDOM"
 
   printf '%s INFO %s\n' "$(date --iso-8601=seconds)" "$text_marker" \
     >> "$runtime/logs/text/service.log"
   printf '{"timestamp":"%s","level":"INFO","service":"integration-test","message":"%s"}\n' \
     "$(date --iso-8601=seconds)" "$app_marker" \
     >> "$runtime/logs/app/application.json.log"
-  printf '%s test-host phase1[1]: %s\n' "$(date '+%b %d %H:%M:%S')" "$system_marker" \
+  printf '%s test-host file-collector[1]: %s\n' "$(date '+%b %d %H:%M:%S')" "$system_marker" \
     >> "$runtime/logs/system/syslog"
   printf '{"log":"%s\\n","stream":"stdout","time":"%s"}\n' \
     "$container_marker" "$(date --utc '+%Y-%m-%dT%H:%M:%S.000000000Z')" \
@@ -131,24 +131,24 @@ assert_canonical_event() {
 }
 
 test_canonical_normalization() {
-  local text_marker="phase3-text-$RANDOM-$RANDOM"
-  local app_marker="phase3-app-$RANDOM-$RANDOM"
-  local app_z_marker="phase3-app-z-$RANDOM-$RANDOM"
-  local app_fraction_marker="phase3-app-fraction-$RANDOM-$RANDOM"
-  local system_marker="phase3-system-$RANDOM-$RANDOM"
-  local container_marker="phase3-container-$RANDOM-$RANDOM"
+  local text_marker="normalization-text-$RANDOM-$RANDOM"
+  local app_marker="normalization-app-$RANDOM-$RANDOM"
+  local app_z_marker="normalization-app-z-$RANDOM-$RANDOM"
+  local app_fraction_marker="normalization-app-fraction-$RANDOM-$RANDOM"
+  local system_marker="normalization-system-$RANDOM-$RANDOM"
+  local container_marker="normalization-container-$RANDOM-$RANDOM"
 
   printf '%s WARN %s\n' "$(date --iso-8601=seconds)" "$text_marker" \
     >> "$runtime/logs/text/service.log"
   {
-    printf '{"timestamp":"%s","level":"ERROR","service":"phase3-test","environment":"integration","message":"%s"}\n' \
+    printf '{"timestamp":"%s","level":"ERROR","service":"normalization-test","environment":"integration","message":"%s"}\n' \
       "$(date --iso-8601=seconds)" "$app_marker"
-    printf '{"timestamp":"2026-06-20T08:00:00Z","level":"INFO","service":"phase3-test","message":"%s"}\n' \
+    printf '{"timestamp":"2026-06-20T08:00:00Z","level":"INFO","service":"normalization-test","message":"%s"}\n' \
       "$app_z_marker"
-    printf '{"timestamp":"2026-06-20T08:00:00.123+1200","level":"INFO","service":"phase3-test","message":"%s"}\n' \
+    printf '{"timestamp":"2026-06-20T08:00:00.123+1200","level":"INFO","service":"normalization-test","message":"%s"}\n' \
       "$app_fraction_marker"
   } >> "$runtime/logs/app/application.json.log"
-  printf '%s phase3-host phase3[1]: %s\n' \
+  printf '%s normalization-host normalizer[1]: %s\n' \
     "$(date '+%b %d %H:%M:%S')" "$system_marker" \
     >> "$runtime/logs/system/syslog"
   printf '{"log":"%s\\n","stream":"stderr","time":"%s"}\n' \
@@ -182,7 +182,7 @@ test_canonical_normalization() {
     fail "application log level was not normalized"
   grep -Fq '"log.severity.number":17' <<<"$app_event" ||
     fail "application severity was not mapped to OpenTelemetry"
-  grep -Fq '"service.name":"phase3-test"' <<<"$app_event" ||
+  grep -Fq '"service.name":"normalization-test"' <<<"$app_event" ||
     fail "application service metadata was not normalized"
   grep -Fq '"deployment.environment.name":"integration"' <<<"$app_event" ||
     fail "application environment metadata was not normalized"
@@ -288,8 +288,8 @@ EOF
 }
 
 test_rotation() {
-  local old_marker="phase1-before-rotation-$RANDOM-$RANDOM"
-  local new_marker="phase1-after-rotation-$RANDOM-$RANDOM"
+  local old_marker="file-before-rotation-$RANDOM-$RANDOM"
+  local new_marker="file-after-rotation-$RANDOM-$RANDOM"
   local log="$runtime/logs/text/service.log"
 
   printf '%s INFO %s\n' "$(date --iso-8601=seconds)" "$old_marker" >> "$log"
@@ -302,8 +302,8 @@ test_rotation() {
 }
 
 test_multiline() {
-  local header_marker="phase1-multiline-header-$RANDOM-$RANDOM"
-  local detail_marker="phase1-multiline-detail-$RANDOM-$RANDOM"
+  local header_marker="file-multiline-header-$RANDOM-$RANDOM"
+  local detail_marker="file-multiline-detail-$RANDOM-$RANDOM"
   local log="$runtime/logs/text/service.log"
 
   {
@@ -324,7 +324,7 @@ test_multiline() {
 }
 
 test_restart_offsets() {
-  local marker="phase1-restart-offset-$RANDOM-$RANDOM"
+  local marker="file-restart-offset-$RANDOM-$RANDOM"
 
   printf '%s INFO %s\n' "$(date --iso-8601=seconds)" "$marker" \
     >> "$runtime/logs/text/service.log"
@@ -344,7 +344,7 @@ test_restart_offsets() {
 }
 
 test_buffer_recovery() {
-  local marker="phase1-buffer-recovery-$RANDOM-$RANDOM"
+  local marker="file-buffer-recovery-$RANDOM-$RANDOM"
 
   compose stop receiver >/dev/null
   printf '%s INFO %s\n' "$(date --iso-8601=seconds)" "$marker" \
@@ -372,7 +372,7 @@ send_tcp() {
 }
 
 test_syslog_udp() {
-  local marker="phase2-syslog-udp-$RANDOM-$RANDOM"
+  local marker="network-syslog-udp-$RANDOM-$RANDOM"
   local ts
   ts="$(date '+%b %e %H:%M:%S')"
   send_udp 127.0.0.1 15514 "<134>${ts} testhost sshd[1234]: ${marker}"
@@ -395,7 +395,7 @@ test_syslog_udp() {
 }
 
 test_syslog_tcp() {
-  local marker="phase2-syslog-tcp-$RANDOM-$RANDOM"
+  local marker="network-syslog-tcp-$RANDOM-$RANDOM"
   local ts
   ts="$(date '+%b %e %H:%M:%S')"
   send_tcp 127.0.0.1 15514 "<134>${ts} testhost sshd[1234]: ${marker}" || {
@@ -407,7 +407,7 @@ test_syslog_tcp() {
 }
 
 test_syslog_deadletter() {
-  local marker="phase2-syslog-dl-$RANDOM-$RANDOM"
+  local marker="network-syslog-dl-$RANDOM-$RANDOM"
   local ts
   ts="$(date '+%b %e %H:%M:%S')"
   # Two spaces after the timestamp produce an empty host field, triggering dead-letter.
@@ -426,7 +426,7 @@ test_syslog_deadletter() {
 }
 
 test_syslog_src_ip() {
-  local marker="phase2-syslog-ip-$RANDOM-$RANDOM"
+  local marker="network-syslog-ip-$RANDOM-$RANDOM"
   local ts
   ts="$(date '+%b %e %H:%M:%S')"
   send_udp 127.0.0.1 15514 "<134>${ts} testhost sshd[1234]: ${marker}"

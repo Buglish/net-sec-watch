@@ -36,4 +36,4 @@ make dr-exercise
 
 ## Evidence
 
-Record the exercise in `docs/test-results/phase-7-dr-exercise-<date>.md`.
+Record the exercise in `docs/test-results/disaster-recovery-exercise-<date>.md`.

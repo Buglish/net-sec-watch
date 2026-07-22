@@ -1,10 +1,17 @@
 {
+  "_meta": {
+    "type": "roles",
+    "config_version": 2
+  },
   "net_sec_watch_admin": {
     "reserved": false,
     "hidden": false,
     "description": "Net Sec Watch platform administrator. Full cluster, index, tenant, and security administration.",
     "cluster_permissions": [
-      "cluster_all"
+      "cluster_all",
+      "cluster_composite_ops",
+      "indices:admin/index_template/*",
+      "indices:admin/template/*"
     ],
     "index_permissions": [
       {

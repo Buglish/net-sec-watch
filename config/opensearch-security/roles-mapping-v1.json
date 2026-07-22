@@ -1,4 +1,8 @@
 {
+  "_meta": {
+    "type": "rolesmapping",
+    "config_version": 2
+  },
   "net_sec_watch_admin": {
     "reserved": false,
     "hidden": false,
@@ -43,6 +47,13 @@
     "backend_roles": [
       "net-sec-watch-service"
     ],
+    "users": [],
+    "hosts": []
+  },
+  "kibana_server": {
+    "reserved": false,
+    "hidden": false,
+    "backend_roles": [],
     "users": [
       "kibanaserver"
     ],

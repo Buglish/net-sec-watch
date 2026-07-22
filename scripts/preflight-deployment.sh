@@ -27,7 +27,7 @@ required_files=(
   deploy/kubernetes/deployment.yaml
   deploy/kubernetes/services.yaml
   deploy/kubernetes/networkpolicy.yaml
-  docs/phase-10-deployment-portability.md
+  docs/deployment-portability.md
   docs/installation-administration-troubleshooting.md
   docs/supported-versions.md
   docs/production-readiness-review.md

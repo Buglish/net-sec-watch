@@ -52,6 +52,6 @@
       "alert.model.score",
       "alert.model.confidence"
     ],
-    "note": "Phase 11 model outputs must emit this alert schema and use the same routing destinations."
+    "note": "Adaptive traffic intelligence model outputs must emit this alert schema and use the same routing destinations."
   }
 }

@@ -2,7 +2,7 @@
 
 Author: SJ du Preez
 
-This document replaces the phase-based delivery checklist. It describes what
+This document replaces the milestone checklist. It describes what
 exists in the application today and what still needs evidence or production
 hardening, grouped by product capability.
 

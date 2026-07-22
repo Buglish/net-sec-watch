@@ -82,8 +82,8 @@ All production runtime components, client libraries, machine-learning frameworks
 | FR-13 | Retention | Apply per-log-class rollover, retention, deletion, and snapshot policies. | Must |
 | FR-14 | Administration | Display pipeline status, ingestion rate, failures, queue depth, index health, and storage consumption. | Must |
 | FR-15 | API | Expose authenticated APIs for ingestion, search, configuration automation, and health checks. | Must |
-| FR-16 | Security ML | Score selected security events for anomalies and risk, show contributing features, and support analyst feedback without automatic blocking. | Later phase |
-| FR-17 | Adaptive traffic intelligence | Classify network and syslog events in near-real time; detect low-confidence patterns; train, evaluate, shadow, approve, promote, and roll back model versions through an auditable self-hosted workflow. | Later phase |
+| FR-16 | Security ML | Score selected security events for anomalies and risk, show contributing features, and support analyst feedback without automatic blocking. | Later milestone |
+| FR-17 | Adaptive traffic intelligence | Classify network and syslog events in near-real time; detect low-confidence patterns; train, evaluate, shadow, approve, promote, and roll back model versions through an auditable self-hosted workflow. | Later milestone |
 
 ## 5. User experience specification
 
@@ -241,7 +241,7 @@ Sizing formula: daily indexed storage = raw daily bytes × parsing/index expansi
 
 ## 14. Delivery plan
 
-| Phase | Indicative duration | Deliverables and exit criteria |
+| Workstream | Indicative duration | Deliverables and exit criteria |
 | --- | --- | --- |
 | 0. Discovery and sizing | 2 weeks | Inventory sources, sample logs, classify data, estimate volume, confirm retention, define success metrics. |
 | 1. Technical proof of concept | 2-3 weeks | One file source and one firewall/router source searchable; basic dashboard; parser and latency measurements. |
@@ -249,11 +249,11 @@ Sizing formula: daily indexed storage = raw daily bytes × parsing/index expansi
 | 3. Production hardening | 3-4 weeks | HA cluster, load/failure tests, restore test, runbooks, security review, capacity threshold, and operational handover. |
 | 4. Expansion | Ongoing | Additional vendors/sources, alert content, dashboard library, automation, and cost/performance tuning. |
 | 5. Security machine learning | 6-10 weeks | Open-source anomaly detection, feature pipelines, analyst feedback, model evaluation, explainable risk scoring, shadow deployment, and controlled production rollout. |
-| 6. Adaptive traffic intelligence | After Phase 5 is stable | Near-real-time classification, unknown-pattern clustering, autonomous candidate training and evaluation, governed shadow-to-live promotion, hot-swap rollback, and optional self-hosted LLM explanations. |
+| 6. Adaptive traffic intelligence | After analyst workflow is stable | Near-real-time classification, unknown-pattern clustering, autonomous candidate training and evaluation, governed shadow-to-live promotion, hot-swap rollback, and optional self-hosted LLM explanations. |
 
-## 15. Security machine-learning phase
+## 15. Security machine-learning workstream
 
-This phase adds machine-learning analysis after the collection, schema, security, and operational foundations are stable. It is intended to improve analyst prioritization and reveal unusual behavior; it does not replace deterministic detection rules or human investigation.
+This workstream adds machine-learning analysis after the collection, schema, security, and operational foundations are stable. It is intended to improve analyst prioritization and reveal unusual behavior; it does not replace deterministic detection rules or human investigation.
 
 ### 15.1 Initial security use cases
 
@@ -290,7 +290,7 @@ This phase adds machine-learning analysis after the collection, schema, security
 - Analyst feedback is recorded separately from raw events and is reviewed for bias, inconsistency, and label quality before retraining.
 - Models have named owners, approval status, intended use, prohibited use, validation results, rollback instructions, and retirement criteria.
 - Open-source model licenses and training-data rights are reviewed before deployment; API-only or non-redistributable models are not permitted.
-### 15.5 ML phase acceptance criteria
+### 15.5 ML acceptance criteria
 
 | ID | Acceptance criterion |
 | --- | --- |
@@ -303,7 +303,7 @@ This phase adds machine-learning analysis after the collection, schema, security
 
 ## 16. Adaptive traffic intelligence and live model orchestration
 
-This phase extends the governed machine-learning foundation into a continuously
+This capability extends the governed machine-learning foundation into a continuously
 operating classification and improvement loop for network and syslog events.
 It does not permit a model or LLM to change firewall rules, block traffic,
 disable accounts, or otherwise enforce a security action automatically.
@@ -374,7 +374,7 @@ the project's license and security audit before use.
 | ATI-AC-02 | A novel low-confidence pattern is deduplicated, clustered, used to train a candidate, evaluated, and staged in shadow mode without manual deployment changes. |
 | ATI-AC-03 | Promotion requires the configured approval gate and produces a complete audit record containing dataset, metrics, approver or policy, active version, and rollback pointer. |
 | ATI-AC-04 | A promoted model can be rolled back within one serving cycle after a simulated quality-degradation alert. |
-| ATI-AC-05 | Disabling the entire adaptive layer leaves ingestion, indexing, search, deterministic alerts, and Phase 9 anomaly analysis operational without data loss. |
+| ATI-AC-05 | Disabling the entire adaptive layer leaves ingestion, indexing, search, deterministic alerts, and machine-learning anomaly analysis operational without data loss. |
 | ATI-AC-06 | The core loop uses only approved open-source, self-hostable components and works without an LLM or external paid API. |
 
 ## 17. Testing strategy
