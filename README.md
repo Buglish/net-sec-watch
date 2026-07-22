@@ -7,6 +7,8 @@ sensors.
 
 Author: SJ du Preez
 
+![Net Sec Watch Log Search](docs/images/network_activity.png)
+
 ![Net Sec Watch architecture](docs/images/openlog-architecture.png)
 
 ## What you can do with it
@@ -320,6 +322,21 @@ Run the orchestration contract test:
 
 ```bash
 make test-orchestration
+```
+
+Run a screenshot-friendly traffic classification demo:
+
+```bash
+make traffic-classification-demo
+```
+
+This classifies fixture network events, writes a readable summary under
+`runtime/demos/traffic-classification/`, and, when local OpenSearch is running,
+indexes prediction records into `net-sec-watch-network-development`. In
+Discover, select `net-sec-watch-network` and search:
+
+```text
+event.dataset:"traffic.classification.demo"
 ```
 
 Key files:

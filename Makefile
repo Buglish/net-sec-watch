@@ -1,4 +1,4 @@
-.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle import-dashboards dashboard-demo up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-security test-operations test-detections test-ml test-deployment test-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
+.PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle import-dashboards dashboard-demo traffic-classification-demo up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-security test-operations test-detections test-ml test-deployment test-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
 	./scripts/init-local-config.sh
@@ -22,6 +22,7 @@ import-dashboards:
 	./scripts/import-dashboards.sh
 
 dashboard-demo: init
+	FLUENT_BIT_CONFIG_PATH=./config/fluent-bit.demo.conf \
 	docker compose --env-file .env --profile opensearch \
 		up -d fluent-bit opensearch opensearch-dashboards
 	./scripts/import-dashboards.sh
@@ -31,6 +32,9 @@ dashboard-demo: init
 	@echo "Dashboard demo is ready."
 	@echo "Open http://127.0.0.1:5601, choose Discover, select the Net Sec Watch data view,"
 	@echo "then search for NetSecWatchDemo001."
+
+traffic-classification-demo:
+	./scripts/run-traffic-classification-demo.sh
 
 up:
 	docker compose --env-file .env up -d
