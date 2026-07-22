@@ -54,6 +54,26 @@ orchestration, candidate model staging, and model rollback.
 make test-orchestration
 ```
 
+For a quick demo with screenshot-friendly output:
+
+```bash
+make traffic-classification-demo
+```
+
+The demo writes:
+
+- `runtime/demos/traffic-classification/predictions.jsonl`
+- `runtime/demos/traffic-classification/candidates.json`
+- `runtime/demos/traffic-classification/summary.md`
+
+If local OpenSearch is running, it also indexes the prediction records into
+`net-sec-watch-network-development`. Open Discover, select
+`net-sec-watch-network`, and search:
+
+```text
+event.dataset:"traffic.classification.demo"
+```
+
 Configuration lives under `config/orchestration/`.
 
 ## Optional local LLM enrichment
