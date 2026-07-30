@@ -9,8 +9,8 @@
   ],
   "expected_types": {
     "index-pattern": 4,
-    "search": 4,
+    "search": 7,
     "visualization": 1,
-    "dashboard": 4
+    "dashboard": 5
   }
 }

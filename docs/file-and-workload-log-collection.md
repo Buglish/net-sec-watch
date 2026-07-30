@@ -132,6 +132,7 @@ curl http://127.0.0.1:2020/api/v1/metrics/prometheus
 
 ## Scope boundary
 
-The current output is JSON Lines on collector stdout. This makes collection,
-rotation, parsing, and offset behavior independently testable. OpenSearch
-indexing and the common searchable schema are introduced by later objectives.
+The local collector can write normalized records to stdout for parser testing
+and to OpenSearch for the dashboard demo. This keeps collection, rotation,
+parsing, offset behavior, indexing, and schema compatibility independently
+testable.

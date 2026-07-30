@@ -32,10 +32,10 @@ class SavedObjectBundleTest(unittest.TestCase):
             BUILD.DEFAULT_MANIFEST.parent / manifest["bundle"]
         ).read_text(encoding="utf-8")
         self.assertEqual(tracked, rendered)
-        self.assertEqual(len(objects), 13)
+        self.assertEqual(len(objects), 17)
         self.assertEqual(len({
             (item["type"], item["id"]) for item in objects
-        }), 13)
+        }), 17)
 
     def test_every_reference_is_inside_bundle(self):
         _, objects, _ = BUILD.build(BUILD.DEFAULT_MANIFEST)

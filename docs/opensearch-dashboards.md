@@ -241,9 +241,9 @@ ignored local Dashboards certificate. Dashboards connects to OpenSearch using
 HTTPS and the built-in `kibanaserver` service identity. The demo OpenSearch
 certificate is not verified in this development deployment.
 
-Do not expose port 5601 to a LAN or the internet. Centralized identity,
-role-based access, and production certificate verification remain security
-objectives.
+Do not expose port 5601 to a LAN or the internet. Use the secure or identity
+profiles when you need centralized identity, role-based access, and production
+certificate verification.
 
 ## Unsecured development mode
 

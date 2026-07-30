@@ -17,7 +17,8 @@ Open:
 http://127.0.0.1:5601
 ```
 
-Then open **Discover**, select the **Net Sec Watch** data view, and search for:
+Then open **Discover**, select the `net-sec-watch-network` data view, and
+search for:
 
 ```text
 NetSecWatchDemo001
@@ -79,11 +80,58 @@ The managed bundle is generated from these source files:
 | `config/dashboards/analyst-states-v1.ndjson` | Analyst workflow objects |
 | `config/dashboards/discover-settings-v1.json` | Discover defaults |
 
+The managed data views include a saved field cache generated from the
+OpenSearch mapping. This lets visualizations resolve fields such as
+`@timestamp`, `event.dataset`, `event.classification`, and
+`event.ml_confidence` without relying on a browser-side refresh.
+
 If you change the source files, rebuild the bundle:
 
 ```bash
 make dashboards-bundle
 make import-dashboards
+```
+
+## Traffic classification dashboard
+
+To populate the self-learning traffic classification demo, make sure the local
+dashboard stack is running, then run:
+
+```bash
+make traffic-classification-demo
+```
+
+Open **Dashboards** and choose:
+
+```text
+Net Sec Watch - Traffic Classification
+```
+
+That dashboard is backed by the `net-sec-watch-network` data view and filters
+for:
+
+```text
+event.dataset:"traffic.classification.demo"
+```
+
+If it is missing from the dashboard list, re-import the saved objects:
+
+```bash
+make import-dashboards
+```
+
+If the dashboard opens but shows no rows, refresh demo classification events:
+
+```bash
+make traffic-classification-demo
+```
+
+The same dashboard also includes the saved search
+**Net Sec Watch - Model Orchestration Events**. It shows candidate models that
+were staged for shadow mode or rejected by governance. In Discover, use:
+
+```text
+event.dataset:"traffic.model_orchestration.demo"
 ```
 
 ## Add a filter in Discover
@@ -122,6 +170,46 @@ Common fields:
 | `net.transport` | TCP/UDP/etc. |
 | `log.syslog.severity.name` | Syslog severity |
 | `event.kind` | Event category such as event/alert |
+
+## Troubleshooting stale dashboard objects
+
+If Dashboards shows an error like:
+
+```text
+Could not locate that dashboard
+```
+
+or:
+
+```text
+Could not locate that index-pattern-field (id: @timestamp)
+```
+
+the browser may still be on an old saved-object URL, or the local Dashboards
+container may contain stale saved objects from an earlier import.
+
+Use the stable dashboard URLs from the dashboard list, or re-import managed
+objects:
+
+```bash
+make import-dashboards
+```
+
+Then close old tabs and open one of the managed dashboard IDs, for example:
+
+```text
+http://127.0.0.1:5601/app/dashboards#/view/net-sec-watch-traffic-classification
+```
+
+If the problem persists in a local demo stack, reset local Dashboards/OpenSearch
+state and recreate the demo:
+
+```bash
+make down
+docker compose --env-file .env --profile opensearch down --volumes
+make dashboard-demo
+make traffic-classification-demo
+```
 
 ## Add a dashboard
 

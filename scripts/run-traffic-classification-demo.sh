@@ -108,7 +108,7 @@ summary.write_text("\n".join(lines) + "\n", encoding="utf-8")
 print(summary)
 PY
 
-python3 - "$predictions" "$bulk" <<'PY'
+python3 - "$predictions" "$candidates" "$bulk" <<'PY'
 import json
 import sys
 from datetime import datetime, timezone
@@ -119,7 +119,8 @@ predictions = [
     for line in Path(sys.argv[1]).read_text(encoding="utf-8").splitlines()
     if line.strip()
 ]
-bulk = Path(sys.argv[2])
+candidates = json.loads(Path(sys.argv[2]).read_text(encoding="utf-8"))
+bulk = Path(sys.argv[3])
 lines = []
 indexed_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
 for item in predictions:
@@ -136,6 +137,47 @@ for item in predictions:
     )
     lines.append(json.dumps({"index": {}}))
     lines.append(json.dumps(item, sort_keys=True))
+
+for bucket in ("candidates", "rejected"):
+    for number, candidate in enumerate(candidates.get(bucket, []), start=1):
+        model_status = candidate.get("status", bucket)
+        model_id = "candidate-{cluster}-{number}".format(
+            cluster="-".join(str(part) for part in candidate.get("cluster_key", [])),
+            number=number,
+        ).replace("/", "-").replace(" ", "-")
+        record = {
+            "@timestamp": indexed_at,
+            "event.dataset": "traffic.model_orchestration.demo",
+            "event.kind": "model_candidate",
+            "event.category": "ml",
+            "event.type": "info",
+            "event.action": model_status,
+            "event.outcome": (
+                "success" if model_status == "staged_shadow" else "failure"
+            ),
+            "event.ml_model_id": model_id,
+            "event.ml_confidence": candidate.get("precision", 0),
+            "event.threat_level": (
+                "medium" if model_status == "staged_shadow" else "low"
+            ),
+            "event.threat_score": candidate.get("false_positive_rate", 0),
+            "event.original": json.dumps(candidate, sort_keys=True),
+            "message": (
+                "model orchestration {status} cluster={cluster} "
+                "events={count} framework={framework}{reason}"
+            ).format(
+                status=model_status,
+                cluster=candidate.get("cluster_key"),
+                count=candidate.get("event_count"),
+                framework=candidate.get("framework"),
+                reason=(
+                    " reason=" + candidate["reason"]
+                    if candidate.get("reason") else ""
+                ),
+            ),
+        }
+        lines.append(json.dumps({"index": {}}))
+        lines.append(json.dumps(record, sort_keys=True))
 bulk.write_text("\n".join(lines) + "\n", encoding="utf-8")
 PY
 
@@ -159,3 +201,4 @@ echo "Candidates: ${candidates}"
 echo
 echo "If OpenSearch was running, open Discover with data view net-sec-watch-network"
 echo "and search for: event.dataset:\"traffic.classification.demo\""
+echo "For model orchestration records, search for: event.dataset:\"traffic.model_orchestration.demo\""

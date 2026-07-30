@@ -83,6 +83,117 @@ local function parse_asus_firewall(record)
     end
 end
 
+local function unquote(value)
+    if type(value) ~= "string" then
+        return value
+    end
+    return (string.gsub(value, "^\"(.*)\"$", "%1"))
+end
+
+local function parse_key_value_firewall(record)
+    local message = record["message"]
+    if type(message) ~= "string" then
+        return
+    end
+
+    local values = {}
+    for key, value in string.gmatch(message, "([%w_%.%-]+)=\"([^\"]*)\"") do
+        values[string.lower(key)] = value
+    end
+
+    for key, value in string.gmatch(message, "([%w_%.%-]+)=([^%s,]+)") do
+        values[string.lower(key)] = unquote(value)
+    end
+
+    local source_ip = values["src"] or values["srcip"] or
+        values["source"] or values["sourceip"]
+    local destination_ip = values["dst"] or values["dstip"] or
+        values["destination"] or values["destinationip"]
+    local action = values["action"] or values["act"] or values["disposition"]
+
+    if not source_ip or not destination_ip or not action then
+        return
+    end
+
+    local normalized_action = string.lower(action)
+    local successful_actions = {
+        allow = true,
+        allowed = true,
+        accept = true,
+        accepted = true,
+        pass = true,
+        permit = true,
+        permitted = true,
+    }
+
+    local denied_actions = {
+        block = true,
+        blocked = true,
+        deny = true,
+        denied = true,
+        drop = true,
+        dropped = true,
+        reject = true,
+        rejected = true,
+    }
+
+    record["event.action"] = normalized_action
+    record["event.category"] = "network"
+    record["event.kind"] = "event"
+    record["event.outcome"] =
+        successful_actions[normalized_action] and "success" or "failure"
+    record["event.type"] =
+        denied_actions[normalized_action] and "denied" or "connection"
+    record["event.module"] = "enterprise-firewall"
+    record["event.dataset"] = "enterprise.firewall"
+    record["event.parser_version"] = "enterprise-firewall-kv-1"
+
+    record["source.ip"] = source_ip
+    record["destination.ip"] = destination_ip
+
+    local source_port = values["sport"] or values["srcport"] or
+        values["sourceport"]
+    local destination_port = values["dport"] or values["dstport"] or
+        values["destinationport"]
+    if source_port then
+        record["source.port"] = tonumber(source_port) or source_port
+    end
+    if destination_port then
+        record["destination.port"] =
+            tonumber(destination_port) or destination_port
+    end
+
+    local protocol = values["proto"] or values["protocol"] or
+        values["transport"]
+    if protocol then
+        local protocol_text = string.lower(protocol)
+        local protocol_numbers = {
+            ["6"] = "tcp",
+            ["17"] = "udp",
+            ["1"] = "icmp",
+        }
+        record["network.transport"] =
+            protocol_numbers[protocol_text] or protocol_text
+    end
+
+    record["observer.vendor"] = values["vendor"] or values["brand"] or
+        values["manufacturer"] or record["observer.vendor"]
+    record["observer.product"] = values["product"] or values["device_type"] or
+        values["type"] or record["observer.product"]
+    record["observer.name"] = values["devname"] or values["device"] or
+        values["hostname"] or record["host.name"] or record["host"]
+    record["device.id"] = values["devid"] or values["deviceid"] or
+        values["serial"] or values["serialnumber"]
+    record["rule.id"] = tonumber(values["policyid"] or values["ruleid"] or
+        values["rule"]) or values["policyid"] or values["ruleid"] or
+        values["rule"]
+    record["rule.name"] = values["policyname"] or values["rulename"]
+
+    if values["service"] then
+        record["network.protocol"] = string.lower(values["service"])
+    end
+end
+
 function enrich_syslog(tag, timestamp, record)
     local ts
     if type(timestamp) == "table" then
@@ -121,6 +232,11 @@ function enrich_syslog(tag, timestamp, record)
     end
 
     parse_asus_firewall(record)
+    if record["event.dataset"] == nil or
+        record["event.dataset"] == "syslog.rfc3164" or
+        record["event.dataset"] == "syslog.rfc5424" then
+        parse_key_value_firewall(record)
+    end
 
     return 1, timestamp, record
 end

@@ -123,6 +123,47 @@ Stock firmware resets local logs on reboot; remote forwarding persists them here
 Sample fixture showing the expected message format:
 `examples/logs/network/asus-router-rfc3164.log`
 
+## Enterprise firewall key/value syslog
+
+Many enterprise firewalls can emit RFC 3164 or RFC 5424 syslog messages with
+key/value fields. Net Sec Watch normalizes common fields from those records
+into the network schema when the message includes at least source IP,
+destination IP, and action.
+
+Supported input aliases include:
+
+| Normalized field | Accepted source keys |
+| --- | --- |
+| `source.ip` | `src`, `srcip`, `source`, `sourceip` |
+| `destination.ip` | `dst`, `dstip`, `destination`, `destinationip` |
+| `source.port` | `sport`, `srcport`, `sourceport` |
+| `destination.port` | `dport`, `dstport`, `destinationport` |
+| `network.transport` | `proto`, `protocol`, `transport` |
+| `event.action` | `action`, `act`, `disposition` |
+| `observer.name` | `devname`, `device`, `hostname` |
+| `observer.vendor` | `vendor`, `brand`, `manufacturer` |
+| `rule.id` | `policyid`, `ruleid`, `rule` |
+
+Protocol numbers `6`, `17`, and `1` are normalized to `tcp`, `udp`, and
+`icmp`. Allow/pass/permit actions are treated as successful connections; deny,
+drop, block, and reject actions are treated as denied traffic.
+
+Example TCP syslog test:
+
+```bash
+printf '<134>%s edge-fw-01 firewall: vendor=ExampleFirewall devname=edge-fw-01 action=deny srcip=192.0.2.70 dstip=198.51.100.80 proto=6 srcport=51515 dstport=443 policyid=42 service=HTTPS\n' \
+  "$(date '+%b %e %H:%M:%S')" |
+  nc -w1 127.0.0.1 514
+```
+
+The normalized event uses:
+
+```text
+event.dataset: enterprise.firewall
+event.parser_version: enterprise-firewall-kv-1
+network.transport: tcp
+```
+
 ## Finding your LAN IP (Windows / WSL2)
 
 The router must send to the Windows computer's LAN address. Do not configure
