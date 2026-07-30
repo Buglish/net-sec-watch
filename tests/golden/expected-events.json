@@ -71,6 +71,24 @@
       }
     },
     {
+      "name": "Enterprise firewall key-value syslog",
+      "match": {"field": "message", "contains": "GOLDEN=enterprise-firewall-golden"},
+      "expected": {
+        "event.dataset": "enterprise.firewall",
+        "event.parser_version": "enterprise-firewall-kv-1",
+        "event.action": "deny",
+        "event.outcome": "failure",
+        "source.ip": "192.0.2.70",
+        "destination.ip": "198.51.100.80",
+        "source.port": 51515,
+        "destination.port": 443,
+        "network.transport": "tcp",
+        "observer.vendor": "ExampleFirewall",
+        "observer.name": "edge-fw-01",
+        "rule.id": 42
+      }
+    },
+    {
       "name": "Zeek connection",
       "match": {"field": "uid", "equals": "CZeekIntegration001"},
       "expected": {

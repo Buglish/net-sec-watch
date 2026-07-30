@@ -406,6 +406,53 @@ test_syslog_tcp() {
   echo "PASS: TCP syslog was collected"
 }
 
+test_enterprise_firewall_tcp_parsing() {
+  local source_port=$((30000 + RANDOM % 20000))
+  local marker="enterprise-firewall-tcp-$RANDOM-$RANDOM"
+  local ts message
+  ts="$(date '+%b %e %H:%M:%S')"
+  message="<134>${ts} edge-fw-01 firewall: vendor=ExampleFirewall devname=edge-fw-01 action=deny srcip=192.0.2.70 dstip=198.51.100.80 proto=6 srcport=${source_port} dstport=443 policyid=42 service=HTTPS GOLDEN=${marker}"
+
+  send_tcp 127.0.0.1 15514 "$message" || {
+    echo "SKIP: enterprise firewall TCP syslog test skipped (/dev/tcp not available)" >&2
+    return 0
+  }
+  wait_for_log receiver "$marker"
+
+  local event
+  event="$(compose logs --no-color receiver 2>/dev/null |
+    grep -F "$marker" | tail -n 1)"
+
+  grep -Fq '"event.dataset":"enterprise.firewall"' <<<"$event" ||
+    fail "enterprise firewall dataset was not normalized"
+  grep -Fq '"event.parser_version":"enterprise-firewall-kv-1"' <<<"$event" ||
+    fail "enterprise firewall parser version was not recorded"
+  grep -Fq '"event.action":"deny"' <<<"$event" ||
+    fail "enterprise firewall action was not normalized"
+  grep -Fq '"event.outcome":"failure"' <<<"$event" ||
+    fail "enterprise firewall outcome was not normalized"
+  grep -Fq '"source.ip":"192.0.2.70"' <<<"$event" ||
+    fail "enterprise firewall source IP was not parsed"
+  grep -Fq '"destination.ip":"198.51.100.80"' <<<"$event" ||
+    fail "enterprise firewall destination IP was not parsed"
+  grep -Fq "\"source.port\":${source_port}" <<<"$event" ||
+    fail "enterprise firewall source port was not parsed"
+  grep -Fq '"destination.port":443' <<<"$event" ||
+    fail "enterprise firewall destination port was not parsed"
+  grep -Fq '"network.transport":"tcp"' <<<"$event" ||
+    fail "enterprise firewall protocol number was not normalized"
+  grep -Fq '"observer.vendor":"ExampleFirewall"' <<<"$event" ||
+    fail "enterprise firewall vendor metadata was not parsed"
+  grep -Fq '"observer.name":"edge-fw-01"' <<<"$event" ||
+    fail "enterprise firewall observer name was not parsed"
+  grep -Fq '"rule.id":42' <<<"$event" ||
+    fail "enterprise firewall policy/rule id was not parsed"
+  grep -Fq '"event.correlation_key":' <<<"$event" ||
+    fail "enterprise firewall correlation key was not generated"
+
+  echo "PASS: enterprise firewall TCP syslog event was normalized"
+}
+
 test_syslog_deadletter() {
   local marker="network-syslog-dl-$RANDOM-$RANDOM"
   local ts
@@ -632,9 +679,12 @@ test_golden_parser_outputs() {
     "<134>${ts} golden-router golden[42]: golden-rfc3164-event"
   send_udp 127.0.0.1 15514 \
     "<4>${ts} RT-AC68U-GOLDEN kernel: DROP IN=eth0 OUT= SRC=192.0.2.45 DST=198.51.100.7 PROTO=UDP SPT=45001 DPT=6667 GOLDEN=asus-firewall"
+  send_udp 127.0.0.1 15514 \
+    "<134>${ts} edge-fw-01 firewall: vendor=ExampleFirewall devname=edge-fw-01 action=deny srcip=192.0.2.70 dstip=198.51.100.80 proto=6 srcport=51515 dstport=443 policyid=42 service=HTTPS GOLDEN=enterprise-firewall-golden"
 
   wait_for_log receiver "golden-rfc3164-event"
   wait_for_log receiver "GOLDEN=asus-firewall"
+  wait_for_log receiver "GOLDEN=enterprise-firewall-golden"
 
   local output="$runtime/golden-output.log"
   compose logs --no-color receiver > "$output"
@@ -672,6 +722,7 @@ main() {
 
   test_syslog_udp
   test_syslog_tcp
+  test_enterprise_firewall_tcp_parsing
   test_syslog_deadletter
   test_syslog_src_ip
   test_asus_firewall_parsing

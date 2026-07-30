@@ -53,8 +53,8 @@ end
 
 function normalize_network_event(tag, timestamp, record)
     local module = record["event.module"]
-    if module ~= "asuswrt" and module ~= "zeek" and
-        module ~= "suricata" then
+    if module ~= "asuswrt" and module ~= "enterprise-firewall" and
+        module ~= "zeek" and module ~= "suricata" then
         return 0, timestamp, record
     end
 

@@ -6,6 +6,9 @@ data.
 For prerequisites, optional profiles, real device ingestion, and
 troubleshooting, use the [administrator guide](admin-guide.md).
 
+If you want the complete path from fresh install to ML/model orchestration
+dashboards, use [Fresh install to ML processing](fresh-install-to-ml.md).
+
 ## One-command dashboard demo
 
 ```bash
@@ -33,7 +36,7 @@ http://127.0.0.1:5601
 Then:
 
 1. Open **Discover**.
-2. Select the **Net Sec Watch** data view.
+2. Select the `net-sec-watch-network` data view.
 3. Search for:
 
    ```text
@@ -42,6 +45,28 @@ Then:
 
 If the marker appears, the collector, OpenSearch index, dashboard saved
 objects, and ingestion path are working.
+
+## Open the starter dashboards
+
+Go to **Dashboards** and open one of:
+
+- `Net Sec Watch - Network`
+- `Net Sec Watch - Security`
+- `Net Sec Watch - Application`
+- `Net Sec Watch - Infrastructure`
+
+To populate the self-learning demo dashboard:
+
+```bash
+make traffic-classification-demo
+make import-dashboards
+```
+
+Then open:
+
+```text
+Net Sec Watch - Traffic Classification
+```
 
 ## Manual first run
 
@@ -57,14 +82,28 @@ make generate
 ./scripts/send-demo-syslog.sh
 ```
 
-Open `http://127.0.0.1:5601`, go to **Discover**, select the Net Sec Watch
-data view, and search for `NetSecWatchDemo001`.
+Open `http://127.0.0.1:5601`, go to **Discover**, select
+`net-sec-watch-network`, and search for `NetSecWatchDemo001`.
 
 ## Check the collector
 
 ```bash
 curl http://127.0.0.1:2020/api/v1/health
 make logs
+```
+
+Check indexed stream freshness:
+
+```bash
+make ingestion-status
+```
+
+If application or system streams are delayed in a demo environment, refresh the
+sample files and check again:
+
+```bash
+make generate
+make ingestion-status
 ```
 
 ## Re-import dashboards

@@ -129,6 +129,46 @@ def test_local_classifier_and_orchestrator() -> None:
         assert_true(payload["rejected"], "failed candidate should be logged")
 
 
+def test_demo_indexes_predictions_and_model_candidates() -> None:
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(
+            ["bash", "scripts/run-traffic-classification-demo.sh"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+            env={
+                **__import__("os").environ,
+                "TRAFFIC_CLASSIFICATION_OUTDIR": tmp,
+                "OPENSEARCH_ENDPOINT": "http://127.0.0.1:9",
+            },
+        )
+        bulk = Path(tmp) / "opensearch-bulk.ndjson"
+        records = [
+            json.loads(line)
+            for number, line in enumerate(bulk.read_text().splitlines())
+            if number % 2 == 1
+        ]
+        datasets = {record["event.dataset"] for record in records}
+        assert_true(
+            "traffic.classification.demo" in datasets,
+            "prediction records were not prepared for indexing",
+        )
+        assert_true(
+            "traffic.model_orchestration.demo" in datasets,
+            "model orchestration records were not prepared for indexing",
+        )
+        orchestration = [
+            record for record in records
+            if record["event.dataset"] == "traffic.model_orchestration.demo"
+        ]
+        assert_true(
+            {record["event.action"] for record in orchestration}
+            >= {"staged_shadow", "rejected"},
+            "candidate staging and rejection states were not indexed",
+        )
+
+
 def test_docs_and_ml_fallback() -> None:
     assert_true((ROOT / "docs/adaptive-traffic-intelligence.md").is_file(), "Adaptive traffic intelligence doc missing")
     assert_true((ROOT / "docs/test-results/orchestration-contract.md").is_file(), "Adaptive traffic intelligence evidence missing")
@@ -155,6 +195,7 @@ if __name__ == "__main__":
         test_unknown_and_orchestration_policy,
         test_registry_llm_oversight_governance,
         test_local_classifier_and_orchestrator,
+        test_demo_indexes_predictions_and_model_candidates,
         test_docs_and_ml_fallback,
     ]:
         test()

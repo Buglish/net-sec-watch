@@ -37,6 +37,7 @@ expected = {
     "net-sec-watch-application",
     "net-sec-watch-network",
     "net-sec-watch-security",
+    "net-sec-watch-traffic-classification",
 }
 
 assert {item["id"] for item in dashboards} == expected
@@ -88,5 +89,11 @@ security = next(
     item for item in dashboards if item["id"] == "net-sec-watch-security"
 )
 assert len(security["references"]) == 4
+
+traffic_classification = next(
+    item for item in dashboards
+    if item["id"] == "net-sec-watch-traffic-classification"
+)
+assert len(traffic_classification["references"]) == 5
 
 print("OpenSearch Dashboards investigation dashboards are valid.")

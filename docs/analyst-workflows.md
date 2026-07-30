@@ -141,6 +141,30 @@ and last occurrence, and the parser or collector change required.
 Record the service, hosts, first error, repeated error pattern, outcome, and
 the event immediately preceding the incident.
 
+## Workflow 5: traffic classification review
+
+**Goal:** review self-learning traffic classifications and decide whether
+unknown or high-interest traffic needs analyst follow-up.
+
+1. Run the demo or confirm the classifier service is producing events:
+   `make traffic-classification-demo`.
+2. Open the dashboard **Net Sec Watch - Traffic Classification**.
+3. Open the saved search **Net Sec Watch - Traffic Classification Events**.
+4. Use the **Network** data view and confirm the query:
+   `event.dataset: "traffic.classification.demo"`.
+5. Review `event.classification`, `event.ml_confidence`,
+   `event.threat_level`, and `event.threat_score`.
+6. Open **Net Sec Watch - Unknown Traffic Classifications** to focus on
+   unknown or high-threat predictions.
+7. Open **Net Sec Watch - Model Orchestration Events** to review candidate
+   model staging and rejection records.
+8. Expand representative events and compare `message` with `event.original`.
+
+Record the source and destination tuple, predicted classification, confidence,
+threat score, model identifier if present, candidate model status, and whether
+the traffic should be accepted as expected, escalated, or used as a candidate
+for future tuning.
+
 ## Export bounded evidence
 
 Use an absolute UTC interval copied from the investigation. Never place

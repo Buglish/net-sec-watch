@@ -39,6 +39,9 @@ expected_ids = {
     "net-sec-watch-parser-failures",
     "net-sec-watch-suspicious-network-activity",
     "net-sec-watch-application-errors",
+    "net-sec-watch-traffic-classification-events",
+    "net-sec-watch-unknown-traffic-classifications",
+    "net-sec-watch-model-orchestration-events",
 }
 
 assert {item["id"] for item in objects} == expected_ids

@@ -29,6 +29,8 @@ hardening, grouped by product capability.
 - UDP, TCP, and TLS syslog reception.
 - RFC 3164 and RFC 5424 syslog support.
 - ASUS RT-AC68U UDP syslog support and firewall-drop parsing.
+- Enterprise firewall key/value syslog normalization for common source,
+  destination, action, protocol, device, and policy fields.
 - Malformed-event dead-letter routing.
 - Optional Zeek network-metadata sensor.
 - Optional Suricata IDS/flow sensor.
@@ -60,11 +62,15 @@ hardening, grouped by product capability.
 
 - OpenSearch Dashboards deployment.
 - Managed saved objects, data views, saved searches, and dashboards.
+- Managed data views include field metadata for `@timestamp` and mapped
+  investigation fields so saved visualizations load reliably after import.
 - Search examples for common analyst tasks.
 - Investigation workflow documentation.
 - Event export tooling.
 - Saved-object reproducibility checks.
 - Seven-day search benchmark tooling.
+- Local dashboard default route can point to a managed Net Sec Watch dashboard
+  instead of stale sample dashboard IDs.
 
 ### Security, privacy, and access control
 
@@ -83,6 +89,8 @@ hardening, grouped by product capability.
 
 - Monitoring thresholds for ingestion, queues, OpenSearch, snapshots, and TLS.
 - Alert routing policy and ownership.
+- `make ingestion-status` reports application, system, network, and dead-letter
+  freshness using local `.env` values without shell-evaluating secrets/config.
 - Runbooks for collector backlog, parser failure, disk pressure, mapping
   conflicts, backup/restore, failure testing, load testing, upgrades, rollback,
   and disaster recovery.
@@ -131,6 +139,12 @@ hardening, grouped by product capability.
 ### Adaptive traffic intelligence
 
 - Self-hosted traffic-classifier service contract and local simulation.
+- Screenshot-friendly traffic classification demo that writes local summaries
+  and indexes demo predictions into OpenSearch.
+- Managed `Net Sec Watch - Traffic Classification` dashboard with saved
+  searches for all classification events and unknown/high-interest traffic.
+- Managed model orchestration saved search and dashboard panel for staged and
+  rejected candidate model records.
 - Unknown-traffic policy and monitored orchestration queue.
 - Candidate model orchestration simulation with staged and rejected candidates.
 - Dynamic model registry events, active slots, promotion, rollback, and
@@ -143,7 +157,8 @@ hardening, grouped by product capability.
 
 ### Ingestion sources
 
-- Enterprise router/firewall sending searchable TCP/TLS logs.
+- Enterprise router/firewall TCP/TLS collection validated with the actual
+  target appliance and production-like certificates.
 - Live Zeek or Suricata sensor producing searchable metadata from mirrored,
   tapped, or gateway traffic.
 
@@ -179,8 +194,8 @@ hardening, grouped by product capability.
 
 ### Adaptive model orchestration
 
-- Live novel unknown-traffic pattern detected, clustered, modeled, staged,
-  approved, and promoted without manual configuration changes.
+- Live novel unknown-traffic pattern detected, clustered, approved, and
+  promoted without manual configuration changes.
 
 ## Current usability
 

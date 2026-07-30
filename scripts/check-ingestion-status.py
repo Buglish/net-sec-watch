@@ -14,6 +14,23 @@ from datetime import datetime, timezone
 STREAMS = ("application", "system", "network", "dead-letter")
 
 
+def load_env_file(path=".env"):
+    """Load simple KEY=VALUE pairs without shell-evaluating the file."""
+    try:
+        lines = open(path, encoding="utf-8").read().splitlines()
+    except FileNotFoundError:
+        return
+    for line in lines:
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#") or "=" not in stripped:
+            continue
+        key, value = stripped.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip("'\"")
+        if key and key not in os.environ:
+            os.environ[key] = value
+
+
 def parse_timestamp(value):
     if not value:
         return None
@@ -98,10 +115,11 @@ def evaluate(args, now):
 
 
 def parse_args(argv=None):
+    load_env_file()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "--endpoint",
-        default=os.environ.get("OPENSEARCH_ENDPOINT", "https://127.0.0.1:9200"),
+        default=os.environ.get("OPENSEARCH_ENDPOINT", "http://127.0.0.1:9200"),
     )
     parser.add_argument(
         "--username",
@@ -109,7 +127,8 @@ def parse_args(argv=None):
     )
     parser.add_argument(
         "--password",
-        default=os.environ.get("OPENSEARCH_PASSWORD"),
+        default=os.environ.get("OPENSEARCH_PASSWORD")
+        or os.environ.get("OPENSEARCH_INITIAL_ADMIN_PASSWORD"),
     )
     parser.add_argument(
         "--environment",

@@ -3,6 +3,9 @@
 Core Net Sec Watch can run as a log/SIEM platform without these optional
 features. Enable them when the environment and operational need justify them.
 
+For the full local path from fresh install to ML/model orchestration dashboards,
+use [Fresh install to ML processing](fresh-install-to-ml.md).
+
 ## Zeek network metadata
 
 Use Zeek when you can observe network traffic through SPAN, TAP, or gateway
@@ -66,12 +69,18 @@ The demo writes:
 - `runtime/demos/traffic-classification/candidates.json`
 - `runtime/demos/traffic-classification/summary.md`
 
-If local OpenSearch is running, it also indexes the prediction records into
-`net-sec-watch-network-development`. Open Discover, select
-`net-sec-watch-network`, and search:
+If local OpenSearch is running, it also indexes prediction and model
+orchestration records into `net-sec-watch-network-development`. Open
+Discover, select `net-sec-watch-network`, and search:
 
 ```text
 event.dataset:"traffic.classification.demo"
+```
+
+For candidate model staging/rejection records:
+
+```text
+event.dataset:"traffic.model_orchestration.demo"
 ```
 
 Configuration lives under `config/orchestration/`.

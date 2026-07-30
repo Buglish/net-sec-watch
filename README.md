@@ -83,7 +83,7 @@ http://127.0.0.1:5601
 Then:
 
 1. Go to **Discover**.
-2. Select the **Net Sec Watch** data view.
+2. Select the `net-sec-watch-network` data view.
 3. Search for:
 
    ```text
@@ -97,6 +97,7 @@ Useful checks:
 
 ```bash
 curl http://127.0.0.1:2020/api/v1/health
+make ingestion-status
 make logs
 ```
 
@@ -117,6 +118,48 @@ For the longer operator walkthrough, including real router/firewall ingestion,
 secure profiles, Zeek, Suricata, and troubleshooting, see the
 [administrator guide](docs/guides/admin-guide.md).
 
+If your goal is to go from a fresh clone all the way to ML processing and
+model orchestration dashboards, follow
+[Fresh install to ML processing](docs/guides/fresh-install-to-ml.md).
+
+## Demo dashboards you can open
+
+After `make dashboard-demo`, open <http://127.0.0.1:5601> and use
+**Dashboards**:
+
+| Dashboard | Shows |
+| --- | --- |
+| `Net Sec Watch - Network` | Router, firewall, denied traffic, and suspicious network records |
+| `Net Sec Watch - Security` | Cross-domain authentication, network, and parser triage |
+| `Net Sec Watch - Application` | Application errors and failed outcomes |
+| `Net Sec Watch - Infrastructure` | Authentication failures and collection quality |
+
+To show the self-learning traffic classification capability, run:
+
+```bash
+make traffic-classification-demo
+make import-dashboards
+```
+
+Then open:
+
+```text
+Net Sec Watch - Traffic Classification
+```
+
+In Discover, select `net-sec-watch-network` and search:
+
+```text
+event.dataset:"traffic.classification.demo"
+```
+
+The same demo also indexes governed model orchestration records. To inspect
+candidate models that were staged or rejected, search:
+
+```text
+event.dataset:"traffic.model_orchestration.demo"
+```
+
 ## Manual setup path
 
 Use this if you want to run each step yourself:
@@ -131,8 +174,8 @@ make generate
 ./scripts/send-demo-syslog.sh
 ```
 
-Then open `http://127.0.0.1:5601`, go to **Discover**, select the Net Sec
-Watch data view, and search for `NetSecWatchDemo001`.
+Then open `http://127.0.0.1:5601`, go to **Discover**, select
+`net-sec-watch-network`, and search for `NetSecWatchDemo001`.
 
 For a real router or firewall, point its remote syslog setting to:
 
@@ -333,7 +376,9 @@ make traffic-classification-demo
 This classifies fixture network events, writes a readable summary under
 `runtime/demos/traffic-classification/`, and, when local OpenSearch is running,
 indexes prediction records into `net-sec-watch-network-development`. In
-Discover, select `net-sec-watch-network` and search:
+OpenSearch Dashboards, open **Dashboards** and choose
+**Net Sec Watch - Traffic Classification**. In Discover, select
+`net-sec-watch-network` and search:
 
 ```text
 event.dataset:"traffic.classification.demo"

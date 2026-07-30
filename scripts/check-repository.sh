@@ -8,7 +8,6 @@ required_files=(
   LICENSE
   CONTRIBUTING.md
   README.md
-  OBJECTIVES.md
   docs/index.md
   docs/features-and-roadmap.md
   .editorconfig
@@ -38,6 +37,7 @@ python3 ./tests/schema/test-schema-contract.py
 python3 ./tests/opensearch/test-capacity-calculator.py
 python3 ./tests/opensearch/searchability-slo.py --help >/dev/null
 python3 ./tests/dashboards/test-search-examples.py
+python3 ./tests/dashboards/test-data-views.py
 python3 ./tests/dashboards/test-saved-searches.py
 python3 ./tests/dashboards/test-dashboards.py
 python3 ./tests/dashboards/test-export-events.py

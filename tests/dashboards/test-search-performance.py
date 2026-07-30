@@ -29,7 +29,7 @@ class SearchPerformanceTest(unittest.TestCase):
         }
 
     def test_catalog_covers_every_managed_saved_search(self):
-        self.assertEqual(len(self.searches), 4)
+        self.assertEqual(len(self.searches), 7)
         self.assertEqual(
             {item["stream"] for item in self.searches},
             {"application", "system", "network", "dead-letter"},
