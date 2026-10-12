@@ -1,157 +1,88 @@
-# Getting started
+# Install and start Net Sec Watch
 
-This is the shortest path to a working Net Sec Watch dashboard with visible
-data.
-
-For prerequisites, optional profiles, real device ingestion, and
-troubleshooting, use the [administrator guide](admin-guide.md).
-
-If you want the complete path from fresh install to ML/model orchestration
-dashboards, use [Fresh install to ML processing](fresh-install-to-ml.md).
-
-## One-command dashboard demo
+Install Git, Docker Engine or Docker Desktop with Compose v2, Python 3, Bash,
+curl, and OpenSSL. `make` is optional. On Windows use an Ubuntu WSL2 terminal
+with Docker Desktop WSL integration enabled. Start Docker before continuing.
+Allow several minutes for the first image download and enough memory for Docker
+to run OpenSearch, Dashboards, and the collector together.
 
 ```bash
-git clone git@github.com:Buglish/net-sec-watch.git
+git clone https://github.com/Buglish/net-sec-watch.git
 cd net-sec-watch
-make dashboard-demo
+python3 scripts/setup.py --demo
 ```
 
-`make dashboard-demo` runs the first-use flow:
+Or use `make dashboard-demo`. Setup checks tools and the Docker daemon, creates
+ignored local configuration and secrets, starts the services, waits for readiness,
+imports all default dashboards and data views, and generates sample logs.
+It prints the dashboard URL using your configured port.
 
-1. `make init` creates ignored local config files from the committed examples.
-2. Docker Compose starts Fluent Bit, OpenSearch, and OpenSearch Dashboards.
-3. `make import-dashboards` imports the Net Sec Watch data view, saved
-   searches, dashboards, and Discover defaults.
-4. `make generate` creates sample log events.
-5. `scripts/send-demo-syslog.sh` sends a UDP syslog marker named
-   `NetSecWatchDemo001`.
-
-Open:
-
-```text
-http://127.0.0.1:5601
-```
-
-Then:
-
-1. Open **Discover**.
-2. Select the `net-sec-watch-network` data view.
-3. Search for:
-
-   ```text
-   NetSecWatchDemo001
-   ```
-
-If the marker appears, the collector, OpenSearch index, dashboard saved
-objects, and ingestion path are working.
-
-## Open the starter dashboards
-
-Go to **Dashboards** and open one of:
-
-- `Net Sec Watch - Network`
-- `Net Sec Watch - Security`
-- `Net Sec Watch - Application`
-- `Net Sec Watch - Infrastructure`
-
-To populate the self-learning demo dashboard:
+On a Linux Docker host, if setup reports a low `vm.max_map_count`, run:
 
 ```bash
-make traffic-classification-demo
-make import-dashboards
+sudo sysctl -w vm.max_map_count=262144
 ```
 
-Then open:
+To retain this setting after reboot, add `vm.max_map_count=262144` to a file
+under `/etc/sysctl.d/` on the Docker host. On Docker Desktop the setting belongs
+to its Linux VM. Setup reports failures without deleting your existing data;
+fix the error and rerun the same command.
 
-```text
-Net Sec Watch - Traffic Classification
-```
+## Choose what to start
 
-## Manual first run
+| Command | Result |
+| --- | --- |
+| `make doctor` | Check prerequisites without changing configuration |
+| `make setup` | Collector, search, and imported dashboards, without sample events |
+| `make dashboard-demo` | Same stack, with sample logs |
+| `make setup-ml` | Sample logs plus traffic classification dashboard records |
+| `make ml-demo` | Offline authentication scoring with readable explanations |
+| `make import-dashboards` | Re-import default dashboards into a running stack |
+| `make down` | Stop services while retaining stored data |
 
-Use this if you want each step separated:
+Without make, use `python3 scripts/setup.py --doctor`, `python3 scripts/setup.py`,
+`python3 scripts/setup.py --demo --ml`, or `python3 scripts/ml-demo.py`.
+Dashboard import can also run with `bash scripts/import-dashboards.sh`.
+
+Setup preserves local files and secrets and changes the default collector path
+in `.env` to `config/fluent-bit.demo.conf` so logs continue reaching OpenSearch
+after restarts. Despite its name, that configuration accepts real syslog too.
+Custom collector configurations are preserved; setup directs you to the manual
+path rather than replacing them. This setup starts the local HTTP profile;
+use the [security guide](security.md) for TLS and authentication.
+
+## Open a dashboard
+
+Open the printed URL (default `http://127.0.0.1:5601/app/dashboards`). Choose
+**Net Sec Watch - Network**, **Security**, **Application**, or **Infrastructure**.
+Set the time picker to **Last 24 hours** and refresh after sample ingestion.
+In **Discover**, choose `net-sec-watch-network` and search `NetSecWatchDemo001`.
+
+If imports are missing, run `make import-dashboards`. Imports overwrite the
+managed saved object IDs; export changes to managed dashboards before re-importing.
+Your own dashboards should use separate IDs.
+For a custom Dashboards port, set `OPENSEARCH_DASHBOARDS_ENDPOINT` when importing:
 
 ```bash
-make init
-make check
-make up
-make up-dashboards
-make import-dashboards
-make generate
-./scripts/send-demo-syslog.sh
+OPENSEARCH_DASHBOARDS_ENDPOINT=http://127.0.0.1:5602 make import-dashboards
 ```
 
-Open `http://127.0.0.1:5601`, go to **Discover**, select
-`net-sec-watch-network`, and search for `NetSecWatchDemo001`.
+To build your own dashboard, start in Discover, save a filtered search, then open
+Dashboard and add it. See [search and dashboards](search-and-dashboards.md).
 
-## Check the collector
+## Add real logs and ML
 
-```bash
-curl http://127.0.0.1:2020/api/v1/health
-make logs
-```
+Run `make setup`, then configure your router/firewall's remote syslog destination
+to the Docker host's LAN IP and the `SYSLOG_UDP_PORT` from `.env` (default 514).
+Allow that port through your host firewall. See [ingestion](ingestion.md) for
+files, Linux hosts, and other sources.
 
-Check indexed stream freshness:
+Start with [machine learning](machine-learning.md): it explains what runs, how
+to interpret scores, and how to replace fixtures with your own feature data.
 
-```bash
-make ingestion-status
-```
+## Diagnose startup problems
 
-If application or system streams are delayed in a demo environment, refresh the
-sample files and check again:
-
-```bash
-make generate
-make ingestion-status
-```
-
-## Re-import dashboards
-
-If Dashboards opens but the Net Sec Watch data view or dashboards are missing:
-
-```bash
-make import-dashboards
-```
-
-This imports `config/dashboards/managed-saved-objects-v1.ndjson` with
-overwrite enabled, which is safe to re-run.
-
-## Real router or firewall ingestion
-
-After the demo works, point your router or firewall remote syslog setting to:
-
-```text
-<net-sec-watch-host-ip>:514/UDP
-```
-
-Example:
-
-```text
-192.168.1.209:514/UDP
-```
-
-More detail is in [ingestion.md](ingestion.md).
-
-## Secure OpenSearch and Dashboards
-
-```bash
-make gen-tls-certs
-make up-identity
-make test-oidc
-```
-
-Dashboards is served over HTTPS in the secure profile. Use the local CA
-created under `config/tls/` for browser trust in development. See the
-[admin guide's profile table](admin-guide.md#4-choose-a-profile-and-start-the-stack)
-for what each profile adds.
-
-## Stop
-
-```bash
-make down
-make down-identity
-```
-
-Use `docker compose down --volumes` only when you intentionally want to remove
-local data volumes. See the [admin guide](admin-guide.md#9-stop-and-clean-up).
+Run `make doctor`, then `make logs-opensearch`, `make logs-dashboards`, or
+`make logs` for the failing service. Port conflicts can be resolved by editing
+`.env` and rerunning setup. Check Docker memory allocation if services are killed.
+Do not delete volumes to fix ordinary startup errors: they contain your data.

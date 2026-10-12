@@ -99,4 +99,4 @@ if [[ ${#kept_files[@]} -gt 0 ]]; then
 fi
 echo "Local files are Git-ignored. Review .env before running Docker Compose."
 echo
-echo "Next: make check, then make up (see docs/guides/admin-guide.md)."
+echo "Next: make setup (dashboard + real log collection) or make dashboard-demo (sample data)."

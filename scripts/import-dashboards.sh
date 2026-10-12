@@ -6,13 +6,16 @@ cd "$repo_root"
 
 endpoint="${OPENSEARCH_DASHBOARDS_ENDPOINT:-http://127.0.0.1:5601}"
 bundle="${DASHBOARDS_BUNDLE:-config/dashboards/managed-saved-objects-v1.ndjson}"
+response_file="$(mktemp)"
+trap 'rm -f "$response_file"' EXIT
+
 settings="${DASHBOARDS_DISCOVER_SETTINGS:-config/dashboards/discover-settings-v1.json}"
 ca_file="${OPENSEARCH_DASHBOARDS_CA_FILE:-}"
 username="${OPENSEARCH_DASHBOARDS_USERNAME:-${OPENSEARCH_USERNAME:-}}"
 auth_value="${OPENSEARCH_DASHBOARDS_PASSWORD:-${OPENSEARCH_INITIAL_ADMIN_PASSWORD:-}}"
 attempt=0
 
-curl_args=(--fail --silent --show-error)
+curl_args=(--fail --silent --show-error --connect-timeout 5 --max-time 30)
 
 if [[ -n "$ca_file" ]]; then
   curl_args+=(--cacert "$ca_file")
@@ -54,7 +57,16 @@ echo "Importing Net Sec Watch data views, saved searches, and dashboards ..."
 curl "${curl_args[@]}" \
   --header "osd-xsrf: true" \
   --form "file=@${bundle};type=application/ndjson" \
-  "${endpoint%/}/api/saved_objects/_import?overwrite=true" >/dev/null
+  "${endpoint%/}/api/saved_objects/_import?overwrite=true" >"$response_file"
+python3 - "$response_file" <<'PYTHON'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as response:
+    result = json.load(response)
+if result.get("success") is not True or result.get("errors"):
+    raise SystemExit("Dashboard import failed: " + json.dumps(result.get("errors", result)))
+print("Imported saved objects:", result.get("successCount", "all"))
+PYTHON
 
 echo "Applying Discover defaults ..."
 curl "${curl_args[@]}" \

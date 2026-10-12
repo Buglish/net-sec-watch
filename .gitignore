@@ -35,3 +35,7 @@ security/audits/*
 # reviewed aggregate report under docs/test-results/.
 usability/results/*
 !usability/results/README.md
+
+# Python tooling caches.
+__pycache__/
+*.py[cod]

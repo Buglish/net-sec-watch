@@ -183,11 +183,21 @@ PY
 
 if curl --fail --silent "$endpoint" >/dev/null; then
   echo "Indexing demo predictions into ${index}..."
-  curl --fail --silent \
+  curl --fail --silent --show-error --connect-timeout 5 --max-time 60 \
     --header "Content-Type: application/x-ndjson" \
     --request POST \
     --data-binary "@${bulk}" \
-    "${endpoint%/}/${index}/_bulk?refresh=true" >/dev/null
+    "${endpoint%/}/${index}/_bulk?refresh=true" >"$outdir/index-response.json"
+  python3 - "$outdir/index-response.json" <<'PYTHON'
+import json
+import sys
+with open(sys.argv[1], encoding="utf-8") as response:
+    result = json.load(response)
+if result.get("errors") or "items" not in result:
+    failures = [entry for item in result.get("items", [])
+                for entry in item.values() if entry.get("error")]
+    raise SystemExit("Demo indexing failed: " + json.dumps(failures or result))
+PYTHON
   echo "Indexed predictions into ${index}."
 else
   echo "OpenSearch is not reachable at ${endpoint}; skipped indexing."

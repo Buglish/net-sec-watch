@@ -12,6 +12,13 @@ This guide takes a clean Net Sec Watch checkout from nothing running to:
 Use this when you want the full local demo path, including the ML/self-learning
 capabilities, without jumping between multiple guides.
 
+For the shortest path, run `python3 scripts/setup.py --demo --ml` from the
+checkout. This starts the stack and imports/populates default dashboards.
+Run `python3 scripts/ml-demo.py` for explained offline authentication scores.
+See [getting started](getting-started.md) for installation troubleshooting and
+[machine learning](machine-learning.md) to score your own data. The steps below
+provide the individual commands for operators.
+
 ## 1. Prerequisites
 
 Install:
@@ -155,10 +162,10 @@ output.
 
 ## 7. Run ML shadow scoring
 
-Run the governed ML contract and shadow scoring checks:
+Run authentication scoring with a readable explanation (no Docker required):
 
 ```bash
-make test-ml
+make ml-demo
 ```
 
 The ML configuration lives under:

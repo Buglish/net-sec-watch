@@ -58,6 +58,7 @@ python3 ./scripts/run-detections.py \
 python3 ./scripts/run-detections.py \
   --events tests/detections/fixtures/detection-negative-events.jsonl \
   --expect tests/detections/fixtures/detection-expected-negative-alerts.json >/dev/null
+python3 ./tests/setup/test-setup.py
 python3 ./tests/ml/test-ml.py
 python3 ./scripts/ml-shadow-score.py \
   --events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
