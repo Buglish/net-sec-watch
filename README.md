@@ -55,72 +55,41 @@ Default local ports:
 | OpenSearch | `http://127.0.0.1:9200` | Search API |
 | OpenSearch Dashboards | `http://127.0.0.1:5601` | Browser UI |
 
-## Quick start: get a dashboard with data
+## Quick start: install, dashboards, and ML
 
-Prerequisites: Git, Docker Engine/Desktop with the Docker Compose v2 plugin,
-`make`, `openssl`, `python3`, and WSL2 if running on Windows.
+Install Docker with Compose v2, Git, Python 3, Bash, curl, and OpenSSL.
+On Windows run in Ubuntu WSL2 with Docker Desktop integration enabled.
 
 ```bash
-git clone git@github.com:Buglish/net-sec-watch.git
+git clone https://github.com/Buglish/net-sec-watch.git
 cd net-sec-watch
-make dashboard-demo
+python3 scripts/setup.py --demo
 ```
 
-That command does the consumer-friendly setup path:
+This checks prerequisites, creates local config, starts collection and search,
+waits for readiness, imports default dashboards, and sends sample data. Open
+the printed URL, choose **Net Sec Watch - Network**, and set **Last 24 hours**.
+In Discover use `net-sec-watch-network` and search `NetSecWatchDemo001`.
+Rerun setup after fixing any reported startup error; existing data is retained.
 
-1. Creates ignored local config files from the examples.
-2. Starts Fluent Bit, OpenSearch, and OpenSearch Dashboards.
-3. Imports the Net Sec Watch data view, saved searches, and dashboards.
-4. Generates sample log files.
-5. Sends a demo syslog event with marker `NetSecWatchDemo001`.
+| Goal | Command |
+| --- | --- |
+| Set up real log collection and dashboards | `make setup` |
+| Start with sample logs | `make dashboard-demo` |
+| Include the traffic ML dashboard demo | `make setup-ml` |
+| Explain authentication anomaly scores offline | `make ml-demo` |
+| Check installed tools and Docker | `make doctor` |
+| Re-import default dashboards | `make import-dashboards` |
+| Stop while keeping data | `make down` |
 
-Open:
+`make` is optional: `python3 scripts/setup.py --demo --ml` starts the ML
+dashboard example, and `python3 scripts/ml-demo.py` runs offline scoring.
+ML examples are advisory statistical scoring and simulated traffic workflows;
+they do not automatically train or deploy production models.
 
-```text
-http://127.0.0.1:5601
-```
-
-Then:
-
-1. Go to **Discover**.
-2. Select the `net-sec-watch-network` data view.
-3. Search for:
-
-   ```text
-   NetSecWatchDemo001
-   ```
-
-If you see the marker event, the collector, OpenSearch storage, dashboard
-saved objects, and sample ingestion path are working.
-
-Useful checks:
-
-```bash
-curl http://127.0.0.1:2020/api/v1/health
-make ingestion-status
-make logs
-```
-
-Stop everything with:
-
-```bash
-make down
-```
-
-If Dashboards opens but the Net Sec Watch data view is missing, re-import the
-saved objects:
-
-```bash
-make import-dashboards
-```
-
-For the longer operator walkthrough, including real router/firewall ingestion,
-secure profiles, Zeek, Suricata, and troubleshooting, see the
-[administrator guide](docs/guides/admin-guide.md).
-
-If your goal is to go from a fresh clone all the way to ML processing and
-model orchestration dashboards, follow
-[Fresh install to ML processing](docs/guides/fresh-install-to-ml.md).
+Follow [installation and dashboard setup](docs/guides/getting-started.md) for
+host settings and troubleshooting, then [machine learning](docs/guides/machine-learning.md)
+for a runnable example using your own data.
 
 ## Demo dashboards you can open
 
@@ -298,6 +267,11 @@ source-agnostic where possible so the same rule can work across router,
 firewall, Zeek, Suricata, and host events.
 
 ## 4. Use machine learning features
+
+Start with `make ml-demo` for explained authentication scores or `make setup-ml`
+for traffic results in a dashboard. The [ML walkthrough](docs/guides/machine-learning.md)
+includes the input format and a copyable example for your own data.
+
 
 **Requires:** nothing running â€” `scripts/ml-shadow-score.py` scores a JSONL
 file of events against a registered model file (`--events`,

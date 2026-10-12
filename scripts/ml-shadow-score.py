@@ -45,11 +45,7 @@ def score_event(event: dict[str, Any], baseline_counts: list[int]) -> dict[str, 
     score = max(0.0, min(1.0, z_score / 6.0))
     classification = "anomalous" if z_score >= 3.0 and failed_count >= 5 else "baseline"
     threat_level = "high" if score >= 0.75 else "medium" if score >= 0.5 else "low"
-    contributing = [
-        "failed_login_count_10m",
-        "source_reputation_score",
-        "asset_criticality_score",
-    ]
+    contributing = ["failed_login_count_10m"]
     evidence = [
         f"failed_login_count_10m={failed_count}",
         f"baseline_mean={baseline_mean:.2f}",
@@ -123,12 +119,31 @@ def main() -> None:
     if not model["model"]["shadow_mode"]:
         raise SystemExit("ML fixture model must run in shadow mode")
     events = load_jsonl(args.events)
+    if not events:
+        parser.error("Event file is empty. See docs/guides/machine-learning.md for the input format.")
+    for number, event in enumerate(events, 1):
+        try:
+            count = event["features"]["failed_login_count_10m"]
+            valid = (event["split"] in ("training", "evaluation")
+                     and isinstance(event["event.id"], str)
+                     and bool(event["event.id"])
+                     and isinstance(count, int) and not isinstance(count, bool) and count >= 0)
+        except (KeyError, TypeError):
+            valid = False
+        if not valid:
+            parser.error(f"Invalid row {number}: expected event.id, split (training/evaluation), "
+                         "and features.failed_login_count_10m (non-negative integer). "
+                         "See docs/guides/machine-learning.md.")
+    if len({event["event.id"] for event in events}) != len(events):
+        parser.error("Each row needs a unique event.id.")
     baseline_counts = [
         int(event["features"]["failed_login_count_10m"])
         for event in events
         if event["split"] == "training"
     ]
     evaluation_events = [event for event in events if event["split"] == "evaluation"]
+    if not baseline_counts or not evaluation_events:
+        parser.error("Include both training rows (normal baseline) and evaluation rows (events to score).")
     predictions = [score_event(event, baseline_counts) for event in evaluation_events]
     Path(args.output).write_text(
         "\n".join(json.dumps(item, sort_keys=True) for item in predictions) + "\n",

@@ -24,3 +24,6 @@ Reference:
 - [Canonical event schema](canonical-event-schema.md)
 - [Runbooks](runbooks/)
 - [Test evidence](test-results/)
+
+- [Easy installation and dashboard setup](guides/getting-started.md)
+- [Machine learning with your own data](guides/machine-learning.md)
