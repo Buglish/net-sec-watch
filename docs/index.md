@@ -2,9 +2,9 @@
 
 Start here:
 
-1. [Administrator guide](guides/admin-guide.md) — the full install/setup walkthrough
-2. [Fresh install to ML processing](guides/fresh-install-to-ml.md) — clean install through dashboards, classification, and model orchestration
-3. [Getting started](guides/getting-started.md) — the fast path, no explanation
+1. [Getting started](guides/getting-started.md) — fresh install to dashboards and the ML demo
+2. [Machine learning](guides/machine-learning.md) — what the ML features do and how to use your own data
+3. [Administrator guide](guides/admin-guide.md) — full install and administration reference
 4. [Configuration](guides/configuration.md)
 5. [Ingestion](guides/ingestion.md)
 6. [Search and dashboards](guides/search-and-dashboards.md)
@@ -24,6 +24,3 @@ Reference:
 - [Canonical event schema](canonical-event-schema.md)
 - [Runbooks](runbooks/)
 - [Test evidence](test-results/)
-
-- [Easy installation and dashboard setup](guides/getting-started.md)
-- [Machine learning with your own data](guides/machine-learning.md)

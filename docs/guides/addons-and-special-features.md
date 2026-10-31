@@ -3,8 +3,8 @@
 Core Net Sec Watch can run as a log/SIEM platform without these optional
 features. Enable them when the environment and operational need justify them.
 
-For the full local path from fresh install to ML/model orchestration dashboards,
-use [Fresh install to ML processing](fresh-install-to-ml.md).
+For the local path from fresh install to the ML dashboards, see
+[getting started](getting-started.md) and [machine learning](machine-learning.md).
 
 ## Zeek network metadata
 
