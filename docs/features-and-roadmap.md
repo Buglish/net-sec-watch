@@ -35,6 +35,9 @@ hardening, grouped by product capability.
 - Optional Zeek network-metadata sensor.
 - Optional Suricata IDS/flow sensor.
 - Normalization across router firewall, Zeek, and Suricata observations.
+- Step-by-step guide for connecting routers and firewalls (ASUS, pfSense,
+  OPNsense, FortiGate, UniFi, Meraki, MikroTik, OpenWrt, Cisco IOS), Linux
+  servers, Windows computers, application files, and traffic sensors.
 
 ### Normalization and data quality
 
@@ -120,6 +123,11 @@ hardening, grouped by product capability.
   decisions.
 - MLflow experiment and registry metadata contracts.
 - Shadow-mode scoring fixture and local scorer.
+- ML job templates that run on real indexed logs: firewall denies per source,
+  port fan-out per source, authentication failures per host, and log volume per
+  host. Each entity is compared with its own baseline.
+- `make ml-jobs` runner with continuous mode, stable finding IDs, run
+  summaries, and the managed `Net Sec Watch - ML Findings` dashboard.
 - Prediction explainability fields and append-only feedback pattern.
 - Drift and resource monitoring policy.
 - Approval, rollback, retraining, retirement, and licensing policy.
@@ -196,6 +204,62 @@ hardening, grouped by product capability.
 
 - Live novel unknown-traffic pattern detected, clustered, approved, and
   promoted without manual configuration changes.
+
+## Proposed objectives (for review)
+
+**Status:** proposed on 2026-11-01. Not yet approved or scheduled.
+
+The features below are common in SIEM platforms but missing from Net Sec
+Watch. Each one was checked against the repository. Review each objective and
+mark it approved, changed, deferred, or rejected before work starts.
+
+Priority key: **P1** closes a gap in the core collect → detect → alert →
+investigate loop. **P2** improves coverage or analyst context. **P3** is useful
+but can wait.
+
+### Detection and alerting
+
+| ID | Objective | Current state | Done when | Priority | Decision |
+| --- | --- | --- | --- | --- | --- |
+| OBJ-01 | Run detection rules on a schedule against indexed data | `scripts/run-detections.py` only reads a JSONL file (`--events`). Rules never run against OpenSearch | Rules run every N minutes against the network, system, and application indexes, with no duplicate alerts across runs | P1 | |
+| OBJ-02 | Store alerts in OpenSearch with an alerts dashboard | No alerts index, data view, or dashboard. Alerts only exist in script output | Alerts are written to a `net-sec-watch-alerts` index and shown in a managed **Alerts** dashboard and saved search | P1 | |
+| OBJ-03 | Deliver alert notifications | `notification-destinations-v1.json` defines webhook and email contracts, but nothing sends them | High and critical alerts reach a configured webhook or SMTP server, with retry, rate limits, and a test command | P1 | |
+| OBJ-04 | Track alert triage status | Dispositions and false positives are recorded in a config file, not per alert | Each alert has a status (new, investigating, closed), owner, disposition, and notes, editable by analysts with an audit trail | P2 | |
+| OBJ-05 | Map rules and alerts to MITRE ATT&CK | No tactic or technique fields on rules or alerts | Every rule declares ATT&CK tactic and technique IDs, alerts carry them, and a dashboard panel shows coverage | P2 | |
+| OBJ-06 | Import Sigma community rules | No Sigma support | A documented, tested path converts approved Sigma rules into Net Sec Watch rules with fixtures | P3 | |
+
+### Ingestion and parsing
+
+| ID | Objective | Current state | Done when | Priority | Decision |
+| --- | --- | --- | --- | --- | --- |
+| OBJ-07 | Parse more common firewall formats | pfSense and OPNsense `filterlog`, MikroTik, UniFi, and Meraki logs are stored as text only, so firewall dashboards and ML jobs can't use them | Each format fills `source.ip`, `destination.ip`, ports, protocol, and action, with golden parser fixtures | P1 | |
+| OBJ-08 | Parse Windows security events | Windows events forwarded through NXLog are stored as text only | Logon success and failure, account lockout, and privilege events (for example 4624, 4625, 4740, 4672) fill user, host, source IP, and outcome fields | P2 | |
+| OBJ-09 | Collect NetFlow, IPFIX, or sFlow | No flow-export input. Full connection data needs a Zeek or Suricata sensor | An open-source flow collector receives router flow exports and indexes normalized connection records | P2 | |
+| OBJ-10 | Collect DNS query logs | No parser for Pi-hole, AdGuard Home, or dnsmasq query logs | DNS queries from at least one home or small-office resolver are searchable by client, domain, and response | P2 | |
+| OBJ-11 | Forward from remote collectors to a central stack | The architecture describes edge collectors with mutual-TLS forwarding, but only the integration test uses Fluent Bit forwarding | A documented remote-collector profile buffers locally and forwards over mutual TLS to the central collector | P3 | |
+
+### Enrichment and context
+
+| ID | Objective | Current state | Done when | Priority | Decision |
+| --- | --- | --- | --- | --- | --- |
+| OBJ-12 | Add GeoIP and ASN enrichment | Nothing fills `source.geo` or `source.asn`, although the orchestration policy lists `source.asn` as a clustering feature | Public IPs gain country and ASN from a self-hosted open database, refreshed on a schedule, with private ranges skipped | P2 | |
+| OBJ-13 | Match events against threat intelligence | No IP or domain indicator matching | Approved open-source blocklists are downloaded on a schedule and matching events are tagged and raise an alert | P2 | |
+| OBJ-14 | Map internal IPs to device names | Asset criticality exists, but there's no IP-to-device lookup | DHCP leases or a maintained asset list add a device name and owner to internal `source.ip` and `destination.ip` values | P2 | |
+
+### Operations
+
+| ID | Objective | Current state | Done when | Priority | Decision |
+| --- | --- | --- | --- | --- | --- |
+| OBJ-15 | Schedule snapshots automatically | The backup runbook sets a daily target, but snapshots are created by hand | A snapshot policy takes and prunes snapshots daily, and a failed snapshot raises an operations alert | P1 | |
+| OBJ-16 | Add a platform health dashboard | Health is checked from the terminal (`make ingestion-status`, Fluent Bit metrics) | A managed dashboard shows stream freshness, events per source, dead-letter rate, and collector metrics | P2 | |
+| OBJ-17 | Run ML jobs as a service | ML jobs run from a terminal (`--every`) or from cron set up by hand | An optional Compose service runs the ML jobs on a schedule and reports its last run | P3 | |
+| OBJ-18 | Send scheduled summary reports | No scheduled reporting | A weekly summary of alerts, ML findings, and top denied sources is generated and delivered | P3 | |
+
+### Response (later)
+
+| ID | Objective | Current state | Done when | Priority | Decision |
+| --- | --- | --- | --- | --- | --- |
+| OBJ-19 | Analyst-approved response actions | Out of scope by design: everything runs in shadow mode | After shadow-mode quality is approved, an analyst can trigger a reviewed, reversible action (for example, adding an IP to a firewall block list) with a full audit trail. Nothing runs automatically | P3 | |
 
 ## Current usability
 
