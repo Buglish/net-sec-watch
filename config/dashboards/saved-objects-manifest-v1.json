@@ -8,9 +8,9 @@
     "dashboards-v1.ndjson"
   ],
   "expected_types": {
-    "index-pattern": 4,
-    "search": 7,
+    "index-pattern": 5,
+    "search": 9,
     "visualization": 1,
-    "dashboard": 5
+    "dashboard": 6
   }
 }

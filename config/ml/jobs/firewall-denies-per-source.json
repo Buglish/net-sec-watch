@@ -1,0 +1,17 @@
+{
+  "id": "firewall-denies-per-source",
+  "version": "1.0.0",
+  "title": "Firewall denies per source IP",
+  "description": "Flags a source IP whose denied connections in a window are far above its own normal level. Typical causes: scanning, brute force, a misconfigured client, or malware retrying blocked connections.",
+  "source": {
+    "indices": "net-sec-watch-network-*",
+    "query": "event.category:network AND event.type:denied"
+  },
+  "entity_field": "source.ip",
+  "metric": {"type": "count"},
+  "window_minutes": 10,
+  "baseline_days": 7,
+  "evaluation_hours": 24,
+  "thresholds": {"z_score": 3.0, "min_value": 10},
+  "shadow_mode": true
+}

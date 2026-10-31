@@ -51,7 +51,8 @@
           "net-sec-watch-application-*",
           "net-sec-watch-system-*",
           "net-sec-watch-network-*",
-          "net-sec-watch-dead-letter-*"
+          "net-sec-watch-dead-letter-*",
+          "net-sec-watch-ml-*"
         ],
         "allowed_actions": [
           "read",
@@ -93,7 +94,8 @@
         "index_patterns": [
           "net-sec-watch-application-*",
           "net-sec-watch-system-*",
-          "net-sec-watch-network-*"
+          "net-sec-watch-network-*",
+          "net-sec-watch-ml-*"
         ],
         "allowed_actions": [
           "read",

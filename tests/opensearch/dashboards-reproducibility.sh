@@ -159,13 +159,15 @@ PY
 )
 
 import_result="$(import_bundle)"
-python3 - "$import_result" <<'PY'
+python3 - "$import_result" "$bundle" <<'PY'
 import json
 import sys
+from pathlib import Path
 
 result = json.loads(sys.argv[1])
+expected = sum(1 for line in Path(sys.argv[2]).read_text(encoding="utf-8").splitlines() if line)
 assert result["success"] is True
-assert result["successCount"] == 13
+assert result["successCount"] == expected, (result["successCount"], expected)
 assert not result.get("errors")
 PY
 

@@ -1,9 +1,15 @@
 # Machine learning
 
-Net Sec Watch includes two ML features. They are separate, need different
-things to run, and show results in different places.
+There are two ways to use ML in Net Sec Watch:
 
-| | Authentication anomaly scoring | Traffic classification |
+- **On your real logs:** ML job templates read events already stored in
+  OpenSearch, score them, and show findings in the **Net Sec Watch - ML
+  Findings** dashboard. Start here once logs are flowing. See
+  [Run ML on your real logs](#run-ml-on-your-real-logs).
+- **Demos:** two examples that run on built-in sample data so you can see
+  the workflow before connecting real sources. The table below compares them.
+
+| Demo | Authentication anomaly scoring | Traffic classification |
 | --- | --- | --- |
 | What it does | Flags unusually high failed-login counts against a learned normal baseline | Labels network events (expected, unknown, and so on) and proposes candidate models for unknown traffic |
 | How it works | Real statistics on the input you give it | Simulated: fixture events and policy rules show the workflow |
@@ -12,17 +18,161 @@ things to run, and show results in different places.
 | Results | Terminal and `runtime/demos/ml/` | **Net Sec Watch - Traffic Classification** dashboard and `runtime/demos/traffic-classification/` |
 | Your own data? | Yes, see [score your own data](#score-your-own-authentication-data) | Not yet |
 
-Neither feature blocks traffic, trains production models, or promotes models
-automatically. Both run in **shadow mode**: they suggest, and an analyst
+Nothing here blocks traffic, trains production models, or promotes models
+automatically. Everything runs in **shadow mode**: it suggests, and an analyst
 decides.
 
 ```text
 ML suggests -> analyst reviews -> detection is tuned -> automation is approved later
 ```
 
-You don't need MLflow, a GPU, or extra Python packages for either feature.
-Files under `config/ml/` that mention MLflow describe the model metadata
-format. They don't start a server.
+You don't need MLflow, a GPU, or extra Python packages. Files under
+`config/ml/` that mention MLflow describe the model metadata format. They
+don't start a server.
+
+## Run ML on your real logs
+
+**Needs:** the running stack (`make setup`) with real logs arriving. To
+connect routers, servers, and sensors, see
+[connect your network](ingestion.md). Each job
+compares an entity (an IP or host) with its own history, so you need some
+history first. With the default 7-day baseline, results get more reliable
+after about a week of logs. Before that, every entity looks "new".
+
+```bash
+make ml-jobs-list                            # see the templates
+make ml-jobs                                 # run them all once
+make ml-job JOB=firewall-denies-per-source   # run one
+```
+
+Without `make`: `python3 scripts/ml-run-job.py --all` or
+`python3 scripts/ml-run-job.py --job firewall-denies-per-source`.
+
+Then open **Net Sec Watch - ML Findings** (time picker: **Last 24 hours**).
+If the dashboard is missing, run `make import-dashboards`.
+
+### Included templates
+
+Templates live in `config/ml/jobs/`. Each one is a short JSON file.
+
+| Job | Reads | Flags |
+| --- | --- | --- |
+| `firewall-denies-per-source` | Network logs with `event.type:denied` | A source IP with far more denied connections than usual |
+| `port-fanout-per-source` | Firewall, Zeek, and Suricata records with a source IP and destination port | A source IP contacting far more distinct ports than usual (scanning) |
+| `auth-failures-per-host` | Normalized auth failures plus sshd/PAM "Failed password", "authentication failure", "Invalid user" messages | A host with far more failed logins than usual |
+| `log-volume-per-host` | All application, system, and network logs | A host sending far more events per hour than usual |
+
+### What a job does
+
+1. Queries OpenSearch for matching events over the baseline period (default
+   7 days) plus the evaluation period (default the last 24 hours).
+2. Counts the metric per entity per window (for example denied connections
+   per `source.ip` per 10 minutes). Empty windows count as zero.
+3. Learns each entity's normal level (average and spread) from the baseline
+   period.
+4. Flags an evaluation window as **anomalous** when it is at least
+   `thresholds.z_score` standard deviations above that entity's normal *and*
+   at least `thresholds.min_value`.
+5. Writes anomalies, plus one run summary per job, to the
+   `net-sec-watch-ml-development` index. It also writes every scored window
+   to `runtime/ml-jobs/<job>/scores.jsonl` and a readable
+   `runtime/ml-jobs/<job>/summary.txt`.
+
+Findings have stable IDs, so running a job again doesn't create duplicates.
+Use `--no-index` to score without writing to OpenSearch, and
+`--index-all-scores` to also index the windows that weren't flagged.
+
+### Reading a finding
+
+| Field | Meaning |
+| --- | --- |
+| `rule.name` / `rule.id` | Which job produced it |
+| `event.correlation_key` | The entity, for example `source.ip=203.0.113.5` |
+| `message` | Observed value against normal, for example `41 events in 10m (normal 0.2 ± 0.6, z=68.5)` |
+| `event.threat_score` / `event.threat_level` | Score from 0 to 1 (z-score ÷ 6, capped) and its level |
+| `event.original` | Full detail, including `investigate_query` |
+
+To see the raw logs behind a finding, copy `investigate_query` from
+`event.original` into Discover. Use the data view for the index in `indices`
+and set the time picker to the finding's `window_start` to `window_end`.
+[Analyst workflow 6](../analyst-workflows.md#workflow-6-ml-findings-review)
+walks through a full review.
+
+### Run jobs continuously
+
+Keep jobs running every 10 minutes in a terminal:
+
+```bash
+python3 scripts/ml-run-job.py --all --every 10
+```
+
+Or schedule them with cron on the Docker host:
+
+```text
+*/10 * * * * cd /path/to/net-sec-watch && python3 scripts/ml-run-job.py --all >> runtime/ml-jobs/cron.log 2>&1
+```
+
+### Connect to a secured stack
+
+The defaults target the local HTTP stack at `http://127.0.0.1:9200`. For the
+TLS stack ([security guide](security.md)), set the connection first:
+
+```bash
+export OPENSEARCH_ENDPOINT=https://127.0.0.1:9200
+export OPENSEARCH_USERNAME=admin
+export OPENSEARCH_PASSWORD='<password from .env>'
+export OPENSEARCH_CA_FILE=config/tls/ca.crt
+make ml-jobs
+```
+
+Set `ML_RESULTS_INDEX` to write findings to a different index. Keep the
+`net-sec-watch-ml-` prefix so the dashboard and analyst roles can read it.
+
+### Make your own job
+
+Copy a template, give it a new `id` that matches the file name, and change
+the query, entity, or metric:
+
+```json
+{
+  "id": "dns-queries-per-host",
+  "version": "1.0.0",
+  "title": "DNS queries per host",
+  "description": "Flags a host making far more DNS queries than usual.",
+  "source": {
+    "indices": "net-sec-watch-network-*",
+    "query": "_exists_:dns.question.name"
+  },
+  "entity_field": "host.name",
+  "metric": {"type": "count"},
+  "window_minutes": 10,
+  "baseline_days": 7,
+  "evaluation_hours": 24,
+  "thresholds": {"z_score": 3.0, "min_value": 50},
+  "shadow_mode": true
+}
+```
+
+| Setting | Meaning |
+| --- | --- |
+| `source.indices` | Comma-separated index patterns to read |
+| `source.query` | [Lucene query string](https://opensearch.org/docs/latest/query-dsl/full-text/query-string/). Test it in Discover first (switch the query language from DQL to Lucene) |
+| `entity_field` | What to compare against its own history. It must be a keyword or IP field, for example `source.ip`, `host.name`, or `destination.ip` |
+| `metric` | `{"type": "count"}` counts events. `{"type": "distinct", "field": "destination.port"}` counts different values |
+| `window_minutes` | Size of each scoring window |
+| `baseline_days` | How much history sets "normal" |
+| `evaluation_hours` | How far back to look for anomalies on each run |
+| `thresholds.z_score` | How unusual a window must be. Raise it to reduce noise |
+| `thresholds.min_value` | Ignore windows below this value, however unusual |
+| `shadow_mode` | Must be `true`. Jobs only suggest |
+
+Run `make test-ml` after adding a job. It checks that every template loads.
+
+**Limits:** this is per-entity statistical baselining, not a trained model.
+It doesn't learn daily or weekly patterns, so a host that is only busy during
+business hours may be flagged each morning. Raise `min_value` or `z_score`
+for noisy jobs, and record false positives as described in
+[analyst workflow 6](../analyst-workflows.md#workflow-6-ml-findings-review).
 
 ## Authentication anomaly scoring
 

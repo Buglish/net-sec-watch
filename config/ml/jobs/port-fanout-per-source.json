@@ -1,0 +1,17 @@
+{
+  "id": "port-fanout-per-source",
+  "version": "1.0.0",
+  "title": "Destination port fan-out per source IP",
+  "description": "Flags a source IP that contacts unusually many different destination ports in a window, compared with its own normal behaviour. A common sign of port scanning. Reads firewall logs and Zeek or Suricata connection records.",
+  "source": {
+    "indices": "net-sec-watch-network-*",
+    "query": "_exists_:source.ip AND _exists_:destination.port"
+  },
+  "entity_field": "source.ip",
+  "metric": {"type": "distinct", "field": "destination.port"},
+  "window_minutes": 10,
+  "baseline_days": 7,
+  "evaluation_hours": 24,
+  "thresholds": {"z_score": 3.0, "min_value": 20},
+  "shadow_mode": true
+}

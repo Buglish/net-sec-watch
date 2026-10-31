@@ -74,6 +74,7 @@ set the time picker to **Last 24 hours**.
 | Net Sec Watch - Application | Application errors and failed outcomes |
 | Net Sec Watch - Infrastructure | Authentication failures and collection quality |
 | Net Sec Watch - Traffic Classification | ML demo results (needs `--ml`) |
+| Net Sec Watch - ML Findings | ML results from your real logs (after `make ml-jobs`) |
 
 To check a single event, open **Discover**, select the `net-sec-watch-network`
 data view, and search `NetSecWatchDemo001`. If it appears, logs are flowing from
@@ -102,8 +103,13 @@ they do and don't do, and how to score your own data.
 
 - **Real router or firewall logs:** set the device's remote syslog destination
   to the Docker host's LAN IP and `SYSLOG_UDP_PORT` from `.env` (default 514).
-  Allow that port through the host firewall. See [ingestion](ingestion.md) for
-  files, Linux hosts, and other sources.
+  Allow that port through the host firewall. See
+  [connect your network](ingestion.md) for step-by-step device settings,
+  Linux servers, Windows computers, and traffic sensors.
+- **ML on your real logs:** once logs are arriving, run `make ml-jobs` and
+  open **Net Sec Watch - ML Findings**. Results get more reliable after about
+  a week of history. See
+  [run ML on your real logs](machine-learning.md#run-ml-on-your-real-logs).
 - **Your own dashboards:** save a filtered search in Discover, then add it to a
   dashboard. See [search and dashboards](search-and-dashboards.md).
 - **TLS and login:** setup starts the local HTTP stack only. See the
@@ -117,6 +123,7 @@ they do and don't do, and how to score your own data.
 | `make import-dashboards` | Re-import default dashboards into a running stack |
 | `make traffic-classification-demo` | Add the ML demo to a stack that is already running |
 | `make ml-demo` | Offline authentication scoring (no Docker) |
+| `make ml-jobs` | Run the ML job templates on your real logs |
 | `make ingestion-status` | Check how recently each log stream was indexed |
 | `make down` | Stop services and keep stored data |
 
