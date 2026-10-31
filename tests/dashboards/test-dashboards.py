@@ -38,6 +38,7 @@ expected = {
     "net-sec-watch-network",
     "net-sec-watch-security",
     "net-sec-watch-traffic-classification",
+    "net-sec-watch-ml-findings",
 }
 
 assert {item["id"] for item in dashboards} == expected

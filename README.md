@@ -2,19 +2,26 @@
 
 Net Sec Watch is an open-source, self-hostable SIEM-style platform for
 collecting, normalizing, searching, dashboarding, and analyzing security logs
-from files, Linux hosts, containers, routers, firewalls, and optional network
-sensors.
+from routers, firewalls, Linux servers, Windows computers, application files,
+containers, and optional network sensors.
 
 Author: SJ du Preez
 
-![Net Sec Watch Log Search](docs/images/network_activity.png)
+![OpenSearch Dashboards web traffic dashboard with visitors, response codes, bytes, and file types over the last 7 days](docs/images/web_traffic.png)
 
-![Net Sec Watch architecture](docs/images/openlog-architecture.png)
+| Charts over time | Sample data sets |
+| --- | --- |
+| ![Line and area charts of average bytes and file extensions over time](docs/images/charts.png) | ![OpenSearch Dashboards sample data page with web logs installed](docs/images/sample_data_examples.png) |
+
+These screenshots use the web log sample data that ships with OpenSearch
+Dashboards (**Home → Add sample data**). Your own logs work with the same
+search, charts, and dashboards.
 
 ## What you can do with it
 
-- Pull logs from routers, firewalls, syslog devices, local files, containers,
-  Linux system logs, Zeek, and Suricata.
+- Pull logs from routers, firewalls, and other syslog devices, Linux servers,
+  Windows computers, application log files, Docker containers, and Zeek and
+  Suricata traffic sensors.
 - Normalize events into a consistent security schema while keeping the original
   raw event for investigation.
 - Search events in OpenSearch and view them in OpenSearch Dashboards.
@@ -30,20 +37,16 @@ references are linked throughout and collected in [docs/index.md](docs/index.md)
 
 ## How the platform fits together
 
-```mermaid
-flowchart LR
-  sources["Routers, firewalls, syslog, files, containers, Zeek, Suricata"]
-  collector["Fluent Bit collector"]
-  normalize["Normalization, redaction, parsing, dead-letter routing"]
-  search["OpenSearch indexes"]
-  dashboards["OpenSearch Dashboards"]
-  detections["Detection rules and alerts"]
-  ml["ML and self-learning shadow analysis"]
+![Net Sec Watch architecture: sources, Fluent Bit collector, OpenSearch indexes, analysis, and investigation](docs/images/net-sec-watch-architecture.svg)
 
-  sources --> collector --> normalize --> search --> dashboards
-  search --> detections
-  search --> ml
-```
+| Stage | What happens | More |
+| --- | --- | --- |
+| Sources | Routers, firewalls, Linux servers, and Windows computers send syslog. The collector also reads Docker host, container, and application log files, and Zeek and Suricata sensor logs | [Connect your network](docs/guides/ingestion.md) |
+| Fluent Bit collector | Receives and tails logs, parses known formats into a common schema, keeps the original event, masks secrets, and routes each event to its stream. Events it can't parse go to dead-letter | [Event normalization](docs/event-normalization-pipeline.md) |
+| OpenSearch | Stores events in `net-sec-watch-network`, `-system`, `-application`, `-dead-letter`, and `-ml` indexes with retention and snapshots | [Search and dashboards](docs/guides/search-and-dashboards.md) |
+| Analysis | Detection rules produce normalized alerts. ML jobs compare each IP or host with its own history and write findings to the `ml` index. Everything runs in shadow mode: ML suggests, an analyst decides | [Detections](docs/security-detections-alerting.md), [machine learning](docs/guides/machine-learning.md) |
+| Investigate | Dashboards, Discover, saved searches, CSV or JSONL export, and analyst workflows | [Analyst workflows](docs/analyst-workflows.md) |
+| Security and operations | TLS, OIDC sign-in with Keycloak, role-based access, ingestion health, backup and restore, and capacity planning | [Security](docs/guides/security.md), [operations](docs/guides/operations.md) |
 
 Default local ports:
 
@@ -78,6 +81,7 @@ setup reports an error, fix it and rerun the command. Existing data is kept.
 | Stack and sample logs, without ML | `make dashboard-demo` |
 | Stack only, for real log sources | `make setup` |
 | ML scoring without Docker | `make ml-demo` |
+| ML on your real logs (after logs arrive) | `make ml-jobs` |
 | Check installed tools and Docker | `make doctor` |
 | Stop and keep data | `make down` |
 
@@ -90,12 +94,15 @@ how to use your own data: [machine learning](docs/guides/machine-learning.md).
 After setup, open <http://127.0.0.1:5601> and use
 **Dashboards**:
 
+![Net Sec Watch network activity search in Discover](docs/images/network_activity.png)
+
 | Dashboard | Shows |
 | --- | --- |
 | `Net Sec Watch - Network` | Router, firewall, denied traffic, and suspicious network records |
 | `Net Sec Watch - Security` | Cross-domain authentication, network, and parser triage |
 | `Net Sec Watch - Application` | Application errors and failed outcomes |
 | `Net Sec Watch - Infrastructure` | Authentication failures and collection quality |
+| `Net Sec Watch - ML Findings` | ML findings from your real logs, after `make ml-jobs` |
 
 After `make setup-ml`, **Net Sec Watch - Traffic Classification** also
 shows the ML demo results.
@@ -117,19 +124,25 @@ make generate
 Then open `http://127.0.0.1:5601`, go to **Discover**, select
 `net-sec-watch-network`, and search for `NetSecWatchDemo001`.
 
-For a real router or firewall, point its remote syslog setting to:
+## Connect your own data
 
-```text
-<net-sec-watch-host-ip>:514/UDP
-```
+Net Sec Watch doesn't fetch logs. You point each source at it. Send syslog
+to the Docker host's LAN IP on port 514, for example `192.168.1.209:514/UDP`.
+Don't use a `172.x.x.x` Docker or WSL address.
 
-Example:
+| Source | How to connect | Guide section |
+| --- | --- | --- |
+| Routers, firewalls, switches | Set the device's remote syslog server to the host IP, port 514, BSD/RFC 3164 format. Steps for ASUS, pfSense, OPNsense, FortiGate, UniFi, Meraki, MikroTik, OpenWrt, and Cisco IOS | [Router or firewall syslog](docs/guides/ingestion.md#1-router-or-firewall-syslog) |
+| Linux servers | Forward with rsyslog to TCP 514 | [Linux servers](docs/guides/ingestion.md#2-linux-servers) |
+| The Docker host itself | Set `HOST_LOG_ROOT=/var/log` and `CONTAINER_LOG_ROOT=/var/lib/docker/containers` in `.env`, then `make up` | [Logs on the Docker host](docs/guides/ingestion.md#3-logs-on-the-docker-host) |
+| Windows computers | Forward the Event Log with an agent such as NXLog | [Windows computers](docs/guides/ingestion.md#4-windows-computers) |
+| Application log files | Mount the log folder in `compose.override.yaml`, or send syslog | [Application log files](docs/guides/ingestion.md#5-application-log-files) |
+| Network traffic | Run Zeek or Suricata on a switch mirror port, TAP, or Linux gateway (see [section 5](#5-optional-sensors-zeek-and-suricata)) | [Traffic sensor](docs/guides/ingestion.md#6-traffic-sensor-zeek-and-suricata) |
 
-```text
-192.168.1.209:514/UDP
-```
-
-More ingestion detail is in [docs/guides/ingestion.md](docs/guides/ingestion.md).
+Run `make ingestion-status` to check that each stream is receiving events.
+The [connect your network](docs/guides/ingestion.md) guide covers firewall
+ports, a test message, which device formats are parsed into fields, and
+troubleshooting.
 
 ## 1. Add a search, filter, or dashboard
 
@@ -239,11 +252,12 @@ firewall, Zeek, Suricata, and host events.
 
 ## 4. Machine learning
 
-**Requires:** nothing for authentication scoring. Viewing traffic
-classification in Dashboards needs the running stack.
+**Requires:** the running stack with real logs for ML jobs. The demos need
+only sample data.
 
 | Feature | Run | Results |
 | --- | --- | --- |
+| **ML jobs on your real logs**: firewall denies, port scans, auth failures, and log volume per IP or host, each compared with its own history | `make ml-jobs` (or `--every 10` to keep running) | **Net Sec Watch - ML Findings** dashboard |
 | Authentication anomaly scoring (real statistics, works on your own data) | `make ml-demo` | Terminal and `runtime/demos/ml/` |
 | Traffic classification and candidate models (simulated workflow) | `make setup-ml`, or `make traffic-classification-demo` on a running stack | **Net Sec Watch - Traffic Classification** dashboard |
 
@@ -254,10 +268,11 @@ blocked or promoted automatically:
 ML suggests -> analyst reviews -> detection is tuned -> automation is approved later
 ```
 
-The [machine learning guide](docs/guides/machine-learning.md) covers what each
-feature does, the input format for your own data, dashboard fields, and
-validation (`make test-ml`, `make test-orchestration`). ML policy lives in
-`config/ml/` and `config/orchestration/`.
+Job templates live in `config/ml/jobs/`. Copy one to add your own use case,
+such as a different query, entity, or metric. The
+[machine learning guide](docs/guides/machine-learning.md) covers the
+templates, scheduling, reading findings, the demos, and validation
+(`make test-ml`). ML policy lives in `config/ml/` and `config/orchestration/`.
 
 ## 5. Optional sensors: Zeek and Suricata
 
@@ -384,7 +399,7 @@ make test-opensearch-dashboards
 - [Getting started](docs/guides/getting-started.md)
 - [Machine learning](docs/guides/machine-learning.md)
 - [Configuration](docs/guides/configuration.md)
-- [Ingestion](docs/guides/ingestion.md)
+- [Connect your network](docs/guides/ingestion.md)
 - [Search and dashboards](docs/guides/search-and-dashboards.md)
 - [Security](docs/guides/security.md)
 - [Operations](docs/guides/operations.md)

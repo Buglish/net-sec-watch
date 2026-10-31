@@ -1,4 +1,4 @@
-.PHONY: setup doctor setup-ml ml-demo test-setup
+.PHONY: setup doctor setup-ml ml-demo ml-jobs ml-job ml-jobs-list test-setup
 .PHONY: init check telemetry-readiness security-audit ingestion-status dashboards-bundle import-dashboards dashboard-demo traffic-classification-demo up up-opensearch up-opensearch-secure up-dashboards up-dashboards-secure up-identity up-zeek up-suricata update-suricata-rules down down-opensearch-secure down-identity logs logs-opensearch logs-dashboards logs-identity logs-zeek logs-suricata generate rotate verify gen-tls-certs test-tls-config test-oidc test-security test-operations test-detections test-ml test-deployment test-orchestration preflight-deployment load-test-syslog dr-exercise test-integration test-golden test-opensearch test-opensearch-secure test-opensearch-restore test-opensearch-searchability test-opensearch-retention test-opensearch-dashboards test-dashboards-reproducibility test-event-export test-analyst-states test-usability-study test-seven-day-searches measure-opensearch-storage capacity-plan test-capacity-plan test-failover test-telemetry-policy test-smoke
 
 init:
@@ -36,6 +36,16 @@ setup-ml:
 
 ml-demo:
 	python3 ./scripts/ml-demo.py
+
+ml-jobs:
+	python3 ./scripts/ml-run-job.py --all
+
+ml-job:
+	@test -n "$(JOB)" || { echo "Usage: make ml-job JOB=<job id>  (see make ml-jobs-list)"; exit 1; }
+	python3 ./scripts/ml-run-job.py --job "$(JOB)"
+
+ml-jobs-list:
+	python3 ./scripts/ml-run-job.py --list
 
 traffic-classification-demo:
 	./scripts/run-traffic-classification-demo.sh
@@ -216,6 +226,7 @@ test-detections:
 
 test-ml:
 	python3 ./tests/ml/test-ml.py
+	python3 ./tests/ml/test-ml-jobs.py
 	python3 ./scripts/ml-shadow-score.py \
 		--events tests/ml/fixtures/auth-shadow-evaluation.jsonl \
 		--model-metadata config/ml/mlflow-model-registry-entry-v1.json \

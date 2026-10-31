@@ -25,6 +25,9 @@ VIEW_STREAMS = {
     "net-sec-watch-network": "network",
     "net-sec-watch-dead-letter": "dead-letter",
 }
+# ML findings are derived results, not ingested event streams, so the
+# seven-day search performance gate does not cover them.
+EXCLUDED_VIEWS = {"net-sec-watch-ml"}
 
 
 def load_json(path):
@@ -41,6 +44,8 @@ def load_searches(path=DEFAULT_SEARCHES):
             item["attributes"]["kibanaSavedObjectMeta"]["searchSourceJSON"]
         )
         view_id = item["references"][0]["id"]
+        if view_id in EXCLUDED_VIEWS:
+            continue
         searches.append({
             "id": item["id"],
             "title": item["attributes"]["title"],

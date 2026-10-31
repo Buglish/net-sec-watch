@@ -33,6 +33,7 @@ approved_views = {
     "net-sec-watch-system",
     "net-sec-watch-network",
     "net-sec-watch-dead-letter",
+    "net-sec-watch-ml",
 }
 expected_ids = {
     "net-sec-watch-authentication-failures",
@@ -42,6 +43,8 @@ expected_ids = {
     "net-sec-watch-traffic-classification-events",
     "net-sec-watch-unknown-traffic-classifications",
     "net-sec-watch-model-orchestration-events",
+    "net-sec-watch-ml-anomalies",
+    "net-sec-watch-ml-job-runs",
 }
 
 assert {item["id"] for item in objects} == expected_ids

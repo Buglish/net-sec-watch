@@ -17,6 +17,7 @@ expected = {
     "net-sec-watch-system": "net-sec-watch-system-*",
     "net-sec-watch-network": "net-sec-watch-network-*",
     "net-sec-watch-dead-letter": "net-sec-watch-dead-letter-*",
+    "net-sec-watch-ml": "net-sec-watch-ml-*",
 }
 
 assert {item["id"] for item in objects} == set(expected)

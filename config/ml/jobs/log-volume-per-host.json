@@ -1,0 +1,17 @@
+{
+  "id": "log-volume-per-host",
+  "version": "1.0.0",
+  "title": "Log volume spike per host",
+  "description": "Flags a host sending far more events in an hour than it normally does. Can indicate an attack, a failing service writing errors in a loop, or a noisy configuration change.",
+  "source": {
+    "indices": "net-sec-watch-application-*,net-sec-watch-system-*,net-sec-watch-network-*",
+    "query": "*"
+  },
+  "entity_field": "host.name",
+  "metric": {"type": "count"},
+  "window_minutes": 60,
+  "baseline_days": 7,
+  "evaluation_hours": 24,
+  "thresholds": {"z_score": 3.0, "min_value": 100},
+  "shadow_mode": true
+}

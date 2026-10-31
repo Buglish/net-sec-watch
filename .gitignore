@@ -4,6 +4,7 @@
 !.env.example
 
 # Machine-specific collector configuration.
+compose.override.yaml
 config/fluent-bit.local.conf
 config/fluent-bit.opensearch.conf
 config/*.local.conf

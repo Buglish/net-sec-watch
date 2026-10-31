@@ -165,6 +165,32 @@ threat score, model identifier if present, candidate model status, and whether
 the traffic should be accepted as expected, escalated, or used as a candidate
 for future tuning.
 
+## Workflow 6: ML findings review
+
+**Goal:** review shadow-mode ML findings calculated from your real logs and
+decide whether each one needs follow-up.
+
+1. Confirm the jobs have run: `make ml-jobs` (or a scheduled run). Open
+   **Net Sec Watch - ML Job Runs** to see when each job last ran and how many
+   anomalies it found.
+2. Open the dashboard **Net Sec Watch - ML Findings**.
+3. Open the saved search **Net Sec Watch - ML Anomalies** (data view
+   `net-sec-watch-ml-*`, query `event.kind: prediction AND
+   event.classification: anomalous`).
+4. For each finding, read `rule.name`, `event.correlation_key` (for example
+   `source.ip=203.0.113.5`), `event.threat_score`, and `message`, which shows
+   the observed value against the entity's normal level.
+5. Expand `event.original` and copy `investigate_query`. Paste it into
+   Discover on the data view named in `indices`, with the time picker set to
+   `window_start`-`window_end`, to see the raw events behind the finding.
+6. Compare with deterministic detections for the same `source.ip` or
+   `host.name`.
+
+Record the job, entity, window, observed value, baseline, and your
+conclusion: expected (tune the job's thresholds or query), suspicious
+(escalate), or noisy source (fix collection). ML findings are suggestions and
+must not trigger blocking without review.
+
 ## Export bounded evidence
 
 Use an absolute UTC interval copied from the investigation. Never place

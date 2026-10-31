@@ -141,7 +141,9 @@ host path at the collector, not by clicking "add source" anywhere:
 
 | Source | How to link it |
 | --- | --- |
-| Router/firewall syslog | In the device's admin UI, set remote syslog server to this host's IP on UDP/TCP 514 (or 6514 for TLS). For an ASUS RT-AC68U: **System Log → General Log → Remote Log Server**. See [ingestion.md](ingestion.md) for other vendors (Meraki, pfSense, OPNsense, Fortinet, Ubiquiti). |
+| Router/firewall syslog | In the device's admin UI, set remote syslog server to this host's IP on UDP/TCP 514 (or 6514 for TLS). For an ASUS RT-AC68U: **System Log → General Log → Remote Log Server**. See [connect your network](ingestion.md#1-router-or-firewall-syslog) for other vendors (pfSense, OPNsense, FortiGate, UniFi, Meraki, MikroTik, OpenWrt, Cisco). |
+| Remote Linux servers | Forward with rsyslog to this host on TCP 514. See [connect your network](ingestion.md#2-linux-servers). |
+| Windows computers | Forward the Event Log with an agent such as NXLog. See [connect your network](ingestion.md#4-windows-computers). |
 | Linux host logs | Set `HOST_LOG_ROOT` in `.env` to the real path (e.g. `/var/log`) instead of the bundled example logs, then restart the collector. |
 | Docker container logs | Set `CONTAINER_LOG_ROOT` in `.env` to the real Docker log root (e.g. `/var/lib/docker/containers`), then restart the collector. |
 | Plain-text or JSON app log files | Drop new files under the paths matched by `config/fluent-bit.conf`'s `file.text`/`file.application` inputs, or add a new `[INPUT]` block — see `docs/onboarding-file-source.md`. |

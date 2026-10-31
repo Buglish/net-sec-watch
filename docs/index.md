@@ -6,7 +6,7 @@ Start here:
 2. [Machine learning](guides/machine-learning.md) — what the ML features do and how to use your own data
 3. [Administrator guide](guides/admin-guide.md) — full install and administration reference
 4. [Configuration](guides/configuration.md)
-5. [Ingestion](guides/ingestion.md)
+5. [Connect your network](guides/ingestion.md) — routers, firewalls, servers, Windows, and traffic sensors
 6. [Search and dashboards](guides/search-and-dashboards.md)
 7. [Security](guides/security.md)
 8. [Operations](guides/operations.md)
