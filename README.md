@@ -55,45 +55,39 @@ Default local ports:
 | OpenSearch | `http://127.0.0.1:9200` | Search API |
 | OpenSearch Dashboards | `http://127.0.0.1:5601` | Browser UI |
 
-## Quick start: install, dashboards, and ML
+## Quick start
 
 Install Docker with Compose v2, Git, Python 3, Bash, curl, and OpenSSL.
-On Windows run in Ubuntu WSL2 with Docker Desktop integration enabled.
+On Windows, run in Ubuntu WSL2 with Docker Desktop integration turned on.
 
 ```bash
 git clone https://github.com/Buglish/net-sec-watch.git
 cd net-sec-watch
-python3 scripts/setup.py --demo
+python3 scripts/setup.py --demo --ml     # or: make setup-ml
 ```
 
-This checks prerequisites, creates local config, starts collection and search,
-waits for readiness, imports default dashboards, and sends sample data. Open
-the printed URL, choose **Net Sec Watch - Network**, and set **Last 24 hours**.
-In Discover use `net-sec-watch-network` and search `NetSecWatchDemo001`.
-Rerun setup after fixing any reported startup error; existing data is retained.
+This one command starts collection, search, and dashboards. It also imports the
+default dashboards, sends sample logs, and loads the ML demo. Open the printed
+URL and set **Last 24 hours**. **Net Sec Watch - Network** shows the sample
+logs, and **Net Sec Watch - Traffic Classification** shows the ML results. If
+setup reports an error, fix it and rerun the command. Existing data is kept.
 
 | Goal | Command |
 | --- | --- |
-| Set up real log collection and dashboards | `make setup` |
-| Start with sample logs | `make dashboard-demo` |
-| Include the traffic ML dashboard demo | `make setup-ml` |
-| Explain authentication anomaly scores offline | `make ml-demo` |
+| Everything, including the ML demo (recommended first run) | `make setup-ml` |
+| Stack and sample logs, without ML | `make dashboard-demo` |
+| Stack only, for real log sources | `make setup` |
+| ML scoring without Docker | `make ml-demo` |
 | Check installed tools and Docker | `make doctor` |
-| Re-import default dashboards | `make import-dashboards` |
-| Stop while keeping data | `make down` |
+| Stop and keep data | `make down` |
 
-`make` is optional: `python3 scripts/setup.py --demo --ml` starts the ML
-dashboard example, and `python3 scripts/ml-demo.py` runs offline scoring.
-ML examples are advisory statistical scoring and simulated traffic workflows;
-they do not automatically train or deploy production models.
-
-Follow [installation and dashboard setup](docs/guides/getting-started.md) for
-host settings and troubleshooting, then [machine learning](docs/guides/machine-learning.md)
-for a runnable example using your own data.
+Step-by-step instructions and troubleshooting:
+[getting started](docs/guides/getting-started.md). How the ML features work and
+how to use your own data: [machine learning](docs/guides/machine-learning.md).
 
 ## Demo dashboards you can open
 
-After `make dashboard-demo`, open <http://127.0.0.1:5601> and use
+After setup, open <http://127.0.0.1:5601> and use
 **Dashboards**:
 
 | Dashboard | Shows |
@@ -103,31 +97,8 @@ After `make dashboard-demo`, open <http://127.0.0.1:5601> and use
 | `Net Sec Watch - Application` | Application errors and failed outcomes |
 | `Net Sec Watch - Infrastructure` | Authentication failures and collection quality |
 
-To show the self-learning traffic classification capability, run:
-
-```bash
-make traffic-classification-demo
-make import-dashboards
-```
-
-Then open:
-
-```text
-Net Sec Watch - Traffic Classification
-```
-
-In Discover, select `net-sec-watch-network` and search:
-
-```text
-event.dataset:"traffic.classification.demo"
-```
-
-The same demo also indexes governed model orchestration records. To inspect
-candidate models that were staged or rejected, search:
-
-```text
-event.dataset:"traffic.model_orchestration.demo"
-```
+After `make setup-ml`, **Net Sec Watch - Traffic Classification** also
+shows the ML demo results.
 
 ## Manual setup path
 
@@ -200,7 +171,7 @@ make test-dashboards-reproducibility
 
 ## 2. Add filters and parsing logic
 
-**Requires:** nothing running â€” this is config editing. `make test-golden`
+**Requires:** nothing running — this is config editing. `make test-golden`
 needs only `python3`; `make test-integration` needs Docker to replay real
 events through the changed config.
 
@@ -236,7 +207,7 @@ make test-opensearch-searchability
 
 ## 3. Use detections and alerts
 
-**Requires:** nothing running â€” `scripts/run-detections.py` evaluates a
+**Requires:** nothing running — `scripts/run-detections.py` evaluates a
 JSONL file of events directly (`--events`), no OpenSearch connection needed.
 Wire alerts into Dashboards once you have real ingested data to search over.
 
@@ -266,124 +237,32 @@ names, severity, asset criticality, or source confidence. Keep detections
 source-agnostic where possible so the same rule can work across router,
 firewall, Zeek, Suricata, and host events.
 
-## 4. Use machine learning features
+## 4. Machine learning
 
-Start with `make ml-demo` for explained authentication scores or `make setup-ml`
-for traffic results in a dashboard. The [ML walkthrough](docs/guides/machine-learning.md)
-includes the input format and a copyable example for your own data.
+**Requires:** nothing for authentication scoring. Viewing traffic
+classification in Dashboards needs the running stack.
 
+| Feature | Run | Results |
+| --- | --- | --- |
+| Authentication anomaly scoring (real statistics, works on your own data) | `make ml-demo` | Terminal and `runtime/demos/ml/` |
+| Traffic classification and candidate models (simulated workflow) | `make setup-ml`, or `make traffic-classification-demo` on a running stack | **Net Sec Watch - Traffic Classification** dashboard |
 
-**Requires:** nothing running â€” `scripts/ml-shadow-score.py` scores a JSONL
-file of events against a registered model file (`--events`,
-`--model-metadata`), no live OpenSearch or dashboard needed for scoring
-itself. Step 5 below covers viewing the output in Dashboards.
-
-The ML layer is intentionally governed. It is designed for shadow analysis and
-analyst review first, not automatic blocking.
-
-ML assets are under `config/ml/`.
-
-Important files:
-
-| Path | Purpose |
-| --- | --- |
-| `config/ml/ml-use-case-v1.json` | Security ML use cases |
-| `config/ml/dataset-policy-v1.json` | Dataset governance |
-| `config/ml/baselines-v1.json` | Baseline behavior definitions |
-| `config/ml/drift-monitoring-v1.json` | Drift checks |
-| `config/ml/model-serving-api-v1.json` | Model serving contract |
-| `config/ml/ml-lifecycle-v1.json` | Review and promotion lifecycle |
-| `config/ml/analyst-feedback-example.json` | Example analyst feedback |
-
-Run ML validation:
-
-```bash
-make test-ml
-```
-
-How to use ML with dashboards:
-
-1. Ingest enough normalized events for the source you care about.
-2. Keep ML in shadow mode.
-3. Write prediction or score outputs to the prediction index/template.
-4. In Dashboards, create filters for fields such as model name, prediction
-   class, anomaly score, confidence, source type, and analyst disposition.
-5. Compare ML output with deterministic detections before promoting anything.
-
-The safest operating model is:
+Both run in shadow mode. They suggest, an analyst decides, and nothing is
+blocked or promoted automatically:
 
 ```text
 ML suggests -> analyst reviews -> detection is tuned -> automation is approved later
 ```
 
-## 5. Use the self-learning traffic features
+The [machine learning guide](docs/guides/machine-learning.md) covers what each
+feature does, the input format for your own data, dashboard fields, and
+validation (`make test-ml`, `make test-orchestration`). ML policy lives in
+`config/ml/` and `config/orchestration/`.
 
-**Requires:** the underlying scripts (`traffic-classifier-service.py`,
-`model-orchestrator.py`) run offline against `--events` files like the ML
-scripts above and need nothing running. The `orchestration` Compose profile
-below is only for running them continuously as services, and it needs the
-`opensearch` profile enabled too (`traffic-classifier` writes results there).
-
-The self-learning features are the adaptive traffic-intelligence and
-orchestration experiments. They classify unknown traffic, produce candidate
-model updates, and require analyst/governance approval before promotion.
-
-Start the orchestration profile:
-
-```bash
-docker compose --env-file .env --file compose.yaml --file compose.orchestration.yaml \
-  --profile orchestration --profile opensearch up -d
-```
-
-Run the orchestration contract test:
-
-```bash
-make test-orchestration
-```
-
-Run a screenshot-friendly traffic classification demo:
-
-```bash
-make traffic-classification-demo
-```
-
-This classifies fixture network events, writes a readable summary under
-`runtime/demos/traffic-classification/`, and, when local OpenSearch is running,
-indexes prediction records into `net-sec-watch-network-development`. In
-OpenSearch Dashboards, open **Dashboards** and choose
-**Net Sec Watch - Traffic Classification**. In Discover, select
-`net-sec-watch-network` and search:
-
-```text
-event.dataset:"traffic.classification.demo"
-```
-
-Key files:
-
-| Path | Purpose |
-| --- | --- |
-| `scripts/traffic-classifier-service.py` | Classifies traffic events |
-| `scripts/model-orchestrator.py` | Creates governed model candidates |
-| `config/orchestration/orchestration-policy-v1.json` | Promotion and safety policy |
-| `config/orchestration/unknown-traffic-policy-v1.json` | Unknown traffic handling |
-| `config/orchestration/analyst-oversight-v1.json` | Human approval requirements |
-| `config/orchestration/governance-monitoring-v1.json` | Governance monitoring |
-| `config/orchestration/model-registry-events-v1.json` | Model registry event contract |
-
-Use this feature carefully:
-
-- Treat results as recommendations until proven.
-- Keep analyst approval in the loop.
-- Do not auto-block traffic from unvalidated model output.
-- Track drift, false positives, and promotion decisions.
-
-More detail:
-[docs/guides/addons-and-special-features.md](docs/guides/addons-and-special-features.md).
-
-## 6. Optional sensors: Zeek and Suricata
+## 5. Optional sensors: Zeek and Suricata
 
 **Requires:** `ZEEK_INTERFACE`/`SURICATA_INTERFACE` set in `.env` to a real
-mirrored, tapped, or gateway interface before starting â€” the containers need
+mirrored, tapped, or gateway interface before starting — the containers need
 host networking and packet-capture capabilities, so this doesn't work against
 a plain loopback/no interface.
 
@@ -415,12 +294,12 @@ SURICATA_INTERFACE=eth0
 These sensors may need host networking and elevated packet-capture
 capabilities, so test them in a lab before using them on a real network.
 
-## 7. Security profile
+## 6. Security profile
 
 **Requires:** `make gen-tls-certs` first (generates local self-signed TLS
 material into `config/tls/`). `up-identity` reuses the `opensearch`/
 `opensearch-dashboards` container names, so Compose recreates them in place
-with TLS enabled if a plain `up-dashboards` stack is already running â€” no
+with TLS enabled if a plain `up-dashboards` stack is already running — no
 need to stop it manually first.
 
 For a more realistic secured stack:
@@ -443,9 +322,9 @@ Security-related assets:
 Never commit real secrets. Use `.env.example` and other `*.example` files for
 safe documentation, and keep real local config ignored by Git.
 
-## 8. Audit open-source libraries and images
+## 7. Audit open-source libraries and images
 
-**Requires:** nothing running â€” these are one-shot `audit`-profile
+**Requires:** nothing running — these are one-shot `audit`-profile
 containers (`syft`/`grype`) invoked via `scripts/security-audit.sh`, not a
 persistent stack.
 
@@ -469,7 +348,7 @@ security/audits/grype-fluent-bit-2026-07-09.json
 See [docs/guides/security.md](docs/guides/security.md) for the detailed audit
 workflow.
 
-## 9. Validate the application
+## 8. Validate the application
 
 Run everything:
 
@@ -503,6 +382,7 @@ make test-opensearch-dashboards
 - [Feature status and remaining work](docs/features-and-roadmap.md)
 - [Administrator guide](docs/guides/admin-guide.md)
 - [Getting started](docs/guides/getting-started.md)
+- [Machine learning](docs/guides/machine-learning.md)
 - [Configuration](docs/guides/configuration.md)
 - [Ingestion](docs/guides/ingestion.md)
 - [Search and dashboards](docs/guides/search-and-dashboards.md)

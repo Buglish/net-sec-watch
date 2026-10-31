@@ -280,11 +280,10 @@ redoing steps 1-6. Each one lists what it actually needs before you touch it:
 | Feature | Needs | Where |
 | --- | --- | --- |
 | Detections and alerts | Nothing running — `scripts/run-detections.py` evaluates a JSONL events file directly | [README detections section](../../README.md#3-use-detections-and-alerts) |
-| ML shadow scoring | Nothing running — `scripts/ml-shadow-score.py` scores a JSONL events file against a model file | [README ML section](../../README.md#4-use-machine-learning-features) |
-| Self-learning traffic/orchestration | Nothing running for the scripts themselves; the `orchestration` Compose profile needs OpenSearch when running continuously | [README self-learning section](../../README.md#5-use-the-self-learning-traffic-features) |
-| Zeek / Suricata sensors | `ZEEK_INTERFACE`/`SURICATA_INTERFACE` set in `.env` to a real mirrored/tapped interface (step 4) | [README sensors section](../../README.md#6-optional-sensors-zeek-and-suricata) |
-| TLS + OIDC security profile | `make gen-tls-certs`, then `make up-identity` (step 4) | [README security section](../../README.md#7-security-profile) |
-| SBOM/vulnerability audits | Nothing running — one-shot `audit`-profile containers | [README audit section](../../README.md#8-audit-open-source-libraries-and-images) |
+| ML: authentication scoring and traffic classification | Nothing running for `make ml-demo`; the running stack to view traffic classification in Dashboards (`make setup-ml` or `make traffic-classification-demo`) | [Machine learning guide](machine-learning.md) |
+| Zeek / Suricata sensors | `ZEEK_INTERFACE`/`SURICATA_INTERFACE` set in `.env` to a real mirrored/tapped interface (step 4) | [README sensors section](../../README.md#5-optional-sensors-zeek-and-suricata) |
+| TLS + OIDC security profile | `make gen-tls-certs`, then `make up-identity` (step 4) | [README security section](../../README.md#6-security-profile) |
+| SBOM/vulnerability audits | Nothing running — one-shot `audit`-profile containers | [README audit section](../../README.md#7-audit-open-source-libraries-and-images) |
 
 Detections and ML/orchestration in particular don't need Docker at all to
 try out — they're plain Python scripts against fixture or exported event
