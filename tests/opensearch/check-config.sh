@@ -173,7 +173,7 @@ objects = [
     .splitlines()
     if line
 ]
-expected = {"application", "system", "network", "dead-letter"}
+expected = {"application", "system", "network", "dead-letter", "ml"}
 assert {
     item["id"].removeprefix("net-sec-watch-")
     for item in objects
